@@ -13,10 +13,9 @@
 # project metadata
 #
 
-# TODO add more from https://packaging.python.org/en/latest/specifications/well-known-project-urls/#well-known-labels
 [project.urls]
 homepage = "https://oligominer.org"
-source = "https://github.com/conorcamplisson/OligoMiner2"
+source = "https://github.com/beliveau-lab/OligoMiner2"
 
 [project]
 name = "oligominer"
