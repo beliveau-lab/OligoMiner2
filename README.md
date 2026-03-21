@@ -1,5 +1,11 @@
 # OligoMiner2
 
+
+> [!WARNING]
+> This package is under active development.
+> Until the first stable release (`v1.0.0`), the API may change without notice.
+> Expect breaking changes in minor releases, and pin your dependency to a specific version if you use it in production.
+
 **Genome-scale oligonucleotide probe design for DNA and RNA FISH.**
 
 OligoMiner2 is a Python package for designing oligonucleotide probes used in
