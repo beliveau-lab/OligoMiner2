@@ -1,0 +1,2 @@
+include src/oligominer/data/models/paintshop/*
+include src/oligominer/data/appending/paintshop/*
