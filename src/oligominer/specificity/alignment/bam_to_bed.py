@@ -57,7 +57,7 @@ AWK_SCRIPT = """
     }
     end = start + total_length;
 
-    strand = and($2, 16) ? "-" : "+";
+    strand = (int($2 / 16) % 2) ? "-" : "+";
 
     align_score = "NA";
     for (i = 12; i <= NF; i++) {
