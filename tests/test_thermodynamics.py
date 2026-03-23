@@ -112,7 +112,7 @@ class TestFormamideCorrection:
 
     def test_basic_correction(self):
         result = formamide_correction(37.0, 50, 0.65)
-        expected = 37.0 + (50 * 0.65)
+        expected = 37.0 - (50 * 0.65)
         assert result == pytest.approx(expected)
 
     def test_zero_formamide(self):
@@ -121,5 +121,5 @@ class TestFormamideCorrection:
 
     def test_custom_factor(self):
         result = formamide_correction(37.0, 50, 0.5)
-        expected = 37.0 + (50 * 0.5)
+        expected = 37.0 - (50 * 0.5)
         assert result == pytest.approx(expected)
