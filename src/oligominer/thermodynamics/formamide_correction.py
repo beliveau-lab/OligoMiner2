@@ -13,11 +13,11 @@ def formamide_correction(temp, pct_fmd, fmd_factor=0.65):
 
     Args:
         temp (float): initial temperature.
-        pct_fmd (int): percent formamide as an integer (e.g. 60 for 60%).
+        pct_fmd (float): percent formamide as a float (e.g. 60.0 for 60%).
         fmd_factor (float): how much Tm decreases per % formamide.
 
     Returns:
         temp_adj (float): the formamide-adjusted temperature.
     """
-    temp_adj = temp + (pct_fmd * fmd_factor)
+    temp_adj = temp - (pct_fmd * fmd_factor)
     return temp_adj
