@@ -3325,11 +3325,11 @@ dependent manner, allowing hybridization at lower temperatures.</p>
                 <code>pct_fmd</code>
             </td>
             <td>
-                  <code><span title="int">int</span></code>
+                  <code><span title="float">float</span></code>
             </td>
             <td>
               <div class="doc-md-description">
-                <p>percent formamide as an integer (e.g. 60 for 60%).</p>
+                <p>percent formamide as a float (e.g. 60.0 for 60%).</p>
               </div>
             </td>
             <td>
@@ -3400,13 +3400,13 @@ dependent manner, allowing hybridization at lower temperatures.</p>
 
 <span class="sd">    Args:</span>
 <span class="sd">        temp (float): initial temperature.</span>
-<span class="sd">        pct_fmd (int): percent formamide as an integer (e.g. 60 for 60%).</span>
+<span class="sd">        pct_fmd (float): percent formamide as a float (e.g. 60.0 for 60%).</span>
 <span class="sd">        fmd_factor (float): how much Tm decreases per % formamide.</span>
 
 <span class="sd">    Returns:</span>
 <span class="sd">        temp_adj (float): the formamide-adjusted temperature.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">temp_adj</span> <span class="o">=</span> <span class="n">temp</span> <span class="o">+</span> <span class="p">(</span><span class="n">pct_fmd</span> <span class="o">*</span> <span class="n">fmd_factor</span><span class="p">)</span>
+    <span class="n">temp_adj</span> <span class="o">=</span> <span class="n">temp</span> <span class="o">-</span> <span class="p">(</span><span class="n">pct_fmd</span> <span class="o">*</span> <span class="n">fmd_factor</span><span class="p">)</span>
     <span class="k">return</span> <span class="n">temp_adj</span>
 </code></pre></div></td></tr></table></div>
             </details>
