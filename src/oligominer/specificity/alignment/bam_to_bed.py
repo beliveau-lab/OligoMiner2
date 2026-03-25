@@ -69,7 +69,9 @@ AWK_SCRIPT = """
 
     bed_start = start - 1;
     if (bed_start < 0) bed_start = 0;
-    print $3, bed_start, end - 1, $1, align_score, strand, cigar;
+    bed_end = end - 1;
+    if (bed_end < 0) bed_end = 0;
+    print $3, bed_start, bed_end, $1, align_score, strand, cigar;
 }
 """
 
