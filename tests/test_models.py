@@ -271,3 +271,30 @@ class TestConditionResponse:
             values = self._mean_by_temperature(name, duplex_df, [17, 87])
             moved = abs(values[0] - values[1]) > 1e-9
             assert moved == declared, f'{name} declares {declared} but moved={moved}'
+
+
+class TestEmptyDuplexFrame:
+    """A chromosome can lose every alignment upstream."""
+
+    def test_an_empty_table_builds_an_empty_frame(self):
+        empty = pd.DataFrame(columns=['probe_seq', 'derived_seq',
+                                      'align_cigar'])
+        out = build_duplex_frame(empty)
+
+        assert out.empty
+        assert 'probe_aln' in out.columns
+        assert out.attrs['n_dropped_malformed'] == 0
+
+    def test_an_empty_frame_does_not_trip_the_cigar_guard(self):
+        # the guard raises when no row distinguishes matches, which no row can
+        # do when there are no rows
+        empty = pd.DataFrame(columns=['probe_seq', 'derived_seq',
+                                      'align_cigar'])
+        assert build_duplex_frame(empty).empty
+
+    def test_an_empty_frame_predicts_nothing(self):
+        empty = pd.DataFrame(columns=['probe_seq', 'derived_seq',
+                                      'align_cigar'])
+        from oligominer.models import load
+
+        assert len(load('physics-xgb').predict(build_duplex_frame(empty))) == 0
