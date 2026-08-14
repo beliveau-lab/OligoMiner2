@@ -35,3 +35,12 @@ from .units import (
     drop_incomplete_units,
     units_to_orders,
 )
+from .split import (
+    SplitArchitecture,
+    hcr3,
+    split_fish,
+    pair_probes,
+    assemble_split,
+    design_split,
+    pair_summary,
+)
