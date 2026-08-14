@@ -30,6 +30,7 @@ from .int_encoding import seq_to_8bit
 from .calc_tm_2d import get_tm_grid
 from .config import GET_DEFAULT_MINING_CONFIG, WRITE_BUFFER_SIZE
 from oligominer.utils import check_dir_exists
+from oligominer.utils.cores import resolve_cores
 from oligominer.utils.exceptions import ConfigurationError
 
 # Column order for probe result tuples: (seq_id, start, stop, probe_seq, tm)
@@ -45,12 +46,14 @@ def mine_sequence(
     max_tm=47,
     tm_target=None,
     chunk_size=100000,
-    overlap=True,
+    allow_overlap=True,
     spacing=0,
     exhaustive=False,
+    min_gc=20,
+    max_gc=80,
     max_homopolymer=4,
     prohibited_seqs=None,
-    cores=1,
+    cores=None,
     Na=390,
     K=0,
     Tris=0,
@@ -76,16 +79,20 @@ def mine_sequence(
         tm_target (float or None): target Tm for closest-to-target selection.
             None = greedy shortest valid probe. Ignored when exhaustive=True.
         chunk_size (int): bases per processing chunk.
-        overlap (bool): allow overlapping probes. Mutually exclusive with
+        allow_overlap (bool): allow overlapping probes. Mutually exclusive with
             exhaustive.
         spacing (int): minimum spacing between adjacent probes. Mutually
             exclusive with exhaustive.
         exhaustive (bool): return all valid (position, length) combinations
             instead of selecting one probe per position. Mutually exclusive
-            with overlap and spacing.
+            with allow_overlap and spacing.
+        min_gc (float or None): minimum GC percent (0-100). None to disable.
+        max_gc (float or None): maximum GC percent (0-100). None to disable.
         max_homopolymer (int or None): max homopolymer run. None to disable.
         prohibited_seqs (list or None): list of subsequence strings to exclude.
-        cores (int): number of CPU cores for parallel chunk processing.
+        cores (int, optional): number of CPU cores for parallel chunk
+            processing. None resolves the batch scheduler's granted core count
+            (see oligominer.utils.cores).
         Na (float): sodium concentration in mM.
         K (float): potassium concentration in mM.
         Tris (float): Tris buffer concentration in mM.
@@ -104,10 +111,12 @@ def mine_sequence(
             Use probes_to_df() to convert to a pandas DataFrame.
     """
 
-    if exhaustive and (not overlap or spacing > 0):
+    if exhaustive and (not allow_overlap or spacing > 0):
         raise ConfigurationError(
-            "exhaustive mode is incompatible with overlap=False and "
+            "exhaustive mode is incompatible with allow_overlap=False and "
             "spacing > 0. In exhaustive mode all valid probes are returned.")
+
+    cores = resolve_cores(cores)
 
     config = GET_DEFAULT_MINING_CONFIG()
     config['min_length'] = min_length
@@ -116,7 +125,12 @@ def mine_sequence(
     config['max_tm'] = max_tm
     config['tm_target'] = tm_target
     config['chunk_size'] = chunk_size
+    config['allow_overlap'] = allow_overlap
+    config['spacing'] = spacing
     config['exhaustive'] = exhaustive
+    config['cores'] = cores
+    config['min_gc'] = min_gc
+    config['max_gc'] = max_gc
     config['max_homopolymer'] = max_homopolymer
     config['prohibited_seqs'] = prohibited_seqs
     config['Na'] = Na
@@ -138,15 +152,15 @@ def mine_sequence(
     if cores > 1:
         with multiprocessing.Pool(processes=cores, maxtasksperchild=64) as pool:
             chunk_results = pool.imap(_process_chunk_packed, chunks, chunksize=4)
-            rows = _collect_probes(seq_id, seq_str, chunk_results, overlap, spacing)
+            rows = _collect_probes(seq_id, seq_str, chunk_results, allow_overlap, spacing)
     else:
         chunk_results = (process_chunk(*c) for c in chunks)
-        rows = _collect_probes(seq_id, seq_str, chunk_results, overlap, spacing)
+        rows = _collect_probes(seq_id, seq_str, chunk_results, allow_overlap, spacing)
 
     return rows
 
 
-def mine_fasta(input_file, cores=1, **mining_params):
+def mine_fasta(input_file, cores=None, **mining_params):
     """Mine probes from all sequences in a FASTA file.
 
     Loads the FASTA via pyfaidx and calls mine_sequence() per sequence.

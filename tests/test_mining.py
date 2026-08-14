@@ -68,7 +68,7 @@ class TestMineSequence:
         fasta = load_fasta(example_fasta_path)
         seq_str = str(fasta[list(fasta.keys())[0]])
 
-        probes = mine_sequence(seq_str, overlap=False)
+        probes = mine_sequence(seq_str, allow_overlap=False)
         for i in range(1, len(probes)):
             prev_stop = probes[i - 1][2]
             curr_start = probes[i][1]
@@ -98,7 +98,7 @@ class TestMineSequence:
 
     def test_exhaustive_overlap_conflict(self, short_seq):
         with pytest.raises(ConfigurationError, match="exhaustive"):
-            mine_sequence(short_seq, exhaustive=True, overlap=False)
+            mine_sequence(short_seq, exhaustive=True, allow_overlap=False)
 
     def test_prohibited_seqs(self, example_fasta_path):
         from oligominer.bioinformatics.file_io import load_fasta
