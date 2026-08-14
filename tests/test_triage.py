@@ -162,6 +162,36 @@ class TestExactness:
             assert abs(row[EXACT_COLUMN] - reference) < 1e-9
 
 
+class TestUnverifiableRows:
+    """A genome gap puts N in the target, which NUPACK will not accept."""
+
+    @pytest.fixture
+    def with_gap(self, frame):
+        gapped = frame.copy()
+        gapped.loc[gapped.index[0], 'derived_seq'] = (
+            'NNN' + str(gapped.loc[gapped.index[0], 'derived_seq'])[3:])
+        return gapped
+
+    def test_a_target_containing_n_does_not_fail_the_run(self, with_gap):
+        out = triage(with_gap, threshold=0.0)
+        assert len(out) == len(with_gap)
+
+    def test_the_gapped_row_keeps_its_model_score(self, with_gap):
+        out = triage(with_gap, threshold=0.0)
+        row = out.iloc[0]
+        assert pd.isna(row[EXACT_COLUMN])
+        assert row[SOURCE_COLUMN] != 'nupack'
+        assert row[FINAL_COLUMN] == row[MODEL_COLUMN]
+
+    def test_unverifiable_rows_are_counted(self, with_gap):
+        out = triage(with_gap, threshold=0.0)
+        assert out.attrs['triage']['n_unverifiable'] >= 1
+
+    def test_other_rows_are_still_verified(self, with_gap):
+        out = triage(with_gap, threshold=0.0)
+        assert (out[SOURCE_COLUMN] == 'nupack').any()
+
+
 class TestGuards:
 
     def test_a_decision_score_model_is_refused(self, frame):

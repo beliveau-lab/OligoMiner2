@@ -83,7 +83,9 @@ def triage(frame, model_name=DEFAULT_MODEL, threshold=DEFAULT_THRESHOLD,
     out[MODEL_COLUMN] = model.predict(frame)
     out[EXACT_COLUMN] = np.nan
 
+    verifiable = _verifiable(out)
     selected = _select_for_verification(out[MODEL_COLUMN], threshold, max_verify)
+    selected = selected & verifiable
 
     if verify and selected.any():
         out.loc[selected, EXACT_COLUMN] = _exact_pdup(
@@ -99,11 +101,34 @@ def triage(frame, model_name=DEFAULT_MODEL, threshold=DEFAULT_THRESHOLD,
         'n_rows': int(len(out)),
         'n_selected': int(selected.sum()),
         'n_verified': int(verified.sum()),
+        'n_unverifiable': int((~verifiable).sum()),
         'fraction_verified': float(verified.mean()) if len(out) else 0.0,
     }
 
     # success
     return out
+
+
+def _verifiable(frame):
+    """
+    Report which rows the physics can accept.
+
+    A target read from a genome can contain N where the assembly has a gap, and
+    NUPACK rejects any character outside its alphabet. Such a row keeps its model
+    score and is reported as unverified, rather than failing the run.
+
+    Args:
+        frame (pandas.DataFrame): rows carrying probe_seq and derived_seq.
+
+    Returns:
+        verifiable (pandas.Series): boolean, True where both sequences are ACGT.
+    """
+    pure = r'^[ACGTacgt]+$'
+    verifiable = (frame['probe_seq'].astype(str).str.match(pure)
+                  & frame['derived_seq'].astype(str).str.match(pure))
+
+    # success
+    return verifiable.fillna(False)
 
 
 def _select_for_verification(scores, threshold, max_verify):
