@@ -165,7 +165,7 @@ class KmerIndex:
             min_count (int): minimum count to store. K-mers rarer than this are
                 omitted, and queries report them as min_count - 1.
             n_bins (int): number of hash bins. More bins means less memory per bin.
-            tmp_dir (str, optional): directory for the temporary bin files.
+            tmp_dir (str, optional): parent directory to create scratch under.
                 A system temporary directory is used and removed when None.
 
         Returns:
@@ -175,12 +175,11 @@ class KmerIndex:
 
         fasta = load_fasta(fasta_path)
 
-        if tmp_dir is None:
-            tmp_dir = tempfile.mkdtemp(prefix='om2_kmer_build_')
-            cleanup_tmp = True
-        else:
+        # a private directory per build: the bin files are opened for append,
+        # so two builds sharing a directory would append into each other's bins
+        if tmp_dir is not None:
             os.makedirs(tmp_dir, exist_ok=True)
-            cleanup_tmp = False
+        tmp_dir = tempfile.mkdtemp(prefix='om2_kmer_build_', dir=tmp_dir)
 
         # k-mers are binned on the top bits of the 2k-bit hash space, so the bins
         # partition that space in ascending order and concatenate already sorted
@@ -224,8 +223,7 @@ class KmerIndex:
                                    ).astype(COUNT_DTYPE))
                 del bin_hashes, unique, raw_counts
         finally:
-            if cleanup_tmp:
-                shutil.rmtree(tmp_dir, ignore_errors=True)
+            shutil.rmtree(tmp_dir, ignore_errors=True)
 
         if result_kmers:
             all_kmers = np.concatenate(result_kmers)
