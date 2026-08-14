@@ -10,3 +10,4 @@ from .registry import (
     missing_artifacts,
 )
 from .loaders import LoadedModel, load, load_all
+from .retrain import build_flat_corpus, retrain, write_card
