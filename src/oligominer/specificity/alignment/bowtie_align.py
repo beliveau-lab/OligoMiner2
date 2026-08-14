@@ -60,88 +60,39 @@ def validate_index(index_path, verbose=False):
     return True
 
 
-def bowtie_align(index_path, input_file=None, input_data=None,
-                 sam_output_file=None, bam_output_file=None,
-                 preset=None, D=None, R=None, N=None, L=None, i=None,
-                 local=False, no_1mm_upfront=False, nofw=False, norc=False,
-                 dpad=None, gbar=None, ignore_quals=False,
-                 n_ceil=None, ma=None, mp=None, np=None, rdg=None, rfg=None,
-                 score_min=None,
-                 k=None, a=False, threads=None, reorder=False, mm=False,
-                 fasta_input=False, no_unal=False, no_hd=True, xeq=True,
-                 no_sq=False, time=False, verbose=False, bt2_verbose=False):
+def build_bowtie2_cmd(index_path, input_file=None, input_data=None,
+                      sam_output_file=None,
+                      preset=None, D=None, R=None, N=None, L=None, i=None,
+                      local=False, no_1mm_upfront=False, nofw=False, norc=False,
+                      dpad=None, gbar=None, ignore_quals=False,
+                      n_ceil=None, ma=None, mp=None, np=None, rdg=None, rfg=None,
+                      score_min=None,
+                      k=None, a=False, threads=None, reorder=False, mm=False,
+                      fasta_input=False, no_unal=False, no_hd=True, xeq=True,
+                      no_sq=False, time=False, bt2_verbose=False):
     """
-    Align reads to a reference genome using Bowtie2.
+    Build the bowtie2 argv for an alignment.
+
+    Both the buffered path in bowtie_align() and the streaming path in
+    stream_align.py construct their command here, so the two cannot diverge on a
+    flag.
 
     Args:
         index_path (str): base path to the Bowtie2 index files.
         input_file (str, optional): path to the input FASTA/FASTQ file.
-        input_data (str, optional): FASTQ (or FASTA with fasta_input=True) data
-            as a string to be piped into Bowtie2.
-        sam_output_file (str, optional): path to the output SAM file.
-        bam_output_file (str, optional): path to the output BAM file.
-        preset (dict, optional): use preset parameters from bowtie_presets
-            (e.g. bowtie_presets.VERY_FAST).
-        D (int, optional): max consecutive seed extension attempts that can fail
-            before Bowtie2 moves on.
-        R (int, optional): for reads with repetitive seeds, try this many sets
-            of seeds.
-        N (int, optional): max mismatches in seed alignment (0 or 1). Default: 0.
-        L (int, optional): length of seed substrings to align.
-        i (str, optional): interval between seed substrings.
-            Format 'S,1,0.50' means f(x)=1+0.5*sqrt(x).
-        local (bool): use local alignment mode instead of end-to-end.
-        no_1mm_upfront (bool): skip the one-mismatch search before the
-            multiseed heuristic.
-        nofw (bool): do not align forward (Watson) strand.
-        norc (bool): do not align reverse-complement (Crick) strand.
-        dpad (int, optional): pad dynamic programming problems by this many
-            columns on each side.
-        gbar (int, optional): disallow gaps within this many positions of
-            read extremes.
-        ignore_quals (bool): treat all quality values as high.
-        n_ceil (str, optional): function for max number of Ns allowed.
-            Format 'L,0,0.15' means f(x)=0+0.15*x.
-        ma (int, optional): match bonus in local mode (>0).
-        mp (str, optional): max and min mismatch penalties (MX,MN).
-        np (int, optional): penalty for ambiguous chars (Ns) in read or ref.
-        rdg (str, optional): read gap open,extend penalties (INT1,INT2).
-        rfg (str, optional): reference gap open,extend penalties (INT1,INT2).
-        score_min (str, optional): min acceptable alignment score w.r.t read
-            length (L,0,-0.6).
-        k (int, optional): report up to k distinct alignments per read.
-        a (bool): report all alignments per read (very slow).
-        threads (int, optional): number of parallel search threads. None
-            resolves the batch scheduler's granted core count (see
-            oligominer.utils.cores).
-        reorder (bool): keep SAM output in order of input reads.
-        mm (bool): use memory-mapped I/O for index.
-        fasta_input (bool): input files are in FASTA format (-f).
-        no_unal (bool): suppress SAM records for reads that failed to align.
-        no_hd (bool): suppress SAM header lines (starting with @).
-        xeq (bool): use '='/'X' instead of 'M' to specify matches/mismatches
-            in SAM record.
-        no_sq (bool): suppress @SQ SAM header lines.
-        time (bool): print wall-clock time for loading index and aligning.
-        verbose (bool): if True, print stdout and stderr of each command
-            to the terminal.
-        bt2_verbose (bool): if True, run bowtie2 in --verbose mode.
+        input_data (str, optional): reads to be piped in, selecting '-U -'.
+        sam_output_file (str, optional): path to write SAM output to.
+        preset (dict, optional): seed parameters from bowtie_presets, overriding
+            D, R, N, L, i and local.
 
     Returns:
-        result (str or None): SAM file content if no output file is
-            specified, otherwise None.
+        cmd (list): the bowtie2 argv.
 
-    Raises:
-        ValueError: if neither input_file nor input_data is provided.
-        RuntimeError: if the alignment fails.
+    See bowtie_align() for the remaining arguments, which have the same meaning.
     """
-    require_one_of(input_file, input_data, 'input_file', 'input_data')
-    ensure_executable('bowtie2')
-    if bam_output_file:
-        ensure_executable('samtools')
-
     index_path = get_abs_path(index_path)
     cmd = ['bowtie2', '-x', index_path]
+
 
     if input_file:
         cmd.extend(['-U', input_file])
@@ -239,6 +190,101 @@ def bowtie_align(index_path, input_file=None, input_data=None,
     if bt2_verbose:
         cmd.append('--verbose')
 
+
+    # success
+    return cmd
+
+
+def bowtie_align(index_path, input_file=None, input_data=None,
+                 sam_output_file=None, bam_output_file=None,
+                 preset=None, D=None, R=None, N=None, L=None, i=None,
+                 local=False, no_1mm_upfront=False, nofw=False, norc=False,
+                 dpad=None, gbar=None, ignore_quals=False,
+                 n_ceil=None, ma=None, mp=None, np=None, rdg=None, rfg=None,
+                 score_min=None,
+                 k=None, a=False, threads=None, reorder=False, mm=False,
+                 fasta_input=False, no_unal=False, no_hd=True, xeq=True,
+                 no_sq=False, time=False, verbose=False, bt2_verbose=False):
+    """
+    Align reads to a reference genome using Bowtie2.
+
+    Args:
+        index_path (str): base path to the Bowtie2 index files.
+        input_file (str, optional): path to the input FASTA/FASTQ file.
+        input_data (str, optional): FASTQ (or FASTA with fasta_input=True) data
+            as a string to be piped into Bowtie2.
+        sam_output_file (str, optional): path to the output SAM file.
+        bam_output_file (str, optional): path to the output BAM file.
+        preset (dict, optional): use preset parameters from bowtie_presets
+            (e.g. bowtie_presets.VERY_FAST).
+        D (int, optional): max consecutive seed extension attempts that can fail
+            before Bowtie2 moves on.
+        R (int, optional): for reads with repetitive seeds, try this many sets
+            of seeds.
+        N (int, optional): max mismatches in seed alignment (0 or 1). Default: 0.
+        L (int, optional): length of seed substrings to align.
+        i (str, optional): interval between seed substrings.
+            Format 'S,1,0.50' means f(x)=1+0.5*sqrt(x).
+        local (bool): use local alignment mode instead of end-to-end.
+        no_1mm_upfront (bool): skip the one-mismatch search before the
+            multiseed heuristic.
+        nofw (bool): do not align forward (Watson) strand.
+        norc (bool): do not align reverse-complement (Crick) strand.
+        dpad (int, optional): pad dynamic programming problems by this many
+            columns on each side.
+        gbar (int, optional): disallow gaps within this many positions of
+            read extremes.
+        ignore_quals (bool): treat all quality values as high.
+        n_ceil (str, optional): function for max number of Ns allowed.
+            Format 'L,0,0.15' means f(x)=0+0.15*x.
+        ma (int, optional): match bonus in local mode (>0).
+        mp (str, optional): max and min mismatch penalties (MX,MN).
+        np (int, optional): penalty for ambiguous chars (Ns) in read or ref.
+        rdg (str, optional): read gap open,extend penalties (INT1,INT2).
+        rfg (str, optional): reference gap open,extend penalties (INT1,INT2).
+        score_min (str, optional): min acceptable alignment score w.r.t read
+            length (L,0,-0.6).
+        k (int, optional): report up to k distinct alignments per read.
+        a (bool): report all alignments per read (very slow).
+        threads (int, optional): number of parallel search threads. None
+            resolves the batch scheduler's granted core count (see
+            oligominer.utils.cores).
+        reorder (bool): keep SAM output in order of input reads.
+        mm (bool): use memory-mapped I/O for index.
+        fasta_input (bool): input files are in FASTA format (-f).
+        no_unal (bool): suppress SAM records for reads that failed to align.
+        no_hd (bool): suppress SAM header lines (starting with @).
+        xeq (bool): use '='/'X' instead of 'M' to specify matches/mismatches
+            in SAM record.
+        no_sq (bool): suppress @SQ SAM header lines.
+        time (bool): print wall-clock time for loading index and aligning.
+        verbose (bool): if True, print stdout and stderr of each command
+            to the terminal.
+        bt2_verbose (bool): if True, run bowtie2 in --verbose mode.
+
+    Returns:
+        result (str or None): SAM file content if no output file is
+            specified, otherwise None.
+
+    Raises:
+        ValueError: if neither input_file nor input_data is provided.
+        RuntimeError: if the alignment fails.
+    """
+    require_one_of(input_file, input_data, 'input_file', 'input_data')
+    ensure_executable('bowtie2')
+    if bam_output_file:
+        ensure_executable('samtools')
+
+    cmd = build_bowtie2_cmd(
+        index_path, input_file=input_file, input_data=input_data,
+        sam_output_file=sam_output_file, preset=preset, D=D, R=R, N=N, L=L, i=i,
+        local=local, no_1mm_upfront=no_1mm_upfront, nofw=nofw, norc=norc,
+        dpad=dpad, gbar=gbar, ignore_quals=ignore_quals, n_ceil=n_ceil, ma=ma,
+        mp=mp, np=np, rdg=rdg, rfg=rfg, score_min=score_min, k=k, a=a,
+        threads=threads, reorder=reorder, mm=mm, fasta_input=fasta_input,
+        no_unal=no_unal, no_hd=no_hd, xeq=xeq, no_sq=no_sq, time=time,
+        bt2_verbose=bt2_verbose,
+    )
     # create the pipeline
     pipeline = ShellPipeline(binary=True)
     pipeline.add(cmd)
