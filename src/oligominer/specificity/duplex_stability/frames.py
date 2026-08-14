@@ -130,6 +130,14 @@ def build_duplex_frame(merged_df, celsius=DEFAULT_CELSIUS, sodium=DEFAULT_SODIUM
     """
     df = merged_df.copy()
 
+    if df.empty:
+        for column in ('target_seq', 'ops', 'probe_aln', 'target_aln'):
+            df[column] = pd.Series(dtype=object)
+        df['align_score'] = pd.Series(dtype=float)
+        df['length'] = pd.Series(dtype=int)
+        df.attrs['n_dropped_malformed'] = 0
+        return df
+
     if 'target_seq' not in df:
         df['target_seq'] = df['derived_seq']
     if 'ops' not in df:
