@@ -35,3 +35,11 @@ from .units import (
     drop_incomplete_units,
     units_to_orders,
 )
+from .orthogonal import (
+    nominate,
+    screen_bruteforce,
+    verify_against_screen,
+    worst_pairs,
+    verify_pairs,
+    evict,
+)
