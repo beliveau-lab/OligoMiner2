@@ -36,6 +36,9 @@ from oligominer.utils import require_one_of, check_output_exists, ensure_executa
 
 # AWK script that parses SAM records into BED with full probe coordinates
 AWK_SCRIPT = """
+# header lines are skipped: the SAM spec forbids a read name starting
+# with '@', so this cannot discard an alignment
+/^@/ { next }
 $3 != "*" {
     OFS = "\\t";
     start = $4;

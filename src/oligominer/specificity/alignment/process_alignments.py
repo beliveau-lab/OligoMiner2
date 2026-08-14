@@ -34,7 +34,8 @@ def process_alignments(sam_data=None, bam_path=None, ref_fasta=None, to_upper=Tr
             align_strand, align_cigar, and optionally derived_seq.
 
     Raises:
-        ValueError: if neither or both of sam_data and bam_path are provided.
+        InvalidInputError: if neither or both of sam_data and bam_path are
+            provided.
     """
     # load bam file as needed
     require_one_of(sam_data, bam_path, 'sam_data', 'bam_path')
