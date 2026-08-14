@@ -1,0 +1,67 @@
+{
+ "model": "PS-XGB",
+ "kind": "xgb",
+ "encoding": "paintshop-37feat",
+ "train_sha256": "7801f4e4d9213972a647c476a08ddb5e15815059cac5022797032c5c00ac118f",
+ "train_n_files": 1,
+ "aln_width": 42,
+ "threshold": 0.5,
+ "label_source": "pdup_nupack",
+ "train_source": "/net/beliveau/vol1/project/conor/om2_ssot/datasets/uniform/chrx_uniform.parquet",
+ "n_train": 286511,
+ "n_test": 71559,
+ "split": "probe-grouped, 20% of probes held out, seed 0",
+ "train_shape": "uniform",
+ "ncond": 3,
+ "temps": [
+  27.0,
+  47.0,
+  67.0,
+  77.0
+ ],
+ "conditions": {
+  "version": "1",
+  "channels": [
+   "t_eff",
+   "length",
+   "log10_sodium"
+  ],
+  "normalization": "min-max to [0,1] over fixed ranges; sodium in log10 space",
+  "ranges": {
+   "t_eff": [
+    7.0,
+    97.0
+   ],
+   "length": [
+    10,
+    80
+   ],
+   "sodium_M": [
+    0.05,
+    1.0
+   ]
+  },
+  "note": "channel ORDER is part of the contract; ncond=k uses the first k channels"
+ },
+ "n_features": 37,
+ "hyperparams": {
+  "max_depth": 10,
+  "min_child_weight": 9,
+  "n_estimators": 100,
+  "subsample": 0.95,
+  "learning_rate": 0.1
+ },
+ "link": "logit",
+ "outputs_pdup": true,
+ "artifact": "/net/beliveau/vol1/project/conor/om2_ssot/models/ps_xgb_pdup_nupack_deploy_uniform.pkl",
+ "metrics": {
+  "n": 71559,
+  "binder_frac": 0.49655529004038623,
+  "spearman": 0.17459305582975188,
+  "pr_auc": 0.5620286379798013,
+  "auroc": 0.5783251485980689,
+  "rmse": 0.3086186175167441,
+  "ece": 0.07074490860948769
+ },
+ "fit_sec": 50.6
+}

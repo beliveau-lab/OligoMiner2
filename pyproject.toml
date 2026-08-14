@@ -53,6 +53,13 @@ dependencies = [
 #
 
 [project.optional-dependencies]
+
+# the sequence model. torch is ~1.8 GB, so it is not required to mine, screen or
+# score with the tree models
+bilstm = [
+    "torch",
+]
+
 dev = [
     "mkdocs",
     "mkdocs-material",
