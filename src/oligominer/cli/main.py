@@ -50,6 +50,15 @@ Code:      https://github.com/beliveau-lab/OligoMiner2
 # '''
 
 def build_parser():
+    """
+    Build the command-line argument parser.
+
+    Each command module registers its own subparser, so adding a command does not
+    require editing this function.
+
+    Returns:
+        parser (argparse.ArgumentParser): the configured parser.
+    """
     parser = argparse.ArgumentParser(prog="oligominer", description=HELP_TEXT, formatter_class=argparse.RawTextHelpFormatter)
 
     parser.add_argument(
@@ -69,6 +78,16 @@ def build_parser():
 
 
 def main(argv=None):
+    """
+    Run the command line interface.
+
+    Args:
+        argv (list, optional): arguments to parse. Defaults to sys.argv.
+
+    Returns:
+        status (int): the process exit status. 1 when no command was given, in
+            which case the help text is printed.
+    """
     parser = build_parser()
     args = parser.parse_args(argv)
 
