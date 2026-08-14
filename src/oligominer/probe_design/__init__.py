@@ -28,3 +28,10 @@ from .padlock import (
     PADLOCK_COLUMNS,
 )
 from .domains import DomainAssembly, assemble_padlock, check_backbone_placement
+from .units import (
+    assign_units,
+    unit_sizes,
+    filter_units,
+    drop_incomplete_units,
+    units_to_orders,
+)
