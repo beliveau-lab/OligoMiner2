@@ -139,9 +139,14 @@ def calc_max_kmer(index_path, seq, k, load=False, no_load=False, verbose=False):
         verbose (bool): if True, print stdout and stderr to the terminal.
 
     Returns:
-        max_count (int): the maximum k-mer count.
+        max_count (int): the maximum k-mer count, 0 for a sequence shorter than
+            k, which contains no k-mer. This matches the backend dispatcher in
+            `backends.max_kmer`.
     """
     kmers = _get_kmers(seq, k)
+    if not kmers:
+        return 0
+
     counts = jellyfish_query(index_path, mers=kmers, load=load, no_load=no_load, verbose=verbose)
 
     # extract counts from the query result
