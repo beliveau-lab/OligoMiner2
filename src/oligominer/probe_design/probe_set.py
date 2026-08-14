@@ -35,6 +35,7 @@ from .appending import (
     build_appending_table,
 )
 from .scoring import label_on_target, score_probes
+from . import schema
 
 
 class ProbeSet:
@@ -91,6 +92,8 @@ class ProbeSet:
         self.merged_df = None
         self.score_df = None
         self._master_entries = {}
+        self.manifest = schema.new_manifest()
+        self._record('create', n_out=len(self.df))
 
     # ------------------------------------------------------------------
     # constructors
@@ -111,9 +114,13 @@ class ProbeSet:
             probe_set (ProbeSet): the mined probe set.
         """
         probes = mine_fasta(input_fasta, cores=cores, **mining_params)
+        probe_set = cls(probes)
+        probe_set.manifest['target'] = {'source_fasta': str(input_fasta)}
+        probe_set._record('mine', params=dict(mining_params),
+                          n_out=len(probe_set.df))
 
         # success
-        return cls(probes)
+        return probe_set
 
     @classmethod
     def from_csv(cls, path):
@@ -262,6 +269,8 @@ class ProbeSet:
             preset=preset, k=k, threads=threads, verbose=verbose,
             **bt2_params
         )
+        self._record('align', params={'bt2_index': str(bt2_index), 'k': k},
+                     n_alignments=len(self.align_df))
 
         # success
         return self
@@ -280,9 +289,12 @@ class ProbeSet:
         Returns:
             self (ProbeSet): for method chaining.
         """
+        n_before = len(self.df)
         self.df = add_max_kmer(
             self.df, jf_index, k=k, verbose=verbose
         )
+        self._record('max_kmer', params={'index': str(jf_index), 'k': k},
+                     n_in=n_before, n_out=len(self.df))
 
         # success
         return self
@@ -304,6 +316,7 @@ class ProbeSet:
             raise PipelineStateError("No alignment data. Call align() first.")
 
         self.merged_df = merge_probes_alignments(self.df, self.align_df)
+        self._record('merge', n_duplexes=len(self.merged_df))
 
         # success
         return self
@@ -332,6 +345,8 @@ class ProbeSet:
         self.merged_df = add_pdup(
             self.merged_df, model=model, conc_a=conc_a, conc_b=conc_b
         )
+        self._record('pdup', params={'conc_a': conc_a, 'conc_b': conc_b},
+                     n_duplexes=len(self.merged_df))
 
         # success
         return self
@@ -364,6 +379,9 @@ class ProbeSet:
         self.merged_df = add_duplex_pred(
             self.merged_df, temperature=temperature, normalize=normalize
         )
+        self._record('duplex_pred',
+                     params={'temperature': temperature, 'normalize': normalize},
+                     n_duplexes=len(self.merged_df))
 
         # success
         return self
@@ -516,9 +534,123 @@ class ProbeSet:
 
         labeled = label_on_target(self.merged_df)
         self.score_df = score_probes(labeled, pred_column=pred_column)
+        self._record('score', params={'pred_column': pred_column},
+                     n_scored=len(self.score_df))
 
         # success
         return self
+
+    # ------------------------------------------------------------------
+    # provenance
+    # ------------------------------------------------------------------
+
+    def _record(self, name, params=None, n_in=None, n_out=None, **details):
+        """
+        Record a pipeline stage in this probe set's manifest.
+
+        Args:
+            name (str): the stage name.
+            params (dict, optional): the parameters the stage ran under.
+            n_in (int, optional): probes entering the stage.
+            n_out (int, optional): probes leaving the stage.
+            **details: further fields to record.
+
+        Returns:
+            self (ProbeSet): for chaining.
+        """
+        schema.record_stage(self.manifest, name, params=params,
+                            n_in=n_in, n_out=n_out, **details)
+        self.manifest['n_probes'] = len(self.df)
+        self.manifest['columns'] = list(self.df.columns)
+
+        # success
+        return self
+
+    @property
+    def attrition(self):
+        """
+        Return where probes were lost across the recorded stages.
+
+        Returns:
+            summary (dict): n_in, n_out and the number dropped per stage.
+        """
+        # success
+        return schema.attrition_summary(self.manifest)
+
+    def describe(self):
+        """
+        Return a human-readable account of how this probe set was produced.
+
+        Returns:
+            lines (str): one line per stage, with counts and parameters.
+        """
+        lines = [f"ProbeSet {self.manifest.get('name') or ''}".rstrip(),
+                 f"  {len(self.df):,} probes, {len(self.df.columns)} columns"]
+        for stage in self.manifest['stages']:
+            counts = ''
+            if 'n_in' in stage and 'n_out' in stage:
+                counts = (f" {stage['n_in']:,} -> {stage['n_out']:,} "
+                          f"({stage['n_dropped']:,} dropped)")
+            elif 'n_out' in stage:
+                counts = f" -> {stage['n_out']:,}"
+            params = ', '.join(f'{k}={v}' for k, v in stage['params'].items())
+            lines.append(f"  {stage['stage']}{counts}"
+                         + (f"  [{params}]" if params else ''))
+
+        # success
+        return '\n'.join(lines)
+
+    def to_json(self, path, orient='records'):
+        """
+        Write the probe set and its manifest to a single JSON document.
+
+        Args:
+            path (str): output file path.
+            orient (str): pandas orientation for the probe table.
+
+        Returns:
+            path (str): the path written.
+        """
+        import json
+
+        document = dict(self.manifest)
+        document['n_probes'] = len(self.df)
+        document['columns'] = list(self.df.columns)
+        document['probes'] = json.loads(self.df.to_json(orient=orient))
+
+        with open(path, 'w') as handle:
+            handle.write(json.dumps(document, indent=1, default=str))
+
+        # success
+        return path
+
+    @classmethod
+    def from_json(cls, path):
+        """
+        Load a probe set written by to_json, upgrading an older schema version.
+
+        Args:
+            path (str): path to the JSON document.
+
+        Returns:
+            probe_set (ProbeSet): the loaded probe set, manifest included.
+
+        Raises:
+            SchemaError: if the document cannot be read at this schema version.
+        """
+        import json
+
+        with open(path) as handle:
+            document = json.load(handle)
+
+        probes = document.pop('probes', [])
+        manifest = schema.upgrade_manifest(schema.validate_manifest(document))
+
+        probe_set = cls(pd.DataFrame(probes))
+        probe_set.manifest = manifest
+
+        # success
+        return probe_set
 
     # ------------------------------------------------------------------
     # display
