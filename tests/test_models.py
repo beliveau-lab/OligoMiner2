@@ -223,6 +223,27 @@ class TestLoadingAndScoring:
         assert set(loaded) == {'physics-xgb', 'duplex-BiLSTM'}
 
 
+class TestEmptyFrame:
+    """Every probe on a chromosome can be dropped upstream, leaving no rows."""
+
+    @pytest.fixture
+    def empty_frame(self):
+        empty = pd.DataFrame(
+            columns=['probe_seq', 'derived_seq', 'align_cigar', 'align_score'])
+        return build_duplex_frame(empty, celsius=69.5)
+
+    @pytest.mark.parametrize('name', ['physics-xgb', 'ps-xgb', 'om1-lda'])
+    def test_predicting_an_empty_frame_returns_nothing(self, name, empty_frame):
+        values = models.load(name).predict(empty_frame)
+        assert len(values) == 0
+
+    def test_the_encoder_returns_the_full_width_on_an_empty_frame(self, empty_frame):
+        assert features_fast.enc_om2_fast(empty_frame).shape == (0, 103)
+
+    def test_an_empty_frame_does_not_trip_the_cigar_guard(self, empty_frame):
+        assert len(empty_frame) == 0
+
+
 class TestConditionResponse:
     """Each model must respond to temperature as its registry entry declares."""
 

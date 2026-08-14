@@ -169,6 +169,15 @@ def terminal_block_batch(prof, lengths, K):
         summ (numpy.ndarray): (rows, 8) interior summaries in INTERIOR_COLS order.
         overlap (numpy.ndarray): (rows,) nt by which the two windows overlap.
     """
+    n_rows = len(lengths)
+    if n_rows == 0 or np.asarray(prof).shape[-1] == 0:
+        # a reduction over an empty axis has no identity, so an empty batch is
+        # returned in the declared shapes rather than raising
+        return (np.zeros((n_rows, K), dtype=np.float64),
+                np.zeros((n_rows, K), dtype=np.float64),
+                np.zeros((n_rows, 8), dtype=np.float64),
+                np.zeros(n_rows, dtype=np.float64))
+
     p = np.asarray(prof, dtype=np.float64)
     rows, width = p.shape
     L = np.asarray(lengths, dtype=np.int64)

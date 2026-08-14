@@ -157,8 +157,12 @@ class LoadedModel:
 
         Returns:
             values (numpy.ndarray): pDup in [0, 1], or a decision score for
-                om1-lda.
+                om1-lda. Empty when the frame is empty, which happens when every
+                probe on a chromosome was dropped upstream.
         """
+        if len(df) == 0:
+            return np.empty(0, dtype=np.float64)
+
         if self.kind == 'bilstm':
             values = self._predict_bilstm(df)
         else:
