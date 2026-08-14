@@ -18,4 +18,5 @@ from .gtf_io import (
 )
 from .classify import classify_seq_ids, classify_and_write
 from .fastq_io import seqs_to_fastq
+from .sam_bam_io import load_sam_file, load_bam_file
 from .chrom_sizes import get_or_create_fai
