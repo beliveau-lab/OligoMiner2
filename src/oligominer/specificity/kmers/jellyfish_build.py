@@ -6,6 +6,7 @@ jellyfish count. After building, validates the index. See jellyfish_query.py
 for querying a built index.
 """
 
+from oligominer.utils.cores import resolve_cores
 from oligominer.utils.shell_pipeline import run_cmd
 from oligominer.utils import (
     get_abs_path, check_dir_exists, check_input_exists, check_output_exists,
@@ -13,7 +14,7 @@ from oligominer.utils import (
 )
 
 
-def jellyfish_build(input_file, output_file, k=18, size='3300M', cores=1,
+def jellyfish_build(input_file, output_file, k=18, size='3300M', cores=None,
                     canonical=False, out_counter_len=4, text=False, disk=False,
                     sam=None, min_qual_char=None, min_quality=None,
                     reprobes=None, shell=None, L=None, U=None, verbose=False):
@@ -25,7 +26,8 @@ def jellyfish_build(input_file, output_file, k=18, size='3300M', cores=1,
         output_file (str): output path for the kmer count file (.jf).
         k (int): length of k-mers.
         size (str): initial hash size (e.g. '3300M').
-        cores (int): number of threads.
+        cores (int, optional): number of threads. None resolves the batch
+            scheduler's granted core count (see oligominer.utils.cores).
         canonical (bool): count canonical representation of k-mers.
         out_counter_len (int): counter field length in bytes.
         text (bool): output in text format.
@@ -46,6 +48,7 @@ def jellyfish_build(input_file, output_file, k=18, size='3300M', cores=1,
     ensure_executable('jellyfish')
     check_input_exists(input_file)
     index_path = get_abs_path(output_file)
+    cores = resolve_cores(cores)
 
     # create output directory as needed
     check_dir_exists(output_file, parent_dir=True, create=True)

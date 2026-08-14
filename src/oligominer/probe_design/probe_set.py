@@ -97,7 +97,7 @@ class ProbeSet:
     # ------------------------------------------------------------------
 
     @classmethod
-    def from_fasta(cls, input_fasta, cores=1, **mining_params):
+    def from_fasta(cls, input_fasta, cores=None, **mining_params):
         """
         Mine probes from a FASTA file and return a ProbeSet.
 
@@ -239,7 +239,7 @@ class ProbeSet:
     # ------------------------------------------------------------------
 
     def align(self, bt2_index, ref_fasta, preset=None, k=100,
-              threads=1, verbose=False, **bt2_params):
+              threads=None, verbose=False, **bt2_params):
         """
         Align probes to a reference genome.
 

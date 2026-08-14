@@ -40,7 +40,7 @@ from .transcript_seq import (
 # ---------------------------------------------------------------------------
 
 def mine_exons(gtf_df, fasta_path, transcript_id=None, gene_id=None,
-               cores=1, **mining_params):
+               cores=None, **mining_params):
     """
     Mine probes from exon sequences of a transcript or gene.
 
@@ -75,7 +75,7 @@ def mine_exons(gtf_df, fasta_path, transcript_id=None, gene_id=None,
     return probe_set
 
 
-def mine_introns(gtf_df, fasta_path, transcript_id, cores=1,
+def mine_introns(gtf_df, fasta_path, transcript_id, cores=None,
                  **mining_params):
     """
     Mine probes from intron sequences of a transcript.
@@ -103,7 +103,7 @@ def mine_introns(gtf_df, fasta_path, transcript_id, cores=1,
     return probe_set
 
 
-def mine_flattened_gene(flat_df, fasta_path, gene_id, cores=1,
+def mine_flattened_gene(flat_df, fasta_path, gene_id, cores=None,
                         **mining_params):
     """
     Mine probes from the flattened (pan-isoform) exonic segments of a gene.
@@ -134,7 +134,7 @@ def mine_flattened_gene(flat_df, fasta_path, gene_id, cores=1,
 # Spliced transcript mining
 # ---------------------------------------------------------------------------
 
-def mine_spliced_transcript(gtf_df, fasta_path, transcript_id, cores=1,
+def mine_spliced_transcript(gtf_df, fasta_path, transcript_id, cores=None,
                             **mining_params):
     """
     Mine probes from a spliced (in silico) transcript sequence.
@@ -177,7 +177,7 @@ def mine_spliced_transcript(gtf_df, fasta_path, transcript_id, cores=1,
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _mine_seq_dict(seqs, cores=1, **mining_params):
+def _mine_seq_dict(seqs, cores=None, **mining_params):
     """
     Mine probes from a dict of {label: sequence} and return a ProbeSet.
 

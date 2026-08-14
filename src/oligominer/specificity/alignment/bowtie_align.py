@@ -7,6 +7,7 @@ with BAM conversion). For building new indexes, see bowtie_build.py. For
 preset parameter configurations, see bowtie_presets.py.
 """
 
+from oligominer.utils.cores import resolve_cores
 from oligominer.utils.shell_pipeline import run_cmd, ShellPipeline
 from oligominer.utils import (
     get_abs_path, check_dir_exists, check_output_exists, require_one_of,
@@ -66,7 +67,7 @@ def bowtie_align(index_path, input_file=None, input_data=None,
                  dpad=None, gbar=None, ignore_quals=False,
                  n_ceil=None, ma=None, mp=None, np=None, rdg=None, rfg=None,
                  score_min=None,
-                 k=None, a=False, threads=1, reorder=False, mm=False,
+                 k=None, a=False, threads=None, reorder=False, mm=False,
                  fasta_input=False, no_unal=False, no_hd=True, xeq=True,
                  no_sq=False, time=False, verbose=False, bt2_verbose=False):
     """
@@ -110,7 +111,9 @@ def bowtie_align(index_path, input_file=None, input_data=None,
             length (L,0,-0.6).
         k (int, optional): report up to k distinct alignments per read.
         a (bool): report all alignments per read (very slow).
-        threads (int): number of parallel search threads. Default: 1.
+        threads (int, optional): number of parallel search threads. None
+            resolves the batch scheduler's granted core count (see
+            oligominer.utils.cores).
         reorder (bool): keep SAM output in order of input reads.
         mm (bool): use memory-mapped I/O for index.
         fasta_input (bool): input files are in FASTA format (-f).
@@ -213,6 +216,7 @@ def bowtie_align(index_path, input_file=None, input_data=None,
         cmd.append('-a')
 
     # add threading options
+    threads = resolve_cores(threads)
     if threads > 1:
         cmd.extend(['-p', str(threads)])
     if reorder:

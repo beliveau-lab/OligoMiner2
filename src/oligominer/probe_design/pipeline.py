@@ -27,7 +27,7 @@ def _make_seqid(row):
     return f"{row['seq_id']}:{row['start']}-{row['stop']}"
 
 
-def mine_probe_candidates(input_fasta, cores=1, **mining_params):
+def mine_probe_candidates(input_fasta, cores=None, **mining_params):
     """
     Mine candidate probes from a FASTA file.
 
@@ -55,7 +55,7 @@ def mine_probe_candidates(input_fasta, cores=1, **mining_params):
 
 
 def align_probes(probe_df, bt2_index, ref_fasta, preset=None, k=100,
-                 threads=1, verbose=False, **bt2_params):
+                 threads=None, verbose=False, **bt2_params):
     """
     Align probe candidates to a reference genome.
 
@@ -222,8 +222,8 @@ def add_duplex_pred(merged_df, temperature=37, normalize=True):
 def design_probes(input_fasta, bt2_index, ref_fasta,
                   jf_index=None, compute_pdup=False,
                   compute_duplex_pred=False,
-                  preset=None, k_align=100, threads=1,
-                  jf_k=18, cores=1, verbose=False,
+                  preset=None, k_align=100, threads=None,
+                  jf_k=18, cores=None, verbose=False,
                   nupack_model=None, conc_a=1e-6, conc_b=1e-12,
                   duplex_pred_temperature=37,
                   **mining_params):
