@@ -68,9 +68,10 @@ def get_intron_seqs(gtf_df, fasta, transcript_id):
     Extract intron sequences for a specific transcript isoform.
 
     Introns are derived from the gaps between consecutive exons of the
-    transcript, sorted by genomic position. For single-exon transcripts,
-    an empty dict is returned. Sequences are returned on the transcript
-    strand.
+    transcript, sorted by genomic position, and span only the bases between
+    them: from the base after one exon ends to the base before the next
+    begins. For single-exon transcripts, an empty dict is returned. Sequences
+    are returned on the transcript strand.
 
     Args:
         gtf_df (pandas.DataFrame): parsed GTF with columns seqid, start,
@@ -99,9 +100,11 @@ def get_intron_seqs(gtf_df, fasta, transcript_id):
 
     intron_seqs = {}
     for i in range(len(exons_sorted) - 1):
-        intron_start = int(ends[i])
-        intron_end = int(starts[i + 1])
-        if intron_end <= intron_start:
+        # coordinates are 1-based inclusive, so the intron runs from the base
+        # after one exon ends to the base before the next one starts
+        intron_start = int(ends[i]) + 1
+        intron_end = int(starts[i + 1]) - 1
+        if intron_end < intron_start:
             continue
         label = _interval_label(chrom, intron_start, intron_end, strand)
         seq = _extract_seq(fasta, chrom, intron_start, intron_end, strand)
