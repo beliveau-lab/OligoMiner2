@@ -25,6 +25,7 @@ GET_DEFAULT_MINING_CONFIG = lambda: {
     'min_gc': 20,              # minimum GC% (0–100)
     'max_gc': 80,              # maximum GC% (0–100)
     'mask_soft': False,        # exclude probes overlapping lowercase (repeat-masked) sequence
+    'min_entropy': None,       # minimum normalized dinucleotide entropy (0-1), None to disable
     'max_homopolymer': 4,      # reject probes with any homopolymer run longer than this (None to disable)
     'prohibited_seqs': None,   # optional list of exact substring sequences to prohibit (e.g. ['AAAAA','TTTTT'])
 

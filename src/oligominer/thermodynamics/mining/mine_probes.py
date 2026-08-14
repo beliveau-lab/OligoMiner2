@@ -9,9 +9,9 @@ The pipeline for each sequence:
   2. Split into overlapping chunks for memory-efficient processing
   3. For each chunk, compute a 2D Tm grid (calc_tm_2d.py) covering all
      positions x probe lengths simultaneously
-  4. Apply vectorized filters: Tm range, N-masking, homopolymer runs,
-     prohibited subsequences, and GC% — all using cumulative-sum tricks
-     for O(1) range queries
+  4. Apply vectorized filters: Tm range, N-masking, soft-masking, GC%,
+     dinucleotide entropy, homopolymer runs, and prohibited subsequences —
+     all using cumulative-sum tricks for O(1) range queries
   5. Select the best probe length per position (greedy shortest or
      closest-to-target Tm)
   6. Apply overlap and spacing constraints
@@ -37,6 +37,10 @@ from oligominer.utils.exceptions import ConfigurationError
 # Column order for probe result tuples: (seq_id, start, stop, probe_seq, tm)
 PROBE_COLUMNS = ['seq_id', 'start', 'stop', 'probe_seq', 'tm']
 
+# the 16 ACGT dinucleotides, and the entropy of a perfectly even mix of them
+N_DINUCLEOTIDES = 16
+MAX_DINUCLEOTIDE_ENTROPY = np.log2(N_DINUCLEOTIDES)
+
 
 def mine_sequence(
     seq,
@@ -53,6 +57,7 @@ def mine_sequence(
     min_gc=20,
     max_gc=80,
     mask_soft=False,
+    min_entropy=None,
     max_homopolymer=4,
     prohibited_seqs=None,
     cores=None,
@@ -94,6 +99,10 @@ def mine_sequence(
             (lowercase) sequence, which is how repeat and low-complexity regions
             are marked in genome FASTA files. If False, case is folded and
             masked sequence is mined like any other.
+        min_entropy (float or None): minimum normalized dinucleotide entropy,
+            on 0-1. Rejects low-complexity sequence such as simple repeats. A
+            random sequence scores near 1 and a homopolymer scores 0. None to
+            disable.
         max_homopolymer (int or None): max homopolymer run. None to disable.
         prohibited_seqs (list or None): list of subsequence strings to exclude.
         cores (int, optional): number of CPU cores for parallel chunk
@@ -138,6 +147,7 @@ def mine_sequence(
     config['min_gc'] = min_gc
     config['max_gc'] = max_gc
     config['mask_soft'] = mask_soft
+    config['min_entropy'] = min_entropy
     config['max_homopolymer'] = max_homopolymer
     config['prohibited_seqs'] = prohibited_seqs
     config['Na'] = Na
@@ -416,6 +426,36 @@ def process_chunk(_seq_id, chunk_nuc_arr, chunk_start, _chunk_stop, config):
                         run_cumsum[n_run_in_probe:n_run_in_probe + result_length]
                         - run_cumsum[:result_length]
                     ) == 0
+
+    # apply low-complexity filter: reject probes whose dinucleotide composition
+    # carries too little entropy, which is what simple repeats look like
+    min_entropy = config.get('min_entropy')
+    if min_entropy is not None and chunk_nuc_arr.size >= 2:
+        # dinucleotide code at each position, 0-15 for ACGT pairs and -1 where a
+        # non-ACGT base makes the pair meaningless
+        left, right = chunk_nuc_arr[:-1], chunk_nuc_arr[1:]
+        pair_code = np.where((left < 4) & (right < 4), left * 4 + right, -1)
+
+        # one running count per dinucleotide, so any window's composition is a
+        # difference of two lookups
+        pair_cumsums = np.empty((N_DINUCLEOTIDES, len(pair_code) + 1), dtype=np.int32)
+        for code in range(N_DINUCLEOTIDES):
+            pair_cumsums[code] = np.concatenate(
+                [[0], np.cumsum((pair_code == code).astype(np.int32))])
+
+        for j in range(n_lengths):
+            L = min_length + j
+            n_pairs = L - 1
+            if n_pairs < 1:
+                continue
+            counts = (pair_cumsums[:, n_pairs:n_pairs + result_length]
+                      - pair_cumsums[:, :result_length]).astype(np.float64)
+            totals = counts.sum(axis=0)
+            with np.errstate(divide='ignore', invalid='ignore'):
+                proportions = np.where(totals > 0, counts / np.maximum(totals, 1), 0.0)
+                logs = np.where(proportions > 0, np.log2(np.maximum(proportions, 1e-12)), 0.0)
+            entropy = -(proportions * logs).sum(axis=0) / MAX_DINUCLEOTIDE_ENTROPY
+            valid_mask[:, j] &= (entropy >= min_entropy) & (totals > 0)
 
     # apply prohibited_seqs filter: reject probes containing any prohibited substring
     prohibited_encoded = config.get('_prohibited_encoded')
