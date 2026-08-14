@@ -23,6 +23,7 @@ Higher-level functions compose mine_sequence() with file I/O:
 """
 
 import multiprocessing
+import warnings
 
 import numpy as np
 
@@ -51,6 +52,7 @@ def mine_sequence(
     exhaustive=False,
     min_gc=20,
     max_gc=80,
+    mask_soft=False,
     max_homopolymer=4,
     prohibited_seqs=None,
     cores=None,
@@ -88,6 +90,10 @@ def mine_sequence(
             with allow_overlap and spacing.
         min_gc (float or None): minimum GC percent (0-100). None to disable.
         max_gc (float or None): maximum GC percent (0-100). None to disable.
+        mask_soft (bool): if True, exclude probes overlapping soft-masked
+            (lowercase) sequence, which is how repeat and low-complexity regions
+            are marked in genome FASTA files. If False, case is folded and
+            masked sequence is mined like any other.
         max_homopolymer (int or None): max homopolymer run. None to disable.
         prohibited_seqs (list or None): list of subsequence strings to exclude.
         cores (int, optional): number of CPU cores for parallel chunk
@@ -131,6 +137,7 @@ def mine_sequence(
     config['cores'] = cores
     config['min_gc'] = min_gc
     config['max_gc'] = max_gc
+    config['mask_soft'] = mask_soft
     config['max_homopolymer'] = max_homopolymer
     config['prohibited_seqs'] = prohibited_seqs
     config['Na'] = Na
@@ -145,8 +152,20 @@ def mine_sequence(
     if prohibited_seqs:
         config['_prohibited_encoded'] = [seq_to_8bit(p) for p in prohibited_seqs]
 
+    # encode from the sequence as given so case is available to the soft-mask
+    # lookup table, and report probe sequences from the upper-cased copy
+    nuc_array = seq_to_8bit(seq, mask_soft=mask_soft)
     seq_str = seq.upper()
-    nuc_array = seq_to_8bit(seq_str)
+
+    if mask_soft and seq_str == seq:
+        warnings.warn(
+            f"mask_soft=True but {seq_id!r} contains no lowercase bases, so no "
+            "sequence was masked. This assembly's FASTA is probably not "
+            "soft-masked -- repeats have NOT been excluded.",
+            RuntimeWarning,
+            stacklevel=2,
+        )
+
     chunks = chunk_generator(seq_id, nuc_array, config)
 
     if cores > 1:

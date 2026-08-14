@@ -19,18 +19,25 @@ from .config import FASTA_EXTENSIONS, merge_files_by_extension
 # Loading
 # ---------------------------------------------------------------------------
 
-def load_fasta(fasta_path):
+def load_fasta(fasta_path, upper=False):
     """
     Load a FASTA file using pyfaidx for indexed random access.
 
+    Sequence case is preserved, which is how soft-masked (repeat and
+    low-complexity) regions are marked in genome FASTA files.
+
     Args:
         fasta_path (str): path to the input FASTA file.
+        upper (bool): if True, upper-case every sequence on read, discarding
+            soft-masking.
 
     Returns:
         fasta (pyfaidx.Fasta): dict-like object (.keys(), [seq_id] -> sequence).
     """
     get_or_create_fai(fasta_path)
-    return Fasta(fasta_path, sequence_always_upper=True)
+
+    # success
+    return Fasta(fasta_path, sequence_always_upper=upper)
 
 
 # ---------------------------------------------------------------------------

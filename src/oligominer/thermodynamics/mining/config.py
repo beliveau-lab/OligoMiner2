@@ -1,12 +1,9 @@
 """config.py — Oligonucleotide probe mining configuration management.
 
-This dict is the only public description of what the miner accepts, and
-``mine_sequence()`` is the only way to pass those parameters, so the two must agree.
-A key documented here that the signature rejects is a parameter users can read about
-and cannot use; a signature parameter missing here is one nobody can discover.
-``tests/test_mining_api.py`` asserts the two sets are equal, because four such
-mismatches shipped undetected — including ``min_gc``/``max_gc``, which were fully
-implemented and unreachable.
+The keys of this dict are exactly the keyword arguments ``mine_sequence()``
+accepts, and their values are exactly its defaults. ``tests/test_mining_api.py``
+asserts both, so the config stays a complete and accurate description of the
+mining API.
 """
 
 
@@ -27,6 +24,7 @@ GET_DEFAULT_MINING_CONFIG = lambda: {
     # additional probe quality filters
     'min_gc': 20,              # minimum GC% (0–100)
     'max_gc': 80,              # maximum GC% (0–100)
+    'mask_soft': False,        # exclude probes overlapping lowercase (repeat-masked) sequence
     'max_homopolymer': 4,      # reject probes with any homopolymer run longer than this (None to disable)
     'prohibited_seqs': None,   # optional list of exact substring sequences to prohibit (e.g. ['AAAAA','TTTTT'])
 

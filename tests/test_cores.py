@@ -1,8 +1,8 @@
 """Tests for core-count resolution.
 
-The failure this guards against is oversubscription: resolving to the machine's
-core count, or to an affinity mask wider than the scheduler's grant, and then
-running that many workers inside a smaller slot allocation.
+Covers the resolution order (explicit argument, environment override, scheduler
+grant, CPU affinity), the guards on junk and out-of-range values, and the
+provenance dict.
 """
 
 import os

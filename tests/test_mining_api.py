@@ -1,14 +1,9 @@
 """Tests that the documented mining config IS the mining API.
 
-``GET_DEFAULT_MINING_CONFIG()`` is the only public description of what the miner
-accepts, and ``mine_sequence()`` is the only way to pass those parameters. When the
-two drift apart the failure is silent in the worst direction: a documented parameter
-either raises TypeError, or -- as happened with ``min_gc``/``max_gc`` -- is fully
-implemented, silently pinned at its default, and produces a probe set that answers a
-different question than the one asked.
-
-Four such mismatches shipped undetected. This file is the check that would have
-caught every one of them.
+``GET_DEFAULT_MINING_CONFIG()`` describes what the miner accepts and
+``mine_sequence()`` is how those parameters are passed. These tests assert the two
+agree on the set of parameters and on their defaults, and that each documented
+parameter both reaches the miner and changes its output.
 """
 
 import inspect
@@ -49,12 +44,12 @@ class TestConfigMatchesSignature:
 
     @pytest.mark.parametrize("key", sorted(GET_DEFAULT_MINING_CONFIG()))
     def test_each_documented_key_can_actually_be_passed(self, key):
-        """Passing each documented key through the public door must not raise TypeError."""
+        """Every documented key is accepted as a keyword argument."""
         value = GET_DEFAULT_MINING_CONFIG()[key]
         mine_sequence('ACGT' * 40, seq_id='t', **{key: value})
 
     def test_defaults_agree_in_value_not_just_in_name(self):
-        """A signature default that disagrees with the documented one is also a lie."""
+        """The documented default and the signature default are the same value."""
         documented = GET_DEFAULT_MINING_CONFIG()
         sig = inspect.signature(mine_sequence).parameters
 
@@ -68,7 +63,7 @@ class TestConfigMatchesSignature:
 
 
 class TestGcIsReachable:
-    """min_gc/max_gc were implemented and unreachable -- assert they now bite."""
+    """The GC bounds reach the filter and change which probes are returned."""
 
     # 30 nt of pure GC (100% GC) and pure AT (0% GC), both well outside 20-80
     GC_RICH = 'GCGCGCGCGCGCGCGCGCGCGCGCGCGCGC'
