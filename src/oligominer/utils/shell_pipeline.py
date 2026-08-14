@@ -42,6 +42,17 @@ def run_cmd(cmd, input_data=None, output_file=None, binary=False, verbose=False)
     return result
 
 class ShellPipeline:
+    """
+    A sequence of shell commands connected by pipes.
+
+    Commands are added in order and run as one pipeline, so each stage's output
+    becomes the next stage's input without passing through Python.
+
+    Attributes:
+        commands (list): the commands added so far, each an argv list.
+        binary (bool): whether the pipeline carries bytes rather than text.
+    """
+
     def __init__(self, binary=False):
         """
         Initialize the pipeline.
