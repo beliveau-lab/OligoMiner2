@@ -15,3 +15,18 @@ from .mine_transcripts import (
     mine_flattened_gene,
     mine_spliced_transcript,
 )
+
+from .junctions import (
+    junction_windows,
+    junction_offsets,
+    junction_probes,
+    spans_junction,
+    exon_order,
+    discriminating_regions,
+)
+
+from .build import (
+    build_transcriptome,
+    transcript_ids,
+    transcript_lengths,
+)

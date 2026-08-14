@@ -208,8 +208,8 @@ def parse_interval_label(label):
 
     Returns:
         seqid (str): the chromosome or sequence identifier.
-        start (int): the start coordinate (0-based).
-        end (int): the end coordinate.
+        start (int): the 1-based inclusive start coordinate.
+        end (int): the 1-based inclusive end coordinate.
         strand (str): '+' or '-'.
     """
     # split 'chrI:100-200(+)' into components
@@ -227,33 +227,39 @@ def local_to_genomic(seq_id, local_start, local_stop):
     genomic coordinates.
 
     The seq_id is expected to be a genomic interval label as produced by
-    get_exon_seqs etc. (e.g. 'chrI:1807-2169(-)').
+    get_exon_seqs etc. (e.g. 'chrI:1807-2169(-)'), which carries GTF 1-based
+    inclusive coordinates.
 
-    For plus-strand intervals, genomic_start = interval_start + local_start.
-    For minus-strand intervals, the coordinates are mirrored so that
-    genomic coordinates remain in standard ascending order.
+    The returned coordinates are 0-based half-open, matching what mine_sequence
+    returns for genomic mining and what BED expects.
+
+    For plus-strand intervals the local offset is added to the interval start.
+    For minus-strand intervals mining runs on the reverse complement, so the
+    offsets are mirrored to keep genomic coordinates ascending.
 
     Args:
         seq_id (str): the interval label used as seq_id during mining.
         local_start (int): 0-based start within the mined sequence.
-        local_stop (int): 0-based stop within the mined sequence.
+        local_stop (int): 0-based stop within the mined sequence, exclusive.
 
     Returns:
         seqid (str): chromosome name.
-        genomic_start (int): absolute genomic start coordinate.
-        genomic_stop (int): absolute genomic stop coordinate.
+        genomic_start (int): 0-based genomic start coordinate.
+        genomic_stop (int): 0-based genomic stop coordinate, exclusive.
         strand (str): '+' or '-'.
     """
     seqid, interval_start, interval_end, strand = parse_interval_label(seq_id)
 
+    # the interval label is 1-based inclusive; work in 0-based half-open
+    origin = interval_start - 1
+    interval_len = interval_end - interval_start + 1
+
     if strand == '+':
-        genomic_start = interval_start + local_start
-        genomic_stop = interval_start + local_stop
+        genomic_start = origin + local_start
+        genomic_stop = origin + local_stop
     else:
-        # mining runs on the rev_comp, so coordinates are mirrored
-        interval_len = interval_end - interval_start
-        genomic_start = interval_start + (interval_len - local_stop)
-        genomic_stop = interval_start + (interval_len - local_start)
+        genomic_start = origin + (interval_len - local_stop)
+        genomic_stop = origin + (interval_len - local_start)
 
     # success
     return seqid, genomic_start, genomic_stop, strand
@@ -328,17 +334,20 @@ def _extract_seq(fasta, seqid, start, end, strand):
     """
     Extract a genomic sequence, reverse-complementing for minus strand.
 
+    Coordinates are GTF coordinates: 1-based and inclusive of both ends, so the
+    feature spans end - start + 1 bases.
+
     Args:
         fasta (pyfaidx.Fasta): loaded genome FASTA.
         seqid (str): chromosome name.
-        start (int): 0-based start coordinate.
-        end (int): end coordinate.
+        start (int): 1-based start coordinate, inclusive.
+        end (int): 1-based end coordinate, inclusive.
         strand (str): '+' or '-'.
 
     Returns:
         seq (str): the extracted sequence on the transcript strand.
     """
-    seq = str(fasta[seqid][int(start):int(end)])
+    seq = str(fasta[seqid][int(start) - 1:int(end)])
     if strand == '-':
         seq = rev_comp(seq)
 
