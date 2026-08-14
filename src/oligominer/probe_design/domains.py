@@ -1,39 +1,26 @@
 """
-Domain-aware appending -- the generalization the padlock backbone forces.
+Domain-aware appending.
 
-# Why the existing interface cannot express a padlock
-
-OM2's appending prototype (``probe_design/appending/appending.py``) is edge-anchored:
-every function takes ``left=True/False`` and puts the appended sequence at the 5' or 3'
-end of one ``sequence`` column. That covers the PaintSHOP anatomy::
-
-    5'--[Outer]--[Inner]--[Homology]--[Inner]--[Outer]--3'
-
-because every layer wraps symmetrically around a single homology core.
-
-A padlock is not that shape. Its backbone sits **between** the two homology arms::
+An oligo is built from an ordered list of named domains, assembled 5'->3'.
+Appending targets a named slot rather than an end, so a domain can sit between
+two others: a padlock's backbone lies between its two homology arms,
 
     5'--[arm_5p]--[backbone]--[arm_3p]--3'
 
-There is no value of ``left`` that produces this, because the insertion point is
-interior. So the boolean generalizes to an **ordered list of named domains**, and
-appending targets a slot rather than an edge. The old behaviour is the two-domain
-special case: ``left=True`` is "insert before the homology domain".
+while the classic single-homology probe wraps its layers symmetrically around
+one core,
 
-# The linker is per-join, not global
+    5'--[outer]--[inner]--[homology]--[inner]--[outer]--3'
 
-``appending.config.LINKER = "TTT"`` is inserted at every join by ``_join()``. For a
-padlock that is wrong in a specific and consequential way: the arms must **abut on the
-target** for ligase to seal the circle, so a linker must never appear at the ligation
-junction. Linkers therefore attach to a join, not to the assembly, and a join can carry
-the empty linker.
+and both are the same mechanism with a different layout.
 
-# What is preserved
+Each join between adjacent domains carries its own linker. A padlock's arms
+must abut on the target for ligase to seal the circle, so the join at the
+ligation junction carries the empty linker while other joins carry theirs.
 
-The four assignment schemes (``same`` / ``unique`` / ``multiple`` / ``custom``) and the
-``entries`` tracking contract are unchanged -- this module delegates to the vendored
-implementations for assignment and only owns *where* the result lands. That keeps the
-PaintSHOP appending path bit-identical while making padlocks expressible.
+Domain assignment uses the four schemes -- ``same`` / ``unique`` / ``multiple``
+/ ``custom`` -- and the ``entries`` tracking contract from
+``probe_design/appending``; this module owns where the assigned sequence lands.
 """
 
 import pandas as pd

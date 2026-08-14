@@ -107,7 +107,8 @@ def drop_incomplete_units(df, expected_size=None, unit_column=UNIT_COLUMN):
     Args:
         df (pandas.DataFrame): the oligo table carrying unit_column.
         expected_size (int, optional): the number of oligos a complete unit has.
-            The most common size present is used when None.
+            The largest size present is used when None, since a unit can only
+            lose members to an earlier stage, never gain them.
         unit_column (str): the unit identifier column.
 
     Returns:
@@ -119,7 +120,7 @@ def drop_incomplete_units(df, expected_size=None, unit_column=UNIT_COLUMN):
 
     sizes = unit_sizes(df, unit_column=unit_column)
     if expected_size is None:
-        expected_size = int(sizes.mode().iloc[0])
+        expected_size = int(sizes.max())
 
     complete = sizes[sizes == expected_size].index
     kept = df[df[unit_column].isin(complete)].copy()

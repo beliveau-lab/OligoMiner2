@@ -144,3 +144,19 @@ class TestUnitsToOrders:
         first = pairs[pairs['unit_id'] == 0]
         assert orders.loc[0, 'left'] == first.iloc[0]['sequence']
         assert orders.loc[0, 'right'] == first.iloc[1]['sequence']
+
+
+class TestInferredUnitSize:
+    """The complete size is inferred as the largest, not the most common."""
+
+    def test_intact_units_survive_when_most_units_are_broken(self):
+        # three pairs lost a member and one did not; the survivor is the one
+        # that must be kept, even though size 1 is the more common size
+        rows = pd.DataFrame({
+            'unit_id': [0, 1, 2, 3, 3],
+            'sequence': list('ABCDE'),
+        })
+
+        kept, n_dropped = drop_incomplete_units(rows)
+        assert kept['unit_id'].tolist() == [3, 3]
+        assert n_dropped == 3
