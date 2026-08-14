@@ -27,3 +27,4 @@ from .padlock import (
     check_identity,
     PADLOCK_COLUMNS,
 )
+from .domains import DomainAssembly, assemble_padlock, check_backbone_placement
