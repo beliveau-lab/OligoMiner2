@@ -235,3 +235,46 @@ class TestBackendAgreement:
             f'numpy={from_numpy[mismatches[:5]].tolist()} '
             f'jellyfish={from_jellyfish[mismatches[:5]].tolist()}'
         )
+
+
+class TestConcurrentBuildScratch:
+    """Builds run concurrently and must not share their bin files."""
+
+    def test_concurrent_builds_sharing_a_tmp_dir_agree_with_a_lone_build(
+            self, tmp_path, reference):
+        import concurrent.futures
+
+        fasta, _, _ = reference
+
+        alone = tmp_path / 'alone.npz'
+        build_index(str(fasta), str(alone), k=K, backend='numpy', min_count=2)
+        expected = KmerIndex.load(str(alone))
+
+        shared = tmp_path / 'scratch'
+        shared.mkdir()
+
+        def build(name):
+            out = tmp_path / f'{name}.npz'
+            KmerIndex.build(str(fasta), k=K, min_count=2,
+                            tmp_dir=str(shared)).save(str(out))
+            return KmerIndex.load(str(out))
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=3) as pool:
+            built = list(pool.map(build, ['a', 'b', 'c']))
+
+        # the bin files are opened for append, so a shared directory would have
+        # each build's k-mers accumulate into the others
+        for index in built:
+            assert len(index.kmers) == len(expected.kmers)
+            assert index.counts.max() == expected.counts.max()
+
+    def test_the_scratch_directory_is_removed(self, tmp_path, reference):
+        fasta, _, _ = reference
+        shared = tmp_path / 'scratch'
+        shared.mkdir()
+
+        KmerIndex.build(str(fasta), k=K, min_count=2, tmp_dir=str(shared))
+
+        # the shared parent survives; only this build's own directory goes
+        assert shared.exists()
+        assert list(shared.iterdir()) == []
