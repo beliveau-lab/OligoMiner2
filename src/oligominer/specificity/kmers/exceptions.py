@@ -1,11 +1,17 @@
 """
 # Kmer Exceptions
 
-Custom exceptions for Jellyfish index validation and query errors.
+Custom exceptions for k-mer index construction, validation and query errors.
 """
 
 from oligominer.utils import get_abs_path
 from oligominer.utils.exceptions import OligominerError
+
+
+class KmerIndexError(OligominerError):
+    """Exception raised when a k-mer index is unusable, or does not match how it is queried."""
+    __module__ = OligominerError.__module__
+
 
 class JellyfishError(OligominerError):
     """Base class for exceptions in this module."""
