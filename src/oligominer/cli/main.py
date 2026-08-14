@@ -5,18 +5,18 @@ This module sets up the command-line interface for OligoMiner, allowing
 users to run various commands related to oligonucleotide probe design 
 directly from the terminal.
 
-Commands are organized into subcommands, each handled by its own module. 
-This modular design makes it easy to add new functionality in the future.
+Commands are organized into subcommands, each handled by its own module. A
+command module exposes `register(subparsers)`, which adds its parser and sets
+`func` to the callable that runs it; `main` dispatches on that attribute.
 """
 
 
 import argparse
 
 from .. import __version__
-from . import test_cli # import each command module
 
 # configure main CLI help text
-HELP_TEXT = f'''
+HELP_TEXT = rf'''
   ____  _ _             __  __ _               _____ _____ 
  / __ \| (_)           |  \/  (_)             |_   _|_   _|
 | |  | | |_  __ _  ___ | \  / |_ _ __   ___ _ __| |   | |  
@@ -31,23 +31,6 @@ Docs:      https://oligominer.org/docs/{__version__}/
 Code:      https://github.com/beliveau-lab/OligoMiner2
 '''
 
-
-# HELP_TEXT = f'''
-# \b
-#   ____  _ _             __  __ _               _____ _____ 
-#  / __ \| (_)           |  \/  (_)             |_   _|_   _|
-# | |  | | |_  __ _  ___ | \  / |_ _ __   ___ _ __| |   | |  
-# | |  | | | |/ _` |/ _ \| |\/| | | '_ \ / _ \ '__| |   | |  
-# | |__| | | | (_| | (_) | |  | | | | | |  __/ | _| |_ _| |_ 
-#  \____/|_|_|\__, |\___/|_|  |_|_|_| |_|\___|_||_____|_____|
-#              __/ |                                         
-#             |___/                                          
-
-# \b
-# Version:   {__version__}
-# Docs:      https://oligominer.org/docs/{__version__}/
-# Code:      https://github.com/beliveau-lab/OligoMiner2
-# '''
 
 def build_parser():
     """
@@ -68,11 +51,7 @@ def build_parser():
         help="show version and exit",
     )
 
-    subparsers = parser.add_subparsers(dest="command")
-
-    # Each command module registers itself with the subparsers
-    # test_cli.register(subparsers)
-    # align.register(subparsers) # TODO
+    parser.add_subparsers(dest="command")
 
     return parser
 
