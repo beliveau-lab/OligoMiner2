@@ -9,6 +9,9 @@ import numpy as np
 import pandas as pd
 import pytest
 
+from oligominer.probe_design.appending.appending import append_sequences
+from oligominer.utils.exceptions import InvalidInputError
+
 from oligominer.data.appending import (
     load_bridges,
     load_outer_forward,
@@ -233,3 +236,108 @@ class TestProbeSetAppending:
         master = ps.master_table
         assert 'outer_fwd' in master.columns
         assert 'inner_fwd' in master.columns
+
+
+class TestSchemeArgumentValidation:
+    """
+    Each scheme reaches for its required argument deep inside the assignment,
+    where a missing one surfaced as a KeyError on None or an arithmetic error
+    rather than as a statement of what the caller left out.
+    """
+
+    @pytest.fixture
+    def probes(self):
+        return pd.DataFrame({'sequence': ['ACGT', 'TTTT'],
+                             'target': ['a', 'b']})
+
+    @pytest.fixture
+    def sequences(self):
+        return pd.DataFrame({'id': ['s1'], 'seq': ['GGG']})
+
+    def test_unique_without_a_target_column(self, probes, sequences):
+        with pytest.raises(InvalidInputError, match='target_column'):
+            append_sequences(probes, sequences, 'unique')
+
+    def test_multiple_without_a_count(self, probes, sequences):
+        with pytest.raises(InvalidInputError, match='n_per_target'):
+            append_sequences(probes, sequences, 'multiple',
+                             target_column='target')
+
+    def test_multiple_without_a_target_column(self, probes, sequences):
+        with pytest.raises(InvalidInputError, match='target_column'):
+            append_sequences(probes, sequences, 'multiple', n_per_target=1)
+
+    def test_custom_without_ranges(self, probes, sequences):
+        with pytest.raises(InvalidInputError, match='ranges'):
+            append_sequences(probes, sequences, 'custom')
+
+    def test_same_needs_none_of_them(self, probes, sequences):
+        result, _ = append_sequences(probes, sequences, 'same')
+        assert result['sequence'].tolist() == ['GGGTTTACGT', 'GGGTTTTTTT']
+
+    def test_an_unknown_scheme_is_still_rejected(self, probes, sequences):
+        with pytest.raises(InvalidInputError, match='Unknown appending'):
+            append_sequences(probes, sequences, 'nonsense')
+
+
+class TestBarcodeShapeValidation:
+    """
+    A malformed MHD4 barcode surfaced as an IndexError from deep inside bridge
+    selection, which says nothing about the barcode being wrong.
+    """
+
+    @pytest.fixture
+    def probes(self):
+        return pd.DataFrame({'sequence': ['ACGT', 'TTTT'],
+                             'refseq': ['a', 'b']})
+
+    @pytest.fixture
+    def bridges(self):
+        return pd.DataFrame({'id': [f'b{i}' for i in range(16)],
+                             'seq': ['ACGT'] * 16})
+
+    def _barcodes(self, code):
+        return pd.DataFrame({'barcode': [code, code]})
+
+    def test_a_valid_codeword_is_accepted(self, probes, bridges):
+        from oligominer.probe_design.appending.paintshop_appending import (
+            append_barcodes,
+        )
+
+        result = append_barcodes(probes, bridges,
+                                 self._barcodes('1111000000000000'))
+        assert len(result) == len(probes)
+
+    def test_a_barcode_narrower_than_the_bridge_set_is_rejected(self, probes,
+                                                                bridges):
+        from oligominer.probe_design.appending.paintshop_appending import (
+            append_barcodes,
+        )
+
+        with pytest.raises(InvalidInputError, match='16 bridges'):
+            append_barcodes(probes, bridges, self._barcodes('1000'))
+
+    def test_a_non_binary_barcode_is_rejected(self, probes, bridges):
+        from oligominer.probe_design.appending.paintshop_appending import (
+            append_barcodes,
+        )
+
+        with pytest.raises(InvalidInputError, match='not binary'):
+            append_barcodes(probes, bridges,
+                            self._barcodes('abcd000000000000'))
+
+    def test_a_codeword_of_the_wrong_weight_is_rejected(self, probes, bridges):
+        from oligominer.probe_design.appending.paintshop_appending import (
+            append_barcodes,
+        )
+
+        with pytest.raises(InvalidInputError, match='exactly 4'):
+            append_barcodes(probes, bridges,
+                            self._barcodes('1100000000000000'))
+
+    def test_collect_indices_returns_the_set_positions(self):
+        from oligominer.probe_design.appending.paintshop_appending import (
+            collect_indices,
+        )
+
+        assert collect_indices('1000000010001001') == [1, 9, 13, 16]

@@ -309,6 +309,46 @@ def append_custom(probes, sequences, ranges, left=True, rc=False,
 # dispatcher
 # ------------------------------------------------------------------
 
+# argument each scheme cannot run without, and why it needs it
+SCHEME_REQUIREMENTS = {
+    'unique': (('target_column',),),
+    'multiple': (('target_column', 'n_per_target'),),
+    'custom': (('ranges',),),
+}
+
+
+def _check_scheme_arguments(scheme, target_column, n_per_target, ranges):
+    """
+    Verify a scheme was given the arguments it needs.
+
+    Each scheme reaches for its argument deep inside the assignment, where a
+    missing one surfaces as a KeyError on None or an arithmetic error rather
+    than as a statement of what the caller left out.
+
+    Args:
+        scheme (str): the appending scheme.
+        target_column (str or None): the grouping column.
+        n_per_target (int or None): sequences per target.
+        ranges (list or None): range strings.
+
+    Returns:
+        ok (bool): True when the scheme has what it needs.
+
+    Raises:
+        InvalidInputError: naming the missing argument and its scheme.
+    """
+    given = {'target_column': target_column, 'n_per_target': n_per_target,
+             'ranges': ranges}
+
+    for required in SCHEME_REQUIREMENTS.get(scheme, ((),))[0]:
+        if given[required] is None:
+            raise InvalidInputError(
+                f'scheme {scheme!r} requires {required}, which was not given')
+
+    # success
+    return True
+
+
 def append_sequences(probes, sequences, scheme, target_column=None,
                      n_per_target=None, ranges=None, left=True, rc=False,
                      linker=LINKER):
@@ -339,7 +379,13 @@ def append_sequences(probes, sequences, scheme, target_column=None,
         result (pandas.DataFrame): probes with modified ``sequence``
             column.
         entries (pandas.Series): tracking strings.
+
+    Raises:
+        InvalidInputError: for an unknown scheme, or when a scheme's required
+            argument is missing.
     """
+    _check_scheme_arguments(scheme, target_column, n_per_target, ranges)
+
     if scheme == "same":
         result, entries = append_same(
             probes, sequences, left=left, rc=rc, linker=linker

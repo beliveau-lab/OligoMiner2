@@ -65,6 +65,10 @@ def append_saber(probes, sequences, scheme, target_column=None,
 # MERFISH barcode appending
 # ------------------------------------------------------------------
 
+# an MHD4 codeword carries exactly four ones, and add_bridges uses three of them
+MHD4_WEIGHT = 4
+
+
 def collect_indices(barcode):
     """
     Convert a 16-bit MHD4 barcode string to bridge indices.
@@ -76,8 +80,23 @@ def collect_indices(barcode):
     Returns:
         indices (list of int): 1-based positions where the barcode
             character is ``"1"``. For example, ``[1, 9, 13, 16]``.
+
+    Raises:
+        InvalidInputError: if the barcode is not binary, or does not carry
+            exactly four ones.
     """
+    if set(barcode) - {"0", "1"}:
+        raise InvalidInputError(
+            f"barcode {barcode!r} is not binary; an MHD4 codeword is a string "
+            f"of '0' and '1'")
+
     indices = [i + 1 for i, c in enumerate(barcode) if c == "1"]
+
+    if len(indices) != MHD4_WEIGHT:
+        raise InvalidInputError(
+            f"barcode {barcode!r} selects {len(indices)} bridges; an MHD4 "
+            f"codeword carries exactly {MHD4_WEIGHT}, three of which reach "
+            f"each probe")
 
     # success
     return indices
@@ -170,7 +189,8 @@ def append_barcodes(probes, bridges, barcodes, target_column="refseq"):
         result (pandas.DataFrame): probes with bridges appended.
 
     Raises:
-        ValueError: if there are fewer barcodes than unique targets.
+        InvalidInputError: if there are fewer barcodes than unique targets, or
+            a barcode's width does not match the number of bridges.
     """
     unique_targets = probes[target_column].unique()
 
@@ -179,6 +199,15 @@ def append_barcodes(probes, bridges, barcodes, target_column="refseq"):
             f"Not enough barcodes ({len(barcodes)}) for "
             f"{len(unique_targets)} unique targets."
         )
+
+    n_bridges = len(bridges)
+    wrong_width = [b for b in barcodes['barcode'].iloc[:len(unique_targets)]
+                   if len(b) != n_bridges]
+    if wrong_width:
+        raise InvalidInputError(
+            f"barcode {wrong_width[0]!r} is {len(wrong_width[0])} characters "
+            f"for {n_bridges} bridges; each position selects one bridge, so "
+            f"the two have to match")
 
     result_parts = []
     for i, target in enumerate(unique_targets):
