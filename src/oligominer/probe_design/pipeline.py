@@ -14,17 +14,52 @@ a probe design workflow:
 
 import pandas as pd
 
-from oligominer.thermodynamics.mining import mine_fasta, probes_to_df
+from oligominer.thermodynamics.mining import mine_fasta, mine_sequence, probes_to_df
 from oligominer.bioinformatics.file_io import seqs_to_fastq
 from oligominer.specificity.alignment import (
     bowtie_align, bowtie_presets, process_alignments
 )
 from oligominer.specificity.kmers import calc_max_kmer_multi
+from oligominer.utils.exceptions import InvalidInputError
 
 
 def _make_seqid(row):
     """Build a seqid string from a probe row."""
     return f"{row['seq_id']}:{row['start']}-{row['stop']}"
+
+
+def _check_mining_params(mining_params):
+    """
+    Verify every keyword forwarded to mining is one mining accepts.
+
+    `design_probes` takes its own arguments by name and forwards the rest to
+    `mine_sequence`. A keyword meant for another stage -- an aligner flag, a
+    scoring option -- therefore arrives at the miner, which reports an
+    unexpected keyword for a function the caller never named.
+
+    Args:
+        mining_params (dict): the keywords destined for mining.
+
+    Returns:
+        ok (bool): True when every keyword is a mining parameter.
+
+    Raises:
+        InvalidInputError: naming the keywords that are not.
+    """
+    import inspect
+
+    accepted = set(inspect.signature(mine_sequence).parameters)
+    unknown = sorted(set(mining_params) - accepted)
+
+    if unknown:
+        raise InvalidInputError(
+            f'{unknown} are not mining parameters. design_probes takes its own '
+            f'arguments by name and forwards the rest to mine_sequence, so a '
+            f'keyword for another stage arrives there instead. Mining accepts: '
+            f'{sorted(accepted - {"seq", "seq_id"})}')
+
+    # success
+    return True
 
 
 def mine_probe_candidates(input_fasta, cores=None, **mining_params):
@@ -44,6 +79,8 @@ def mine_probe_candidates(input_fasta, cores=None, **mining_params):
         probe_df (pandas.DataFrame): probe candidates with columns
             seq_id, start, stop, probe_seq, tm, seqid.
     """
+    _check_mining_params(mining_params)
+
     probe_tuples = mine_fasta(input_fasta, cores=cores, **mining_params)
     probe_df = probes_to_df(probe_tuples)
 
