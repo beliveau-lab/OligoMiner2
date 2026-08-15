@@ -7,6 +7,8 @@ seqid column auto-generation.
 
 import os
 
+import shutil
+
 import pandas as pd
 import pytest
 
@@ -132,3 +134,90 @@ class TestProbeSetInitialState:
     def test_merge_without_align_raises(self, example_probe_set):
         with pytest.raises(PipelineStateError, match="align"):
             example_probe_set.merge()
+
+
+class TestKmerProvenance:
+    """
+    A forward-only index counts a probe's k-mers on one strand; a canonical one
+    counts both. The same probe gets a different answer, so two probe sets
+    built against indexes of different canonicality are not comparable and the
+    manifest has to say which was used.
+    """
+
+    @pytest.fixture
+    def reference(self, tmp_path):
+        path = tmp_path / 'ref.fa'
+        path.write_text('>chr1\n' + 'ACGTACGTACGTACGTACGT' * 6 + '\n')
+        return str(path)
+
+    def _probe_set(self):
+        return ProbeSet(pd.DataFrame({
+            'seq_id': ['chr1', 'chr1'],
+            'start': [0, 20],
+            'stop': [20, 40],
+            'probe_seq': ['ACGTACGTACGTACGTACGT'] * 2,
+            'tm': [45.0, 45.0],
+        }))
+
+    def test_a_forward_only_index_is_recorded_as_such(self, reference,
+                                                       tmp_path):
+        from oligominer.specificity.kmers import build_index
+
+        index = tmp_path / 'forward.npz'
+        build_index(reference, str(index), k=18, backend='numpy',
+                    min_count=1, canonical=False)
+
+        probes = self._probe_set()
+        probes.compute_max_kmer(str(index), k=18)
+
+        stage = [s for s in probes.manifest['stages']
+                 if s['stage'] == 'max_kmer'][-1]
+        assert stage['params']['is_canonical'] is False
+
+    @pytest.mark.skipif(shutil.which('jellyfish') is None,
+                        reason='jellyfish is required for a canonical index')
+    def test_a_canonical_index_is_recorded_as_such(self, reference, tmp_path):
+        # the numpy backend counts one strand and refuses canonical outright,
+        # so a canonical index has to come from jellyfish
+        from oligominer.specificity.kmers import build_index
+
+        index = tmp_path / 'canonical.jf'
+        build_index(reference, str(index), k=18, backend='jellyfish',
+                    min_count=1, canonical=True)
+
+        probes = self._probe_set()
+        probes.compute_max_kmer(str(index), k=18)
+
+        stage = [s for s in probes.manifest['stages']
+                 if s['stage'] == 'max_kmer'][-1]
+        assert stage['params']['is_canonical'] is True
+
+    def test_the_numpy_backend_refuses_to_pretend_it_is_canonical(self,
+                                                                  reference,
+                                                                  tmp_path):
+        # forward-only counts labelled canonical would be a wrong number with a
+        # correct-looking label
+        from oligominer.specificity.kmers import build_index
+        from oligominer.specificity.kmers.exceptions import KmerIndexError
+
+        with pytest.raises(KmerIndexError, match='forward strand'):
+            build_index(reference, str(tmp_path / 'x.npz'), k=18,
+                        backend='numpy', min_count=1, canonical=True)
+
+    def test_an_index_without_metadata_records_it_as_unknown(self, reference,
+                                                             tmp_path):
+        # a jellyfish index built outside the package has no sidecar, and
+        # guessing its canonicality would be worse than recording that we do
+        # not know
+        from oligominer.specificity.kmers import build_index, sidecar_path
+
+        index = tmp_path / 'bare.npz'
+        build_index(reference, str(index), k=18, backend='numpy', min_count=1)
+        sidecar_path(str(index)).unlink()
+
+        probes = self._probe_set()
+        probes.compute_max_kmer(str(index), k=18)
+
+        stage = [s for s in probes.manifest['stages']
+                 if s['stage'] == 'max_kmer'][-1]
+        assert stage['params']['is_canonical'] is None

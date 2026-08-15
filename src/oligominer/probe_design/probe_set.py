@@ -275,25 +275,35 @@ class ProbeSet:
         # success
         return self
 
-    def compute_max_kmer(self, jf_index, k=18, verbose=False):
+    def compute_max_kmer(self, jf_index, k=18, backend='auto', verbose=False):
         """
         Compute max kmer counts for each probe.
 
         Adds a max_kmer column to self.df.
 
         Args:
-            jf_index (str): path to the Jellyfish index file.
+            jf_index (str): path to the k-mer index, Jellyfish or numpy.
             k (int): kmer length.
-            verbose (bool): if True, print query output.
+            backend (str): 'auto', 'jellyfish' or 'numpy'.
+            verbose (bool): if True, print the backend and index being used.
 
         Returns:
             self (ProbeSet): for method chaining.
         """
+        from oligominer.specificity.kmers import read_metadata
+
         n_before = len(self.df)
         self.df = add_max_kmer(
-            self.df, jf_index, k=k, verbose=verbose
+            self.df, jf_index, k=k, backend=backend, verbose=verbose
         )
-        self._record('max_kmer', params={'index': str(jf_index), 'k': k},
+
+        # a forward-only index counts a probe's k-mers on one strand, a
+        # canonical one counts both; the two give different answers for the
+        # same probe, so a probe set records which it was built against
+        info = read_metadata(jf_index) or {}
+        self._record('max_kmer',
+                     params={'index': str(jf_index), 'k': k,
+                             'is_canonical': info.get('is_canonical')},
                      n_in=n_before, n_out=len(self.df))
 
         # success

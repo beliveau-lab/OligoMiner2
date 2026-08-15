@@ -5,6 +5,7 @@ from .backends import (
     resolve_backend,
     have_jellyfish,
     read_metadata,
+    sidecar_path,
     write_metadata,
 )
 from .numpy_index import KmerIndex
