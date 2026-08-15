@@ -62,7 +62,7 @@ $3 != "*" {
 
     strand = (int($2 / 16) % 2) ? "-" : "+";
 
-    align_score = "NA";
+    align_score = 0;
     for (i = 12; i <= NF; i++) {
         if (substr($i, 1, 2) == "AS") {
             align_score = substr($i, 6);
