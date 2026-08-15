@@ -514,6 +514,14 @@ class ProbeSet:
             target_column=target_column,
         )
 
+        # the master table exists so a finished oligo can be traced back to
+        # what was added to it; a step that changes every sequence and records
+        # nothing leaves the table saying no appending happened
+        codes = dict(zip(self.df[target_column].unique(),
+                         barcodes['barcode']))
+        self._master_entries['merfish'] = self.df[target_column].map(
+            lambda target: f'merfish:{codes.get(target, "?")}')
+
         # success
         return self
 

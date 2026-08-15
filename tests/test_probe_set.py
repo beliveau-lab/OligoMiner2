@@ -254,3 +254,52 @@ class TestProbeTableValidation:
                               'probe_seq': ['ACGT'], 'tm': [45.0],
                               'note': ['keep me']})
         assert 'note' in ProbeSet(frame).df.columns
+
+
+class TestMerfishProvenance:
+    """
+    The master table exists so a finished oligo can be traced back to what was
+    added to it. MERFISH appending changed every sequence and recorded nothing,
+    leaving the table saying no appending had happened.
+    """
+
+    @pytest.fixture
+    def probes(self):
+        return ProbeSet(pd.DataFrame({
+            'seq_id': ['a', 'b'], 'start': [0, 10], 'stop': [20, 30],
+            'probe_seq': ['ACGT' * 5, 'TTTT' * 5], 'tm': [45.0, 46.0],
+            'refseq': ['g1', 'g2'],
+        }))
+
+    @pytest.fixture
+    def bridges(self):
+        return pd.DataFrame({'id': [f'b{i}' for i in range(16)],
+                             'seq': ['ACGT'] * 16})
+
+    @pytest.fixture
+    def barcodes(self):
+        return pd.DataFrame({'barcode': ['1111000000000000',
+                                         '0000111100000000']})
+
+    def test_no_master_table_before_any_appending(self, probes):
+        assert probes.master_table is None
+
+    def test_appending_barcodes_records_a_step(self, probes, bridges,
+                                               barcodes):
+        probes.append_merfish_barcodes(bridges, barcodes)
+        assert probes.master_table is not None
+
+    def test_each_probe_records_the_barcode_it_was_given(self, probes, bridges,
+                                                         barcodes):
+        probes.append_merfish_barcodes(bridges, barcodes)
+        entries = probes.master_table['merfish'].tolist()
+
+        assert 'merfish:1111000000000000' in entries
+        assert 'merfish:0000111100000000' in entries
+
+    def test_the_sequences_actually_changed(self, probes, bridges, barcodes):
+        before = probes.df['sequence'].tolist() if 'sequence' in probes.df \
+            else None
+        probes.append_merfish_barcodes(bridges, barcodes)
+
+        assert before != probes.df['sequence'].tolist()

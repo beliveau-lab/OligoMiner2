@@ -168,3 +168,32 @@ class TestChunkSizeValidation:
 
         assert len(whole) == len(chunked)
         assert {p[1] for p in whole} == {p[1] for p in chunked}
+
+
+class TestMiningKeywordRouting:
+    """
+    design_probes takes its own arguments by name and forwards the rest to
+    mine_sequence, so a keyword meant for another stage arrives at the miner and
+    is reported as unexpected for a function the caller never named.
+    """
+
+    def test_a_keyword_for_another_stage_is_rejected(self):
+        from oligominer.probe_design.pipeline import mine_probe_candidates
+        from oligominer.utils.exceptions import InvalidInputError
+
+        with pytest.raises(InvalidInputError, match='not mining parameters'):
+            mine_probe_candidates('genome.fa', nofw=True)
+
+    def test_the_error_lists_what_mining_does_accept(self):
+        from oligominer.probe_design.pipeline import mine_probe_candidates
+        from oligominer.utils.exceptions import InvalidInputError
+
+        with pytest.raises(InvalidInputError, match='min_length'):
+            mine_probe_candidates('genome.fa', normalize=False)
+
+    def test_several_unknown_keywords_are_all_named(self):
+        from oligominer.probe_design.pipeline import mine_probe_candidates
+        from oligominer.utils.exceptions import InvalidInputError
+
+        with pytest.raises(InvalidInputError, match="'nofw'.*'norc'"):
+            mine_probe_candidates('genome.fa', nofw=True, norc=True)
