@@ -12,6 +12,7 @@ disk, constructed directly from a DataFrame, or mined from a FASTA file.
 import pandas as pd
 
 from oligominer.thermodynamics.mining import mine_fasta, probes_to_df, write_probes, PROBE_COLUMNS
+from oligominer.utils.exceptions import InvalidInputError
 from oligominer.utils.exceptions import PipelineStateError
 
 from .pipeline import (
@@ -36,6 +37,10 @@ from .appending import (
 )
 from .scoring import label_on_target, score_probes
 from . import schema
+
+
+# the columns a probe table has to carry for any stage to mean anything
+REQUIRED_COLUMNS = ('seq_id', 'start', 'stop', 'probe_seq', 'tm')
 
 
 class ProbeSet:
@@ -78,8 +83,16 @@ class ProbeSet:
             probes (list or pandas.DataFrame): either a list of
                 (seq_id, start, stop, probe_seq, tm) tuples, or a
                 DataFrame with at least those columns.
+
+        Raises:
+            InvalidInputError: if a DataFrame is missing a required column.
         """
         if isinstance(probes, pd.DataFrame):
+            missing = [c for c in REQUIRED_COLUMNS if c not in probes.columns]
+            if missing:
+                raise InvalidInputError(
+                    f'probe table is missing {missing}; a probe set needs '
+                    f'{list(REQUIRED_COLUMNS)}')
             self.df = probes.copy()
         else:
             self.df = probes_to_df(probes)

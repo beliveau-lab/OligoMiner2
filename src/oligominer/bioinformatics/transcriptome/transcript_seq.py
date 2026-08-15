@@ -311,9 +311,15 @@ def _select_features(gtf_df, transcript_id=None, gene_id=None):
         features (pandas.DataFrame): the selected exon records.
 
     Raises:
-        ValueError: if neither transcript_id nor gene_id is provided,
-            or if the selection is empty.
+        ValueError: if neither transcript_id nor gene_id is provided, if both
+            are, or if the selection is empty.
     """
+    if transcript_id is not None and gene_id is not None:
+        raise ValueError(
+            f'both transcript_id {transcript_id!r} and gene_id {gene_id!r} '
+            f'were given; the two select different record sets, and silently '
+            f'honouring one returns features the caller did not ask for')
+
     # filter to exons if the type column is present
     if 'type' in gtf_df.columns:
         gtf_df = gtf_df[gtf_df['type'] == 'exon']

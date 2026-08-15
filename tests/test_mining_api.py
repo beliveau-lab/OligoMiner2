@@ -137,3 +137,34 @@ class TestExhaustiveGuard:
     def test_exhaustive_with_spacing_raises(self):
         with pytest.raises(ConfigurationError):
             mine_sequence(self.SEQ, seq_id='t', exhaustive=True, spacing=5)
+
+
+class TestChunkSizeValidation:
+    """
+    A chunk smaller than max_length cannot hold a whole probe, and the chunker
+    then drops every probe starting in the first max_length bases -- a quietly
+    short result rather than a visible error.
+    """
+
+    def test_a_chunk_smaller_than_a_probe_is_rejected(self):
+        with pytest.raises(ConfigurationError, match='chunk_size'):
+            mine_sequence('ATCG' * 50, min_length=30, max_length=37,
+                          min_tm=0, max_tm=100, chunk_size=10)
+
+    def test_a_chunk_equal_to_max_length_is_accepted(self):
+        probes = mine_sequence('ATCG' * 50, min_length=30, max_length=37,
+                               min_tm=0, max_tm=100, min_gc=0, max_gc=100,
+                               chunk_size=37)
+        assert probes
+
+    def test_chunking_does_not_change_the_probe_set(self):
+        # the reason the guard matters: below it, results silently differ
+        seq = 'ATCG' * 50
+        params = dict(min_length=30, max_length=37, min_tm=0, max_tm=100,
+                      min_gc=0, max_gc=100)
+
+        whole = mine_sequence(seq, chunk_size=100_000, **params)
+        chunked = mine_sequence(seq, chunk_size=40, **params)
+
+        assert len(whole) == len(chunked)
+        assert {p[1] for p in whole} == {p[1] for p in chunked}

@@ -187,3 +187,35 @@ class TestMinedProbesMapBackToTheReference:
             reference = sequence[start:stop]
             expected = reference if strand == '+' else rev_comp(reference)
             assert probe_seq == expected
+
+
+class TestFeatureSelectorContract:
+    """
+    transcript_id and gene_id select different record sets. Honouring one when
+    both are given returns features the caller did not ask for.
+    """
+
+    def test_giving_both_selectors_is_rejected(self):
+        from oligominer.bioinformatics.transcriptome.transcript_seq import (
+            _select_features,
+        )
+
+        with pytest.raises(ValueError, match='both'):
+            _select_features(gtf([(101, 200, '+', 'T1')]),
+                             transcript_id='T1', gene_id='G1')
+
+    def test_giving_neither_is_rejected(self):
+        from oligominer.bioinformatics.transcriptome.transcript_seq import (
+            _select_features,
+        )
+
+        with pytest.raises(ValueError):
+            _select_features(gtf([(101, 200, '+', 'T1')]))
+
+    def test_one_selector_is_accepted(self):
+        from oligominer.bioinformatics.transcriptome.transcript_seq import (
+            _select_features,
+        )
+
+        assert len(_select_features(gtf([(101, 200, '+', 'T1')]),
+                                    transcript_id='T1')) == 1

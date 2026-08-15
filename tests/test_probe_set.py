@@ -221,3 +221,36 @@ class TestKmerProvenance:
         stage = [s for s in probes.manifest['stages']
                  if s['stage'] == 'max_kmer'][-1]
         assert stage['params']['is_canonical'] is None
+
+
+class TestProbeTableValidation:
+    """
+    A probe table missing a required column produced a raw KeyError from
+    whichever stage happened to reach for it first, which says nothing about
+    what the caller got wrong.
+    """
+
+    def test_a_frame_with_none_of_the_columns_is_rejected(self):
+        from oligominer.utils.exceptions import InvalidInputError
+
+        with pytest.raises(InvalidInputError, match='missing'):
+            ProbeSet(pd.DataFrame({'foo': [1]}))
+
+    def test_the_error_names_the_missing_column(self):
+        from oligominer.utils.exceptions import InvalidInputError
+
+        frame = pd.DataFrame({'seq_id': ['a'], 'start': [0],
+                              'probe_seq': ['ACGT'], 'tm': [45.0]})
+        with pytest.raises(InvalidInputError, match='stop'):
+            ProbeSet(frame)
+
+    def test_a_complete_frame_is_accepted(self):
+        frame = pd.DataFrame({'seq_id': ['a'], 'start': [0], 'stop': [4],
+                              'probe_seq': ['ACGT'], 'tm': [45.0]})
+        assert len(ProbeSet(frame)) == 1
+
+    def test_extra_columns_are_kept(self):
+        frame = pd.DataFrame({'seq_id': ['a'], 'start': [0], 'stop': [4],
+                              'probe_seq': ['ACGT'], 'tm': [45.0],
+                              'note': ['keep me']})
+        assert 'note' in ProbeSet(frame).df.columns

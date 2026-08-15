@@ -1,5 +1,6 @@
 
 from .pipeline import (
+    add_duplex_pred,
     mine_probe_candidates,
     align_probes,
     add_max_kmer,

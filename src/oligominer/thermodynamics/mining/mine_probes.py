@@ -85,7 +85,8 @@ def mine_sequence(
         max_tm (float): maximum melting temperature (°C).
         tm_target (float or None): target Tm for closest-to-target selection.
             None = greedy shortest valid probe. Ignored when exhaustive=True.
-        chunk_size (int): bases per processing chunk.
+        chunk_size (int): bases per processing chunk. Must be at least
+            max_length, since a chunk has to hold a whole probe.
         allow_overlap (bool): allow overlapping probes. Mutually exclusive with
             exhaustive.
         spacing (int): minimum spacing between adjacent probes. Mutually
@@ -130,6 +131,14 @@ def mine_sequence(
         raise ConfigurationError(
             "exhaustive mode is incompatible with allow_overlap=False and "
             "spacing > 0. In exhaustive mode all valid probes are returned.")
+
+    if chunk_size < max_length:
+        raise ConfigurationError(
+            f'chunk_size {chunk_size} is smaller than max_length '
+            f'{max_length}. A chunk that cannot hold one full-length probe '
+            f'drops every probe starting in the first max_length bases of the '
+            f'sequence, so the result would be quietly short rather than '
+            f'wrong in a visible way.')
 
     cores = resolve_cores(cores)
 
