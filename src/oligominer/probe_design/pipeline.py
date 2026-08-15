@@ -106,27 +106,31 @@ def align_probes(probe_df, bt2_index, ref_fasta, preset=None, k=100,
     return align_df
 
 
-def add_max_kmer(probe_df, jf_index, k=18, verbose=False):
+def add_max_kmer(probe_df, index_path, k=18, backend='auto', verbose=False):
     """
     Add a max_kmer column to the probe DataFrame.
 
-    Queries a Jellyfish kmer index to find the maximum kmer count for
-    each probe sequence. Lower values indicate higher specificity.
+    Queries a k-mer index for the highest count among each probe's k-mers.
+    Lower values indicate higher specificity. The index may be a Jellyfish
+    '.jf' or a numpy '.npz'; the backend is chosen from the index unless one is
+    named.
 
     Args:
         probe_df (pandas.DataFrame): probe candidates with a probe_seq
             column.
-        jf_index (str): path to the Jellyfish index file.
-        k (int): kmer length. Must match the Jellyfish index.
-        verbose (bool): if True, print query output.
+        index_path (str): path to the k-mer index.
+        k (int): kmer length. Must match the index.
+        backend (str): 'auto', 'jellyfish' or 'numpy'.
+        verbose (bool): if True, print the backend and index being used.
 
     Returns:
         probe_df (pandas.DataFrame): the input DataFrame with an added
             max_kmer column.
     """
-    seqs = probe_df['probe_seq'].tolist()
-    max_kmer_values = calc_max_kmer_multi(jf_index, seqs, k=k, verbose=verbose)
-    probe_df['max_kmer'] = max_kmer_values
+    from oligominer.specificity.kmers import max_kmer
+
+    probe_df['max_kmer'] = max_kmer(index_path, probe_df['probe_seq'].tolist(),
+                                    k=k, backend=backend, verbose=verbose)
 
     # success
     return probe_df
