@@ -6,6 +6,8 @@ jellyfish count. After building, validates the index. See jellyfish_query.py
 for querying a built index.
 """
 
+import os
+
 from oligominer.utils.cores import resolve_cores
 from oligominer.utils.shell_pipeline import run_cmd
 from oligominer.utils import (
@@ -14,7 +16,35 @@ from oligominer.utils import (
 )
 
 
-def jellyfish_build(input_file, output_file, k=18, size='3300M', cores=None,
+# smallest hash to ask for, so a tiny input does not get a degenerate table
+MIN_HASH_SIZE = 1_000_000
+
+
+def estimate_hash_size(input_file, floor=MIN_HASH_SIZE):
+    """
+    Estimate Jellyfish's initial hash size from the input.
+
+    Jellyfish sizes its hash by the number of distinct k-mers it expects, which
+    for a genome is close to its length. Asking for a fixed large size makes a
+    small genome allocate for a large one; asking for too little makes
+    Jellyfish write intermediate files and merge them.
+
+    The estimate is the file's size in bytes, which overshoots the sequence
+    length by the FASTA headers and newlines -- an overshoot being the cheaper
+    error of the two.
+
+    Args:
+        input_file (str): path to the input FASTA/FASTQ.
+        floor (int): smallest size to return.
+
+    Returns:
+        size (int): the hash size to pass to '-s'.
+    """
+    # success
+    return max(int(floor), os.path.getsize(input_file))
+
+
+def jellyfish_build(input_file, output_file, k=18, size=None, cores=None,
                     canonical=False, out_counter_len=4, text=False, disk=False,
                     sam=None, min_qual_char=None, min_quality=None,
                     reprobes=None, shell=None, L=None, U=None, verbose=False):
@@ -25,7 +55,9 @@ def jellyfish_build(input_file, output_file, k=18, size='3300M', cores=None,
         input_file (str): path to the input FASTA/FASTQ file.
         output_file (str): output path for the kmer count file (.jf).
         k (int): length of k-mers.
-        size (str): initial hash size (e.g. '3300M').
+        size (str or int, optional): initial hash size. None estimates it from
+            the input's size, so a small genome does not allocate for a large
+            one.
         cores (int, optional): number of threads. None resolves the batch
             scheduler's granted core count (see oligominer.utils.cores).
         canonical (bool): count canonical representation of k-mers.
@@ -49,6 +81,8 @@ def jellyfish_build(input_file, output_file, k=18, size='3300M', cores=None,
     check_input_exists(input_file)
     index_path = get_abs_path(output_file)
     cores = resolve_cores(cores)
+    if size is None:
+        size = estimate_hash_size(input_file)
 
     # create output directory as needed
     check_dir_exists(output_file, parent_dir=True, create=True)
