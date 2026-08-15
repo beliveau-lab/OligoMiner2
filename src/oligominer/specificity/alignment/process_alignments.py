@@ -12,6 +12,7 @@ from oligominer.specificity.alignment import bam_to_bed, trim_bed_coords, get_fa
 from oligominer.bioinformatics.file_io.bed_io import bed_to_df
 from oligominer.bioinformatics.file_io.sam_bam_io import load_bam_file
 from oligominer.utils import require_one_of
+from oligominer.utils.exceptions import InvalidInputError
 
 def process_alignments(sam_data=None, bam_path=None, ref_fasta=None, to_upper=True):
     """
@@ -66,6 +67,19 @@ def process_alignments(sam_data=None, bam_path=None, ref_fasta=None, to_upper=Tr
         # lookup sequences at probe alignment sites in reference genome
         fasta_result = get_fasta(bed_data=trimmed_bed_data, fasta_path=ref_fasta)
         derived_seqs = fasta_result.strip().split('\n')
+
+        # the sequences are assigned by position, with nothing tying a sequence
+        # to the interval it came from. A dropped interval -- a contig absent
+        # from the reference, or a zero-length interval -- shifts every later
+        # sequence onto the wrong alignment, which reads as a plausible score
+        # rather than an error
+        if len(derived_seqs) != len(align_df):
+            raise InvalidInputError(
+                f'{len(derived_seqs)} sequences returned for '
+                f'{len(align_df)} alignments; the reference is missing '
+                f'intervals the alignments refer to, and assigning by '
+                f'position would attribute sequences to the wrong rows')
+
         align_df['derived_seq'] = derived_seqs
 
         if to_upper:

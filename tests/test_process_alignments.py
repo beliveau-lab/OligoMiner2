@@ -105,3 +105,63 @@ class TestFromBam:
         from_bam = process_alignments(bam_path=str(bam))
 
         assert from_bam.equals(from_sam)
+
+
+class TestDerivedSequenceAlignment:
+    """
+    Sequences are assigned to alignments by position, with nothing tying a
+    sequence to the interval it came from. A dropped interval shifts every
+    later sequence onto the wrong alignment, which reads as a plausible score
+    rather than an error.
+    """
+
+    def test_a_short_sequence_list_raises(self, reference, monkeypatch):
+        import importlib
+
+        # the package exports a function of the same name, which shadows the
+        # module on attribute access
+        mod = importlib.import_module(
+            'oligominer.specificity.alignment.process_alignments')
+
+        def one_short(*args, **kwargs):
+            return 'ACGTACGT\n'
+
+        monkeypatch.setattr(mod, 'get_fasta', one_short)
+
+        with pytest.raises(InvalidInputError, match='wrong rows'):
+            process_alignments(sam_data=SAM_DATA, ref_fasta=reference)
+
+    def test_a_long_sequence_list_raises(self, reference, monkeypatch):
+        import importlib
+
+        # the package exports a function of the same name, which shadows the
+        # module on attribute access
+        mod = importlib.import_module(
+            'oligominer.specificity.alignment.process_alignments')
+
+        def one_extra(*args, **kwargs):
+            return 'ACGTACGT\nTTTTGGGG\nCCCCAAAA\n'
+
+        monkeypatch.setattr(mod, 'get_fasta', one_extra)
+
+        with pytest.raises(InvalidInputError, match='wrong rows'):
+            process_alignments(sam_data=SAM_DATA, ref_fasta=reference)
+
+    def test_a_matching_list_is_accepted(self, reference):
+        df = process_alignments(sam_data=SAM_DATA, ref_fasta=reference)
+        assert len(df['derived_seq']) == len(df)
+
+
+class TestAlignScore:
+
+    def test_a_record_without_an_alignment_score_reports_zero(self):
+        # 'NA' would turn the column to float64 and make the model treat the
+        # value as missing rather than as no score
+        no_tag = ('probe3\t0\tchr1\t1\t42\t8=\t*\t0\t0\tACGTACGT\t~~~~~~~~\n')
+        df = process_alignments(sam_data=SAM_HEADER + no_tag)
+
+        assert df['align_score'].tolist() == [0]
+
+    def test_the_score_column_stays_integral(self):
+        df = process_alignments(sam_data=SAM_DATA)
+        assert df['align_score'].tolist() == [16, 14]
