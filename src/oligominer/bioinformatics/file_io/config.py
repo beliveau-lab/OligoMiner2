@@ -1,5 +1,4 @@
-"""Configuration constants and shared helpers for the file_io sub-package.
-"""
+"""Configuration constants and shared helpers for the file_io sub-package."""
 
 import os
 

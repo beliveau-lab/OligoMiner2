@@ -5,7 +5,6 @@ file, converts to BED, builds a DataFrame of alignment metadata, and optionally
 looks up derived sequences from a reference genome.
 """
 
-
 from oligominer.bioinformatics.file_io.bed_io import bed_to_df
 from oligominer.bioinformatics.file_io.sam_bam_io import load_bam_file
 from oligominer.specificity.alignment import bam_to_bed, get_fasta, trim_bed_coords

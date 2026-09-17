@@ -145,11 +145,11 @@ def append_unique(probes, sequences, target_column, left=True, rc=False, linker=
 
         if left:
             result.loc[mask, "sequence"] = result.loc[mask, "sequence"].apply(
-                lambda s: _join(seq, s, linker)
+                lambda s, seq=seq: _join(seq, s, linker)
             )
         else:
             result.loc[mask, "sequence"] = result.loc[mask, "sequence"].apply(
-                lambda s: _join(s, seq, linker)
+                lambda s, seq=seq: _join(s, seq, linker)
             )
 
         entries.loc[mask] = f"{seq_id}_{sequences['seq'].iloc[i]}"
@@ -273,11 +273,11 @@ def append_custom(probes, sequences, ranges, left=True, rc=False, linker=LINKER)
 
         if left:
             result.loc[iloc_indices, "sequence"] = result.loc[iloc_indices, "sequence"].apply(
-                lambda s: _join(seq, s, linker)
+                lambda s, seq=seq: _join(seq, s, linker)
             )
         else:
             result.loc[iloc_indices, "sequence"] = result.loc[iloc_indices, "sequence"].apply(
-                lambda s: _join(s, seq, linker)
+                lambda s, seq=seq: _join(s, seq, linker)
             )
 
         entries.loc[iloc_indices] = f"{seq_id}_{sequences['seq'].iloc[i]}"

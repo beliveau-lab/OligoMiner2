@@ -284,9 +284,7 @@ def retrain(name, corpus, out, celsius=None, seed=0, label_col="pdup", hyperpara
             f"orchestrate. Use the corpus builder here and fit it in a GPU job."
         )
 
-    info["card"] = str(
-        write_card(name, out, corpus, celsius, seed, extra={"n_train": len(df)})
-    )
+    info["card"] = str(write_card(name, out, corpus, celsius, seed, extra={"n_train": len(df)}))
 
     # success
     return info

@@ -215,7 +215,6 @@ class TestComposition:
         assert len(counts) == len(probes)
 
     def test_padlock_then_assemble_then_unit(self):
-
         import random
 
         from oligominer.probe_design import (

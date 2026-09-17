@@ -11,7 +11,6 @@ a probe design workflow:
   6. Optionally predict duplex stability via XGBoost (PaintSHOP model)
 """
 
-
 from oligominer.bioinformatics.file_io import seqs_to_fastq
 from oligominer.specificity.alignment import bowtie_align, bowtie_presets, process_alignments
 from oligominer.thermodynamics.mining import mine_fasta, mine_sequence, probes_to_df

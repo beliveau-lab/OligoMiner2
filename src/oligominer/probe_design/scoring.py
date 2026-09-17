@@ -15,7 +15,6 @@ on-target scores and low off-target scores.
 """
 
 
-
 def label_on_target(merged_df):
     """Add an ``on_target`` boolean column to a merged duplex DataFrame.
 

@@ -19,7 +19,6 @@ Two mining strategies are supported:
     transcript, not the genome.
 """
 
-
 from oligominer.probe_design.probe_set import ProbeSet
 from oligominer.thermodynamics.mining import mine_sequence
 
