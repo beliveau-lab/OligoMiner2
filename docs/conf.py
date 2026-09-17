@@ -8,7 +8,7 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1] / "src"))
 from oligominer import __version__
 
 project = "oligominer"
-author = "Conor Camplisson"                 
+author = "Conor Camplisson"
 copyright = "2026, Conor Camplisson"
 release = __version__
 
