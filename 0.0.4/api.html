@@ -1,0 +1,1116 @@
+
+<!DOCTYPE html>
+
+
+<html lang="en" data-content_root="./" >
+
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <title>API reference &#8212; oligominer 0.0.4</title>
+  
+  
+  
+  <script data-cfasync="false">
+    document.documentElement.dataset.mode = localStorage.getItem("mode") || "";
+    document.documentElement.dataset.theme = localStorage.getItem("theme") || "";
+  </script>
+  <!--
+    this give us a css class that will be invisible only if js is disabled
+  -->
+  <noscript>
+    <style>
+      .pst-js-only { display: none !important; }
+
+    </style>
+  </noscript>
+  
+  <!-- Loaded before other Sphinx assets -->
+  <link href="_static/styles/theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+<link href="_static/styles/pydata-sphinx-theme.css?digest=8878045cc6db502f8baf" rel="stylesheet" />
+
+    <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=8f2a1f02" />
+  
+  <!-- So that users can add custom icons -->
+  <script src="_static/scripts/fontawesome.js?digest=8878045cc6db502f8baf"></script>
+  <!-- Pre-loaded scripts that we'll load fully later -->
+  <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
+<link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
+
+    <script src="_static/documentation_options.js?v=8c5712d9"></script>
+    <script src="_static/doctools.js?v=9bcbadda"></script>
+    <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script>DOCUMENTATION_OPTIONS.pagename = 'api';</script>
+    <script>
+        DOCUMENTATION_OPTIONS.theme_version = '0.16.1';
+        DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://oligominer.org/switcher.json';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '0.0.4';
+        DOCUMENTATION_OPTIONS.show_version_warning_banner =
+            false;
+        </script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Changelog" href="changelog.html" />
+    <link rel="prev" title="The pipeline" href="pipeline.html" />
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <meta name="docsearch:language" content="en"/>
+  <meta name="docsearch:version" content="" />
+  </head>
+  
+  
+  <body data-bs-spy="scroll" data-bs-target=".bd-toc-nav" data-offset="180" data-bs-root-margin="0px 0px -60%" data-default-mode="">
+
+  
+  
+  <div id="pst-skip-link" class="skip-link d-print-none"><a href="#main-content">Skip to main content</a></div>
+  
+  <div id="pst-scroll-pixel-helper"></div>
+  
+  <button type="button" class="btn rounded-pill" id="pst-back-to-top">
+    <i class="fa-solid fa-arrow-up"></i>Back to top</button>
+
+  
+  <dialog id="pst-search-dialog">
+    
+<form class="bd-search d-flex align-items-center"
+      action="search.html"
+      method="get">
+  <i class="fa-solid fa-magnifying-glass"></i>
+  <input type="search"
+         class="form-control"
+         name="q"
+         placeholder="Search the docs ..."
+         aria-label="Search the docs ..."
+         autocomplete="off"
+         autocorrect="off"
+         autocapitalize="off"
+         spellcheck="false"/>
+  <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd>K</kbd></span>
+</form>
+  </dialog>
+
+  <div class="pst-async-banner-revealer d-none">
+  <aside id="bd-header-version-warning" class="d-none d-print-none" aria-label="Version warning"></aside>
+</div>
+
+  
+    <header class="bd-header navbar navbar-expand-lg bd-navbar d-print-none">
+<div class="bd-header__inner bd-page-width">
+  <button class="pst-navbar-icon sidebar-toggle primary-toggle" aria-label="Site navigation">
+    <span class="fa-solid fa-bars"></span>
+  </button>
+  
+  
+  <div class="col-lg-3 navbar-header-items__start">
+    
+      <div class="navbar-item">
+
+  
+    
+  
+
+<a class="navbar-brand logo" href="index.html">
+  
+  
+  
+  
+  
+  
+    <p class="title logo__title">oligominer 0.0.4</p>
+  
+</a></div>
+    
+  </div>
+  
+  <div class="col-lg-9 navbar-header-items">
+    
+    <div class="me-auto navbar-header-items__center">
+      
+        <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="pipeline.html">
+    The pipeline
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="#">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="changelog.html">
+    Changelog
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+      
+    </div>
+    
+    
+    <div class="navbar-header-items__end">
+      
+        <div class="navbar-item navbar-persistent--container">
+          
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+        </div>
+      
+      
+        <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-2"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-2"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-2"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-2">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+      
+        <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+      
+        <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/beliveau-lab/OligoMiner2" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+      
+    </div>
+    
+  </div>
+  
+  
+    <div class="navbar-persistent--mobile">
+
+<button class="btn search-button-field search-button__button pst-js-only" title="Search" aria-label="Search" data-bs-placement="bottom" data-bs-toggle="tooltip">
+ <i class="fa-solid fa-magnifying-glass"></i>
+ <span class="search-button__default-text">Search</span>
+ <span class="search-button__kbd-shortcut"><kbd class="kbd-shortcut__modifier">Ctrl</kbd>+<kbd class="kbd-shortcut__modifier">K</kbd></span>
+</button>
+    </div>
+  
+
+  
+    <button class="pst-navbar-icon sidebar-toggle secondary-toggle" aria-label="On this page">
+      <span class="fa-solid fa-outdent"></span>
+    </button>
+  
+</div>
+
+    </header>
+  
+
+  <div class="bd-container">
+    <div class="bd-container__inner bd-page-width">
+      
+      
+      
+      <dialog id="pst-primary-sidebar-modal"></dialog>
+      <div id="pst-primary-sidebar" class="bd-sidebar-primary bd-sidebar">
+        
+
+  
+  <div class="sidebar-header-items sidebar-primary__section">
+    
+    
+      <div class="sidebar-header-items__center">
+        
+          
+          
+            <div class="navbar-item">
+<nav>
+  <ul class="bd-navbar-elements navbar-nav">
+    
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="pipeline.html">
+    The pipeline
+  </a>
+</li>
+
+
+<li class="nav-item current active">
+  <a class="nav-link nav-internal" href="#">
+    API reference
+  </a>
+</li>
+
+
+<li class="nav-item ">
+  <a class="nav-link nav-internal" href="changelog.html">
+    Changelog
+  </a>
+</li>
+
+  </ul>
+</nav></div>
+          
+        
+      </div>
+    
+    
+    
+      <div class="sidebar-header-items__end">
+        
+          <div class="navbar-item">
+<div class="version-switcher__container dropdown pst-js-only">
+  <button id="pst-version-switcher-button-3"
+    type="button"
+    class="version-switcher__button btn btn-sm dropdown-toggle"
+    data-bs-toggle="dropdown"
+    aria-haspopup="listbox"
+    aria-controls="pst-version-switcher-list-3"
+    aria-label="Version switcher list"
+  >
+    Choose version  <!-- this text may get changed later by javascript -->
+    <span class="caret"></span>
+  </button>
+  <div id="pst-version-switcher-list-3"
+    class="version-switcher__menu dropdown-menu list-group-flush py-0"
+    role="listbox" aria-labelledby="pst-version-switcher-button-3">
+    <!-- dropdown will be populated by javascript on page load -->
+  </div>
+</div></div>
+        
+          <div class="navbar-item">
+
+<button class="btn btn-sm nav-link pst-navbar-icon theme-switch-button pst-js-only" aria-label="Color mode" data-bs-title="Color mode"  data-bs-placement="bottom" data-bs-toggle="tooltip">
+  <i class="theme-switch fa-solid fa-sun                fa-lg" data-mode="light" title="Light"></i>
+  <i class="theme-switch fa-solid fa-moon               fa-lg" data-mode="dark"  title="Dark"></i>
+  <i class="theme-switch fa-solid fa-circle-half-stroke fa-lg" data-mode="auto"  title="System Settings"></i>
+</button></div>
+        
+          <div class="navbar-item"><ul class="navbar-icon-links"
+    aria-label="Icon Links">
+        <li class="nav-item">
+          
+          
+          
+          
+          
+          
+          
+          
+          <a href="https://github.com/beliveau-lab/OligoMiner2" title="GitHub" class="nav-link pst-navbar-icon" rel="noopener" target="_blank" data-bs-toggle="tooltip" data-bs-placement="bottom"><i class="fa-brands fa-square-github fa-lg" aria-hidden="true"></i>
+            <span class="sr-only">GitHub</span></a>
+        </li>
+</ul></div>
+        
+      </div>
+    
+  </div>
+  
+    <div class="sidebar-primary-items__start sidebar-primary__section">
+        <div class="sidebar-primary-item">
+<nav class="bd-docs-nav bd-links"
+     aria-label="Section Navigation">
+  <p class="bd-links__title" role="heading" aria-level="1">Section Navigation</p>
+  <div class="bd-toc-item navbar-nav"></div>
+</nav></div>
+    </div>
+  
+  
+  <div class="sidebar-primary-items__end sidebar-primary__section">
+      <div class="sidebar-primary-item">
+<div id="ethical-ad-placement"
+      class="flat"
+      data-ea-publisher="readthedocs"
+      data-ea-type="readthedocs-sidebar"
+      data-ea-manual="true">
+</div></div>
+  </div>
+
+
+      </div>
+      
+      <main id="main-content" class="bd-main" role="main">
+        
+        
+          <div class="bd-content">
+            <div class="bd-article-container">
+              
+              <div class="bd-header-article d-print-none">
+<div class="header-article-items header-article__inner">
+  
+    <div class="header-article-items__start">
+      
+        <div class="header-article-item">
+
+<nav aria-label="Breadcrumb" class="d-print-none">
+  <ul class="bd-breadcrumbs">
+    
+    <li class="breadcrumb-item breadcrumb-home">
+      <a href="index.html" class="nav-link" aria-label="Home">
+        <i class="fa-solid fa-home"></i>
+      </a>
+    </li>
+    <li class="breadcrumb-item active" aria-current="page"><span class="ellipsis">API reference</span></li>
+  </ul>
+</nav>
+</div>
+      
+    </div>
+  
+  
+</div>
+</div>
+              
+              
+              
+                
+<div id="searchbox"></div>
+                <article class="bd-article">
+                  
+  <section id="api-reference">
+<h1>API reference<a class="headerlink" href="#api-reference" title="Link to this heading">#</a></h1>
+<p>Generated from the source, so it cannot drift from the code.</p>
+<dl class="py class" id="module-oligominer">
+<dt class="sig sig-object py" id="oligominer.ProbeSet">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">oligominer.</span></span><span class="sig-name descname"><span class="pre">ProbeSet</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">probes</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#oligominer.ProbeSet" title="Link to this definition">#</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A set of candidate probes backed by a pandas DataFrame.</p>
+<p>Provides a fluent interface for the probe design pipeline steps:
+mining, alignment, kmer counting, merging, and pDup computation.</p>
+<dl class="simple">
+<dt>Can be created from:</dt><dd><ul class="simple">
+<li><p>A list of probe tuples from mine_sequence() or mine_fasta()</p></li>
+<li><p>A pandas DataFrame with probe columns</p></li>
+<li><p>A FASTA file via ProbeSet.from_fasta()</p></li>
+<li><p>A CSV file via ProbeSet.from_csv()</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Variables<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<em>pandas.DataFrame</em>) – probe candidates with columns
+seq_id, start, stop, probe_seq, tm, seqid, and optionally
+max_kmer.</p></li>
+<li><p><strong>align_df</strong> (<em>pandas.DataFrame</em><em> or </em><em>None</em>) – alignment results, populated
+after calling align().</p></li>
+<li><p><strong>merged_df</strong> (<em>pandas.DataFrame</em><em> or </em><em>None</em>) – merged probe-alignment
+duplex table, populated after calling merge().</p></li>
+<li><p><strong>score_df</strong> (<em>pandas.DataFrame</em><em> or </em><em>None</em>) – per-probe on-target and
+off-target scores, populated after calling score().</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py method">
+<dt class="sig sig-object py" id="oligominer.ProbeSet.align">
+<span class="sig-name descname"><span class="pre">align</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bt2_index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ref_fasta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">preset</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threads</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">bt2_params</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#oligominer.ProbeSet.align" title="Link to this definition">#</a></dt>
+<dd><p>Align probes to a reference genome.</p>
+<p>Populates self.align_df with alignment results.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>bt2_index</strong> (<em>str</em>) – path to the Bowtie2 index.</p></li>
+<li><p><strong>ref_fasta</strong> (<em>str</em>) – path to the reference FASTA file.</p></li>
+<li><p><strong>preset</strong> (<em>dict</em><em>, </em><em>optional</em>) – Bowtie2 preset parameters.</p></li>
+<li><p><strong>k</strong> (<em>int</em>) – number of alignments to report per read.</p></li>
+<li><p><strong>threads</strong> (<em>int</em>) – number of Bowtie2 threads.</p></li>
+<li><p><strong>verbose</strong> (<em>bool</em>) – if True, print alignment output.</p></li>
+<li><p><strong>**bt2_params</strong> – additional parameters forwarded to bowtie_align().</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>self (ProbeSet)</em> – for method chaining.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="oligominer.ProbeSet.append">
+<span class="sig-name descname"><span class="pre">append</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sequences</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scheme</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_column</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_per_target</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ranges</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">left</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">rc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#oligominer.ProbeSet.append" title="Link to this definition">#</a></dt>
+<dd><p>Append sequences to probes using the specified scheme.</p>
+<p>Modifies the <code class="docutils literal notranslate"><span class="pre">sequence</span></code> column in df (creating it from
+<code class="docutils literal notranslate"><span class="pre">probe_seq</span></code> if it does not exist). Tracks appended sequences
+in the internal master table.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sequences</strong> (<em>pandas.DataFrame</em>) – appending sequences with
+<code class="docutils literal notranslate"><span class="pre">id</span></code> and <code class="docutils literal notranslate"><span class="pre">seq</span></code> columns.</p></li>
+<li><p><strong>scheme</strong> (<em>str</em>) – one of <code class="docutils literal notranslate"><span class="pre">&quot;same&quot;</span></code>, <code class="docutils literal notranslate"><span class="pre">&quot;unique&quot;</span></code>,
+<code class="docutils literal notranslate"><span class="pre">&quot;multiple&quot;</span></code>, or <code class="docutils literal notranslate"><span class="pre">&quot;custom&quot;</span></code>.</p></li>
+<li><p><strong>label</strong> (<em>str</em>) – name for this appending step in the master
+table (e.g. <code class="docutils literal notranslate"><span class="pre">&quot;outer_forward&quot;</span></code>).</p></li>
+<li><p><strong>target_column</strong> (<em>str</em><em>, </em><em>optional</em>) – column for grouping by
+target.</p></li>
+<li><p><strong>n_per_target</strong> (<em>int</em><em>, </em><em>optional</em>) – sequences per target for
+<code class="docutils literal notranslate"><span class="pre">&quot;multiple&quot;</span></code> scheme.</p></li>
+<li><p><strong>ranges</strong> (<em>list</em><em> of </em><em>str</em><em>, </em><em>optional</em>) – ranges for <code class="docutils literal notranslate"><span class="pre">&quot;custom&quot;</span></code>.</p></li>
+<li><p><strong>left</strong> (<em>bool</em>) – if True, prepend to the 5’ end.</p></li>
+<li><p><strong>rc</strong> (<em>bool</em>) – if True, reverse-complement sequences.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>self (ProbeSet)</em> – for method chaining.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="oligominer.ProbeSet.append_merfish_barcodes">
+<span class="sig-name descname"><span class="pre">append_merfish_barcodes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">bridges</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">barcodes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_column</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'refseq'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#oligominer.ProbeSet.append_merfish_barcodes" title="Link to this definition">#</a></dt>
+<dd><p>Append MERFISH barcode-encoded bridges.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>bridges</strong> (<em>pandas.DataFrame</em>) – the 16 MERFISH bridges with
+<code class="docutils literal notranslate"><span class="pre">id</span></code> and <code class="docutils literal notranslate"><span class="pre">seq</span></code> columns.</p></li>
+<li><p><strong>barcodes</strong> (<em>pandas.DataFrame</em>) – barcodes with a <code class="docutils literal notranslate"><span class="pre">barcode</span></code>
+column.</p></li>
+<li><p><strong>target_column</strong> (<em>str</em>) – column for grouping by target.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>self (ProbeSet)</em> – for method chaining.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="oligominer.ProbeSet.append_saber_seqs">
+<span class="sig-name descname"><span class="pre">append_saber_seqs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">sequences</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">scheme</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">label</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'saber'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">target_column</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_per_target</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ranges</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#oligominer.ProbeSet.append_saber_seqs" title="Link to this definition">#</a></dt>
+<dd><p>Append SABER concatemer sequences to the 3’ end.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>sequences</strong> (<em>pandas.DataFrame</em>) – SABER sequences with <code class="docutils literal notranslate"><span class="pre">id</span></code>
+and <code class="docutils literal notranslate"><span class="pre">seq</span></code> columns.</p></li>
+<li><p><strong>scheme</strong> (<em>str</em>) – appending scheme.</p></li>
+<li><p><strong>label</strong> (<em>str</em>) – master table column name.</p></li>
+<li><p><strong>target_column</strong> (<em>str</em><em>, </em><em>optional</em>) – column for grouping by
+target.</p></li>
+<li><p><strong>n_per_target</strong> (<em>int</em><em>, </em><em>optional</em>) – sequences per target for
+<code class="docutils literal notranslate"><span class="pre">&quot;multiple&quot;</span></code> scheme.</p></li>
+<li><p><strong>ranges</strong> (<em>list</em><em> of </em><em>str</em><em>, </em><em>optional</em>) – ranges for <code class="docutils literal notranslate"><span class="pre">&quot;custom&quot;</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>self (ProbeSet)</em> – for method chaining.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="oligominer.ProbeSet.attrition">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">attrition</span></span><a class="headerlink" href="#oligominer.ProbeSet.attrition" title="Link to this definition">#</a></dt>
+<dd><p>Return where probes were lost across the recorded stages.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><em>summary (dict)</em> – n_in, n_out and the number dropped per stage.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="oligominer.ProbeSet.compute_duplex_pred">
+<span class="sig-name descname"><span class="pre">compute_duplex_pred</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">temperature</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">37</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">normalize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#oligominer.ProbeSet.compute_duplex_pred" title="Link to this definition">#</a></dt>
+<dd><p>Predict duplex stability for each duplex using the PaintSHOP XGBoost
+model.</p>
+<p>Requires that merge() has been called. Adds a duplex_pred column to
+self.merged_df. This is a fast alternative to compute_pdup() that
+does not require NUPACK.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>temperature</strong> (<em>int</em>) – hybridization temperature in °C. Must be one
+of 37, 42, 47, 52, or 60.</p></li>
+<li><p><strong>normalize</strong> (<em>bool</em>) – if True, scale predictions to 0.0-1.0 to match
+pdup output. If False, predictions are on the native 0-100
+scale.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>self (ProbeSet)</em> – for method chaining.</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>PipelineStateError</strong> – if no merged data is available.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="oligominer.ProbeSet.compute_max_kmer">
+<span class="sig-name descname"><span class="pre">compute_max_kmer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">jf_index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">k</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">18</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">backend</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'auto'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#oligominer.ProbeSet.compute_max_kmer" title="Link to this definition">#</a></dt>
+<dd><p>Compute max kmer counts for each probe.</p>
+<p>Adds a max_kmer column to self.df.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>jf_index</strong> (<em>str</em>) – path to the k-mer index, Jellyfish or numpy.</p></li>
+<li><p><strong>k</strong> (<em>int</em>) – kmer length.</p></li>
+<li><p><strong>backend</strong> (<em>str</em>) – ‘auto’, ‘jellyfish’ or ‘numpy’.</p></li>
+<li><p><strong>verbose</strong> (<em>bool</em>) – if True, print the backend and index being used.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>self (ProbeSet)</em> – for method chaining.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="oligominer.ProbeSet.compute_pdup">
+<span class="sig-name descname"><span class="pre">compute_pdup</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conc_a</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-06</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conc_b</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-12</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#oligominer.ProbeSet.compute_pdup" title="Link to this definition">#</a></dt>
+<dd><p>Compute pDup for each duplex in the merged table.</p>
+<p>Requires that merge() has been called. Adds a pdup column to
+self.merged_df.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<em>nupack.Model</em><em>, </em><em>optional</em>) – a NUPACK thermodynamic model.</p></li>
+<li><p><strong>conc_a</strong> (<em>float</em>) – molar concentration of the probe strand.</p></li>
+<li><p><strong>conc_b</strong> (<em>float</em>) – molar concentration of the target strand.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>self (ProbeSet)</em> – for method chaining.</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>PipelineStateError</strong> – if no merged data is available.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="oligominer.ProbeSet.describe">
+<span class="sig-name descname"><span class="pre">describe</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#oligominer.ProbeSet.describe" title="Link to this definition">#</a></dt>
+<dd><p>Return a human-readable account of how this probe set was produced.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><em>lines (str)</em> – one line per stage, with counts and parameters.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="oligominer.ProbeSet.from_csv">
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_csv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#oligominer.ProbeSet.from_csv" title="Link to this definition">#</a></dt>
+<dd><p>Load a ProbeSet from a probe CSV file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>path</strong> (<em>str</em>) – path to the probe CSV file.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>probe_set (ProbeSet)</em> – the loaded probe set.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="oligominer.ProbeSet.from_fasta">
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_fasta</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_fasta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cores</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">mining_params</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#oligominer.ProbeSet.from_fasta" title="Link to this definition">#</a></dt>
+<dd><p>Mine probes from a FASTA file and return a ProbeSet.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_fasta</strong> (<em>str</em>) – path to the input FASTA file.</p></li>
+<li><p><strong>cores</strong> (<em>int</em>) – number of CPU cores for parallel mining.</p></li>
+<li><p><strong>**mining_params</strong> – forwarded to mine_fasta() / mine_sequence()
+(min_length, max_length, min_tm, max_tm, Na, Mg, etc.).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>probe_set (ProbeSet)</em> – the mined probe set.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="oligominer.ProbeSet.from_json">
+<em class="property"><span class="k"><span class="pre">classmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#oligominer.ProbeSet.from_json" title="Link to this definition">#</a></dt>
+<dd><p>Load a probe set written by to_json, upgrading an older schema version.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>path</strong> (<em>str</em>) – path to the JSON document.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>probe_set (ProbeSet)</em> – the loaded probe set, manifest included.</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>SchemaError</strong> – if the document cannot be read at this schema version.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="oligominer.ProbeSet.load_align_csv">
+<span class="sig-name descname"><span class="pre">load_align_csv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#oligominer.ProbeSet.load_align_csv" title="Link to this definition">#</a></dt>
+<dd><p>Load alignment results from a CSV file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>path</strong> (<em>str</em>) – path to the alignment CSV file.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>self (ProbeSet)</em> – for method chaining.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="oligominer.ProbeSet.master_table">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">master_table</span></span><a class="headerlink" href="#oligominer.ProbeSet.master_table" title="Link to this definition">#</a></dt>
+<dd><p>Return the master table tracking all appending steps.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><p><em>master (pandas.DataFrame or None)</em> –</p>
+<dl class="simple">
+<dt>one row per probe, one</dt><dd><p>column per appending step, or None if no appending has
+been performed.</p>
+</dd>
+</dl>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="oligominer.ProbeSet.merge">
+<span class="sig-name descname"><span class="pre">merge</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#oligominer.ProbeSet.merge" title="Link to this definition">#</a></dt>
+<dd><p>Merge probe and alignment tables into a duplex table.</p>
+<p>Requires that align() (or load_align_csv()) has been called.
+Populates self.merged_df.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><em>self (ProbeSet)</em> – for method chaining.</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>PipelineStateError</strong> – if no alignment data is available.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="oligominer.ProbeSet.save_align_csv">
+<span class="sig-name descname"><span class="pre">save_align_csv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#oligominer.ProbeSet.save_align_csv" title="Link to this definition">#</a></dt>
+<dd><p>Write the alignment DataFrame to a CSV file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>path</strong> (<em>str</em>) – output file path.</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>PipelineStateError</strong> – if align() has not been called yet.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="oligominer.ProbeSet.save_merged_csv">
+<span class="sig-name descname"><span class="pre">save_merged_csv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#oligominer.ProbeSet.save_merged_csv" title="Link to this definition">#</a></dt>
+<dd><p>Write the merged duplex DataFrame to a CSV file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>path</strong> (<em>str</em>) – output file path.</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>PipelineStateError</strong> – if merge() has not been called yet.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="oligominer.ProbeSet.score">
+<span class="sig-name descname"><span class="pre">score</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pred_column</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'duplex_pred'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#oligominer.ProbeSet.score" title="Link to this definition">#</a></dt>
+<dd><p>Compute on-target and off-target scores from duplex predictions.</p>
+<p>Requires that merge() and either compute_pdup() or
+compute_duplex_pred() have been called. Populates self.score_df.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>pred_column</strong> (<em>str</em>) – name of the prediction column in
+merged_df.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>self (ProbeSet)</em> – for method chaining.</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>PipelineStateError</strong> – if no merged data is available.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="oligominer.ProbeSet.to_bed">
+<span class="sig-name descname"><span class="pre">to_bed</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#oligominer.ProbeSet.to_bed" title="Link to this definition">#</a></dt>
+<dd><p>Write probes to a BED file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>path</strong> (<em>str</em>) – output file path.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="oligominer.ProbeSet.to_csv">
+<span class="sig-name descname"><span class="pre">to_csv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#oligominer.ProbeSet.to_csv" title="Link to this definition">#</a></dt>
+<dd><p>Write the probe DataFrame to a CSV file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>path</strong> (<em>str</em>) – output file path.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="oligominer.ProbeSet.to_fasta">
+<span class="sig-name descname"><span class="pre">to_fasta</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#oligominer.ProbeSet.to_fasta" title="Link to this definition">#</a></dt>
+<dd><p>Write probe sequences to a FASTA file.</p>
+<p>Each probe is written as a separate record with the seqid as the
+header and the probe sequence as the body.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>path</strong> (<em>str</em>) – output file path.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="oligominer.ProbeSet.to_fastq">
+<span class="sig-name descname"><span class="pre">to_fastq</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#oligominer.ProbeSet.to_fastq" title="Link to this definition">#</a></dt>
+<dd><p>Write probes to a FASTQ file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>path</strong> (<em>str</em>) – output file path.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="oligominer.ProbeSet.to_json">
+<span class="sig-name descname"><span class="pre">to_json</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">path</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">orient</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'records'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#oligominer.ProbeSet.to_json" title="Link to this definition">#</a></dt>
+<dd><p>Write the probe set and its manifest to a single JSON document.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>path</strong> (<em>str</em>) – output file path.</p></li>
+<li><p><strong>orient</strong> (<em>str</em>) – pandas orientation for the probe table.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>path (str)</em> – the path written.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="oligominer.get_example_fasta_path">
+<span class="sig-prename descclassname"><span class="pre">oligominer.</span></span><span class="sig-name descname"><span class="pre">get_example_fasta_path</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#oligominer.get_example_fasta_path" title="Link to this definition">#</a></dt>
+<dd><p>Return the path to the bundled example FASTA file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><em>path (str)</em> – absolute path to example.fa.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="oligominer.load_example_fasta">
+<span class="sig-prename descclassname"><span class="pre">oligominer.</span></span><span class="sig-name descname"><span class="pre">load_example_fasta</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#oligominer.load_example_fasta" title="Link to this definition">#</a></dt>
+<dd><p>Load the bundled example FASTA file using pyfaidx.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p><em>fasta (pyfaidx.Fasta)</em> – dict-like object (.keys(), [seq_id] -&gt; sequence).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="oligominer.mine_fasta">
+<span class="sig-prename descclassname"><span class="pre">oligominer.</span></span><span class="sig-name descname"><span class="pre">mine_fasta</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cores</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">mining_params</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#oligominer.mine_fasta" title="Link to this definition">#</a></dt>
+<dd><p>Mine probes from all sequences in a FASTA file.</p>
+<p>Loads the FASTA via pyfaidx and calls mine_sequence() per sequence.
+Returns raw probe tuples — use ProbeSet() to convert to a DataFrame
+or to export results to disk.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>input_file</strong> (<em>str</em>) – path to input FASTA file.</p></li>
+<li><p><strong>cores</strong> (<em>int</em>) – number of CPU cores (passed to mine_sequence).</p></li>
+<li><p><strong>**mining_params</strong> – forwarded to mine_sequence(). See mine_sequence()
+for the full list of parameters (min_length, max_length,
+min_tm, max_tm, Na, Mg, etc.).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><p><em>probes (list)</em> –</p>
+<dl class="simple">
+<dt>list of tuples (seq_id, start, stop, probe_seq, tm).</dt><dd><p>Pass to ProbeSet() to get a DataFrame or use export methods.</p>
+</dd>
+</dl>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="oligominer.mine_sequence">
+<span class="sig-prename descclassname"><span class="pre">oligominer.</span></span><span class="sig-name descname"><span class="pre">mine_sequence</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">seq</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">seq_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'seq'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">30</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">37</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_tm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">42</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_tm</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">47</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tm_target</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">chunk_size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">100000</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">allow_overlap</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spacing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exhaustive</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_gc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">20</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_gc</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">80</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mask_soft</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_entropy</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_homopolymer</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prohibited_seqs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">cores</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Na</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">390</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">K</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Tris</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">Mg</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dNTPs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dnac1</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">25</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">dnac2</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">25</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">pct_formamide</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">50</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">formamide_factor</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.65</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#oligominer.mine_sequence" title="Link to this definition">#</a></dt>
+<dd><p>Mine candidate oligonucleotide probes from a DNA sequence.</p>
+<p>Pure compute — takes a sequence string, returns probe results as a list
+of tuples. No file I/O.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>seq</strong> (<em>str</em>) – DNA sequence string (ACGTN).</p></li>
+<li><p><strong>seq_id</strong> (<em>str</em>) – identifier for this sequence (used in output).</p></li>
+<li><p><strong>min_length</strong> (<em>int</em>) – minimum probe length.</p></li>
+<li><p><strong>max_length</strong> (<em>int</em>) – maximum probe length.</p></li>
+<li><p><strong>min_tm</strong> (<em>float</em>) – minimum melting temperature (°C).</p></li>
+<li><p><strong>max_tm</strong> (<em>float</em>) – maximum melting temperature (°C).</p></li>
+<li><p><strong>tm_target</strong> (<em>float</em><em> or </em><em>None</em>) – target Tm for closest-to-target selection.
+None = greedy shortest valid probe. Ignored when exhaustive=True.</p></li>
+<li><p><strong>chunk_size</strong> (<em>int</em>) – bases per processing chunk. Must be at least
+max_length, since a chunk has to hold a whole probe.</p></li>
+<li><p><strong>allow_overlap</strong> (<em>bool</em>) – allow overlapping probes. Mutually exclusive with
+exhaustive.</p></li>
+<li><p><strong>spacing</strong> (<em>int</em>) – minimum spacing between adjacent probes. Mutually
+exclusive with exhaustive.</p></li>
+<li><p><strong>exhaustive</strong> (<em>bool</em>) – return all valid (position, length) combinations
+instead of selecting one probe per position. Mutually exclusive
+with allow_overlap and spacing.</p></li>
+<li><p><strong>min_gc</strong> (<em>float</em><em> or </em><em>None</em>) – minimum GC percent (0-100). None to disable.</p></li>
+<li><p><strong>max_gc</strong> (<em>float</em><em> or </em><em>None</em>) – maximum GC percent (0-100). None to disable.</p></li>
+<li><p><strong>mask_soft</strong> (<em>bool</em>) – if True, exclude probes overlapping soft-masked
+(lowercase) sequence, which is how repeat and low-complexity regions
+are marked in genome FASTA files. If False, case is folded and
+masked sequence is mined like any other.</p></li>
+<li><p><strong>min_entropy</strong> (<em>float</em><em> or </em><em>None</em>) – minimum normalized dinucleotide entropy,
+on 0-1. Rejects low-complexity sequence such as simple repeats. A
+random sequence scores near 1 and a homopolymer scores 0. None to
+disable.</p></li>
+<li><p><strong>max_homopolymer</strong> (<em>int</em><em> or </em><em>None</em>) – max homopolymer run. None to disable.</p></li>
+<li><p><strong>prohibited_seqs</strong> (<em>list</em><em> or </em><em>None</em>) – list of subsequence strings to exclude.</p></li>
+<li><p><strong>cores</strong> (<em>int</em><em>, </em><em>optional</em>) – number of CPU cores for parallel chunk
+processing. None resolves the batch scheduler’s granted core count
+(see oligominer.utils.cores).</p></li>
+<li><p><strong>Na</strong> (<em>float</em>) – sodium concentration in mM.</p></li>
+<li><p><strong>K</strong> (<em>float</em>) – potassium concentration in mM.</p></li>
+<li><p><strong>Tris</strong> (<em>float</em>) – Tris buffer concentration in mM.</p></li>
+<li><p><strong>Mg</strong> (<em>float</em>) – magnesium concentration in mM.</p></li>
+<li><p><strong>dNTPs</strong> (<em>float</em>) – dNTP concentration in mM. dNTPs chelate Mg2+,
+reducing the effective free Mg2+ concentration.</p></li>
+<li><p><strong>dnac1</strong> (<em>float</em>) – concentration of the probe strand in nM.</p></li>
+<li><p><strong>dnac2</strong> (<em>float</em>) – concentration of the target strand in nM.</p></li>
+<li><p><strong>pct_formamide</strong> (<em>int</em>) – percent formamide in the hybridization buffer
+(e.g. 50 for 50%). Set to 0 to disable formamide correction.</p></li>
+<li><p><strong>formamide_factor</strong> (<em>float</em>) – degrees C of Tm depression per percent
+formamide.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><p><em>probes (list)</em> –</p>
+<dl class="simple">
+<dt>list of tuples (seq_id, start, stop, probe_seq, tm).</dt><dd><p>Use probes_to_df() to convert to a pandas DataFrame.</p>
+</dd>
+</dl>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="oligominer.write_probes">
+<span class="sig-prename descclassname"><span class="pre">oligominer.</span></span><span class="sig-name descname"><span class="pre">write_probes</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">probes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_file</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fmt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'bed'</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#oligominer.write_probes" title="Link to this definition">#</a></dt>
+<dd><p>Write probe results to a file.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>probes</strong> (<em>list</em>) – list of (seq_id, start, stop, probe_seq, tm) tuples.</p></li>
+<li><p><strong>output_file</strong> (<em>str</em>) – destination file path.</p></li>
+<li><p><strong>fmt</strong> (<em>str</em>) – output format — ‘bed’, ‘fastq’, or ‘csv’.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+                </article>
+              
+              
+              
+              
+              
+                <footer class="prev-next-footer d-print-none">
+                  
+<div class="prev-next-area">
+    <a class="left-prev"
+       href="pipeline.html"
+       title="previous page">
+      <i class="fa-solid fa-angle-left"></i>
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">previous</p>
+        <p class="prev-next-title">The pipeline</p>
+      </div>
+    </a>
+    <a class="right-next"
+       href="changelog.html"
+       title="next page">
+      <div class="prev-next-info">
+        <p class="prev-next-subtitle">next</p>
+        <p class="prev-next-title">Changelog</p>
+      </div>
+      <i class="fa-solid fa-angle-right"></i>
+    </a>
+</div>
+                </footer>
+              
+            </div>
+            
+            
+              
+                <dialog id="pst-secondary-sidebar-modal"></dialog>
+                <div id="pst-secondary-sidebar" class="bd-sidebar-secondary bd-toc"><div class="sidebar-secondary-items sidebar-secondary__inner">
+
+
+  <div class="sidebar-secondary-item">
+<div
+    id="pst-page-navigation-heading-2"
+    class="page-toc tocsection onthispage">
+    <i class="fa-solid fa-list"></i> On this page
+  </div>
+  <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
+    <ul class="visible nav section-nav flex-column">
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#oligominer.ProbeSet"><code class="docutils literal notranslate"><span class="pre">ProbeSet</span></code></a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#oligominer.ProbeSet.align"><code class="docutils literal notranslate"><span class="pre">ProbeSet.align()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#oligominer.ProbeSet.append"><code class="docutils literal notranslate"><span class="pre">ProbeSet.append()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#oligominer.ProbeSet.append_merfish_barcodes"><code class="docutils literal notranslate"><span class="pre">ProbeSet.append_merfish_barcodes()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#oligominer.ProbeSet.append_saber_seqs"><code class="docutils literal notranslate"><span class="pre">ProbeSet.append_saber_seqs()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#oligominer.ProbeSet.attrition"><code class="docutils literal notranslate"><span class="pre">ProbeSet.attrition</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#oligominer.ProbeSet.compute_duplex_pred"><code class="docutils literal notranslate"><span class="pre">ProbeSet.compute_duplex_pred()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#oligominer.ProbeSet.compute_max_kmer"><code class="docutils literal notranslate"><span class="pre">ProbeSet.compute_max_kmer()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#oligominer.ProbeSet.compute_pdup"><code class="docutils literal notranslate"><span class="pre">ProbeSet.compute_pdup()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#oligominer.ProbeSet.describe"><code class="docutils literal notranslate"><span class="pre">ProbeSet.describe()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#oligominer.ProbeSet.from_csv"><code class="docutils literal notranslate"><span class="pre">ProbeSet.from_csv()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#oligominer.ProbeSet.from_fasta"><code class="docutils literal notranslate"><span class="pre">ProbeSet.from_fasta()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#oligominer.ProbeSet.from_json"><code class="docutils literal notranslate"><span class="pre">ProbeSet.from_json()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#oligominer.ProbeSet.load_align_csv"><code class="docutils literal notranslate"><span class="pre">ProbeSet.load_align_csv()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#oligominer.ProbeSet.master_table"><code class="docutils literal notranslate"><span class="pre">ProbeSet.master_table</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#oligominer.ProbeSet.merge"><code class="docutils literal notranslate"><span class="pre">ProbeSet.merge()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#oligominer.ProbeSet.save_align_csv"><code class="docutils literal notranslate"><span class="pre">ProbeSet.save_align_csv()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#oligominer.ProbeSet.save_merged_csv"><code class="docutils literal notranslate"><span class="pre">ProbeSet.save_merged_csv()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#oligominer.ProbeSet.score"><code class="docutils literal notranslate"><span class="pre">ProbeSet.score()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#oligominer.ProbeSet.to_bed"><code class="docutils literal notranslate"><span class="pre">ProbeSet.to_bed()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#oligominer.ProbeSet.to_csv"><code class="docutils literal notranslate"><span class="pre">ProbeSet.to_csv()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#oligominer.ProbeSet.to_fasta"><code class="docutils literal notranslate"><span class="pre">ProbeSet.to_fasta()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#oligominer.ProbeSet.to_fastq"><code class="docutils literal notranslate"><span class="pre">ProbeSet.to_fastq()</span></code></a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#oligominer.ProbeSet.to_json"><code class="docutils literal notranslate"><span class="pre">ProbeSet.to_json()</span></code></a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#oligominer.get_example_fasta_path"><code class="docutils literal notranslate"><span class="pre">get_example_fasta_path()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#oligominer.load_example_fasta"><code class="docutils literal notranslate"><span class="pre">load_example_fasta()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#oligominer.mine_fasta"><code class="docutils literal notranslate"><span class="pre">mine_fasta()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#oligominer.mine_sequence"><code class="docutils literal notranslate"><span class="pre">mine_sequence()</span></code></a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#oligominer.write_probes"><code class="docutils literal notranslate"><span class="pre">write_probes()</span></code></a></li>
+</ul>
+  </nav></div>
+
+  <div class="sidebar-secondary-item">
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/api.md.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div></div>
+
+</div></div>
+              
+            
+          </div>
+          <footer class="bd-footer-content">
+            
+          </footer>
+        
+      </main>
+    </div>
+  </div>
+  
+  <!-- Scripts loaded after <body> so the DOM is not blocked -->
+  <script defer src="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf"></script>
+<script defer src="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf"></script>
+
+  <footer class="bd-footer">
+<div class="bd-footer__inner bd-page-width">
+  
+    <div class="footer-items__start">
+      
+        <div class="footer-item">
+
+  <p class="copyright">
+    
+      © Copyright 2026, Conor Camplisson.
+      <br/>
+    
+  </p>
+</div>
+      
+        <div class="footer-item">
+
+  <p class="sphinx-version">
+    Created using <a href="https://www.sphinx-doc.org/">Sphinx</a> 8.2.3.
+    <br/>
+  </p>
+</div>
+      
+    </div>
+  
+  
+  
+    <div class="footer-items__end">
+      
+        <div class="footer-item">
+<p class="theme-version">
+  <!-- # L10n: Setting the PST URL as an argument as this does not need to be localized -->
+  Built with the <a href="https://pydata-sphinx-theme.readthedocs.io/en/stable/index.html">PyData Sphinx Theme</a> 0.16.1.
+</p></div>
+      
+    </div>
+  
+</div>
+
+  </footer>
+  </body>
+</html>
