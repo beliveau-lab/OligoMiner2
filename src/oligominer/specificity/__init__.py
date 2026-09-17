@@ -9,4 +9,3 @@ kmer frequency analysis (Jellyfish), and duplex stability prediction
 from . import alignment
 from . import kmers
 from . import duplex_stability
-from .triage import triage, triage_summary

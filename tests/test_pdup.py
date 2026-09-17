@@ -1,4 +1,4 @@
-"""Tests for two-stage duplex triage.
+"""Tests for two-stage pDup prediction.
 
 The screen decides which alignments reach the physics. The property that matters
 is not the speedup but that an estimate and a measurement never end up
@@ -12,13 +12,13 @@ import pandas as pd
 import pytest
 
 from oligominer.specificity.duplex_stability.frames import build_duplex_frame
-from oligominer.specificity.triage import (
+from oligominer.specificity.duplex_stability.pdup import (
     EXACT_COLUMN,
     FINAL_COLUMN,
     MODEL_COLUMN,
     SOURCE_COLUMN,
-    triage,
-    triage_summary,
+    predict_pdup,
+    pdup_summary,
 )
 from oligominer.utils.seq_utils import rev_comp
 
@@ -62,26 +62,26 @@ def frame():
 class TestColumns:
 
     def test_the_model_score_is_kept_separately(self, frame):
-        out = triage(frame, threshold=0.5)
+        out = predict_pdup(frame, verify_above=0.5)
         assert out[MODEL_COLUMN].notna().all()
 
     def test_unverified_rows_have_no_exact_value(self, frame):
-        out = triage(frame, threshold=0.5)
+        out = predict_pdup(frame, verify_above=0.5)
         unverified = out[SOURCE_COLUMN] != 'nupack'
         assert out.loc[unverified, EXACT_COLUMN].isna().all()
 
     def test_the_source_column_names_the_origin_of_every_value(self, frame):
-        out = triage(frame, threshold=0.5)
+        out = predict_pdup(frame, verify_above=0.5)
         assert set(out[SOURCE_COLUMN]) <= {'nupack', 'physics-xgb'}
 
     def test_the_final_column_takes_the_exact_value_where_it_exists(self, frame):
-        out = triage(frame, threshold=0.5)
+        out = predict_pdup(frame, verify_above=0.5)
         verified = out[EXACT_COLUMN].notna()
         assert np.allclose(out.loc[verified, FINAL_COLUMN],
                            out.loc[verified, EXACT_COLUMN])
 
     def test_the_final_column_falls_back_to_the_model(self, frame):
-        out = triage(frame, threshold=0.5)
+        out = predict_pdup(frame, verify_above=0.5)
         unverified = out[EXACT_COLUMN].isna()
         assert np.allclose(out.loc[unverified, FINAL_COLUMN],
                            out.loc[unverified, MODEL_COLUMN])
@@ -90,21 +90,21 @@ class TestColumns:
 class TestSelection:
 
     def test_a_low_threshold_verifies_more_than_a_high_one(self, frame):
-        low = triage(frame, threshold=0.001).attrs['triage']['n_verified']
-        high = triage(frame, threshold=0.9).attrs['triage']['n_verified']
+        low = predict_pdup(frame, verify_above=0.001).attrs['pdup_prediction']['n_verified']
+        high = predict_pdup(frame, verify_above=0.9).attrs['pdup_prediction']['n_verified']
         assert low >= high
 
     def test_a_threshold_above_every_score_verifies_nothing(self, frame):
-        out = triage(frame, threshold=1.1)
+        out = predict_pdup(frame, verify_above=1.1)
         assert out[EXACT_COLUMN].isna().all()
         assert (out[SOURCE_COLUMN] != 'nupack').all()
 
     def test_verification_can_be_capped(self, frame):
-        out = triage(frame, threshold=0.0, max_verify=3)
-        assert out.attrs['triage']['n_verified'] <= 3
+        out = predict_pdup(frame, verify_above=0.0, max_verify=3)
+        assert out.attrs['pdup_prediction']['n_verified'] <= 3
 
     def test_the_cap_keeps_the_highest_scoring_rows(self, frame):
-        out = triage(frame, threshold=0.0, max_verify=3)
+        out = predict_pdup(frame, verify_above=0.0, max_verify=3)
         verified = out[out[EXACT_COLUMN].notna()]
         unverified = out[out[EXACT_COLUMN].isna()]
         if len(verified) and len(unverified):
@@ -112,7 +112,7 @@ class TestSelection:
 
     def test_verification_can_be_skipped_entirely(self, frame):
         """A run without NUPACK reports the model score alone."""
-        out = triage(frame, threshold=0.0, verify=False)
+        out = predict_pdup(frame, verify_above=0.0, verify=False)
         assert out[EXACT_COLUMN].isna().all()
         assert np.allclose(out[FINAL_COLUMN], out[MODEL_COLUMN])
 
@@ -127,7 +127,7 @@ class TestStrandConvention:
                            'align_cigar': f'{len(probe)}=', 'align_score': 0}]),
             celsius=69.5, sodium=0.39)
 
-        out = triage(on_target, threshold=0.0)
+        out = predict_pdup(on_target, verify_above=0.0)
         assert out[EXACT_COLUMN].iloc[0] > 0.9
 
 
@@ -136,7 +136,7 @@ class TestExactness:
     def test_verified_values_match_calc_pdup(self, frame):
         from oligominer.thermodynamics.nupack import calc_pdup
 
-        out = triage(frame, threshold=0.0)
+        out = predict_pdup(frame, verify_above=0.0)
         verified = out[out[EXACT_COLUMN].notna()].head(6)
         for _, row in verified.iterrows():
             # derived_seq is same-strand, so the duplex is against its complement
@@ -154,7 +154,7 @@ class TestExactness:
             duplicated[['probe_seq', 'derived_seq', 'align_cigar', 'align_score']],
             celsius=69.5, sodium=0.39)
 
-        out = triage(duplicated, threshold=0.0)
+        out = predict_pdup(duplicated, verify_above=0.0)
         for _, row in out[out[EXACT_COLUMN].notna()].head(8).iterrows():
             reference = calc_pdup(str(row['probe_seq']),
                                   rev_comp(str(row['derived_seq'])),
@@ -173,22 +173,22 @@ class TestUnverifiableRows:
         return gapped
 
     def test_a_target_containing_n_does_not_fail_the_run(self, with_gap):
-        out = triage(with_gap, threshold=0.0)
+        out = predict_pdup(with_gap, verify_above=0.0)
         assert len(out) == len(with_gap)
 
     def test_the_gapped_row_keeps_its_model_score(self, with_gap):
-        out = triage(with_gap, threshold=0.0)
+        out = predict_pdup(with_gap, verify_above=0.0)
         row = out.iloc[0]
         assert pd.isna(row[EXACT_COLUMN])
         assert row[SOURCE_COLUMN] != 'nupack'
         assert row[FINAL_COLUMN] == row[MODEL_COLUMN]
 
     def test_unverifiable_rows_are_counted(self, with_gap):
-        out = triage(with_gap, threshold=0.0)
-        assert out.attrs['triage']['n_unverifiable'] >= 1
+        out = predict_pdup(with_gap, verify_above=0.0)
+        assert out.attrs['pdup_prediction']['n_unverifiable'] >= 1
 
     def test_other_rows_are_still_verified(self, with_gap):
-        out = triage(with_gap, threshold=0.0)
+        out = predict_pdup(with_gap, verify_above=0.0)
         assert (out[SOURCE_COLUMN] == 'nupack').any()
 
 
@@ -196,11 +196,11 @@ class TestGuards:
 
     def test_a_decision_score_model_is_refused(self, frame):
         with pytest.raises(ValueError, match='decision score'):
-            triage(frame, model_name='om1-lda', threshold=0.5)
+            predict_pdup(frame, model='om1-lda', verify_above=0.5)
 
     def test_the_summary_reports_what_was_avoided(self, frame):
-        out = triage(frame, threshold=0.5)
-        summary = triage_summary(out)
+        out = predict_pdup(frame, verify_above=0.5)
+        summary = pdup_summary(out)
         assert summary['n_rows'] == len(frame)
         assert summary['n_verified'] <= summary['n_rows']
         if summary.get('fraction_verified'):

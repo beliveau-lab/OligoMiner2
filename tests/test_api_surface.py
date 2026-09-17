@@ -31,7 +31,7 @@ PUBLIC_SURFACE = {
     'oligominer.specificity.duplex_stability.frames': [
         'build_duplex_frame', 'build_aln', 'expand_cigar',
     ],
-    'oligominer.specificity.triage': ['triage', 'triage_summary'],
+    'oligominer.specificity.duplex_stability': ['predict_pdup', 'pdup_summary'],
     'oligominer.models': [
         'load', 'load_all', 'spec', 'available', 'REGISTRY',
         'build_flat_corpus', 'retrain',
@@ -39,6 +39,7 @@ PUBLIC_SURFACE = {
     'oligominer.probe_design': [
         'ProbeSet', 'exclude_intervals', 'mine_padlock_sequence', 'padlocks_to_df',
         'DomainAssembly', 'assemble_padlock', 'assign_units', 'filter_units',
+        'hcr3', 'split_fish', 'append_sequences', 'build_appending_table',
     ],
     'oligominer.probe_design.schema': [
         'new_manifest', 'record_stage', 'attrition_summary', 'SCHEMA_VERSION',

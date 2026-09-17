@@ -7,3 +7,4 @@ from .paintshop_xgboost import (
 )
 
 from . import legacy_lda
+from .pdup import predict_pdup, pdup_summary

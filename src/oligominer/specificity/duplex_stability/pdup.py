@@ -1,8 +1,12 @@
 """
-# Two-stage duplex triage
+# Two-stage pDup prediction
 
 Screens every alignment with a fast model, then computes exact NUPACK pDup for
 only the ones that could matter.
+
+This is the duplex-stability stage of specificity analysis: alignment proposes
+candidate duplexes, duplex reconstruction builds the frame, and this module puts
+a binding probability on every row of it.
 
 Exact pDup on every alignment of a genome-wide run is the accurate answer and an
 expensive one. Most alignments out of a permissive aligner are not credible
@@ -23,7 +27,7 @@ that returns pDup 0.000276 where the duplex is 0.999948.
 
 ## The two columns are never merged
 
-A triaged table carries the model score and the exact value in separate columns,
+The returned table carries the model score and the exact value in separate columns,
 plus a column saying which rows were verified. Writing an estimate and a
 measurement into one column makes them indistinguishable downstream, and the rows
 that were never verified are exactly the ones a reader would most want to know
@@ -33,29 +37,32 @@ about.
 import numpy as np
 import pandas as pd
 
-from oligominer.models import load
 from oligominer.models.registry import DEFAULT_MODEL
 
 # rows scoring at or above this are sent to the physics
-DEFAULT_THRESHOLD = 0.05
+DEFAULT_VERIFY_ABOVE = 0.05
 
-# column names the triage writes
+# column names this stage writes
 MODEL_COLUMN = 'pdup_model'
 EXACT_COLUMN = 'pdup_exact'
 SOURCE_COLUMN = 'pdup_source'
 FINAL_COLUMN = 'pdup'
 
+# where the per-run record is stashed on the returned frame
+ATTRS_KEY = 'pdup_prediction'
 
-def triage(frame, model_name=DEFAULT_MODEL, threshold=DEFAULT_THRESHOLD,
-           verify=True, nupack_model=None, max_verify=None):
+
+def predict_pdup(frame, model=DEFAULT_MODEL, verify_above=DEFAULT_VERIFY_ABOVE,
+                 verify=True, nupack_model=None, max_verify=None):
     """
     Score duplexes with a model and verify the credible ones with NUPACK.
 
     Args:
         frame (pandas.DataFrame): a duplex frame carrying the aligned columns,
             as built by duplex_stability.frames.build_duplex_frame.
-        model_name (str): the screening model, from oligominer.models.
-        threshold (float): rows scoring at or above this are verified.
+        model (str): the screening model, from oligominer.models.
+        verify_above (float): rows scoring at or above this are sent to the
+            physics. This is a verification cutoff, not a binder threshold.
         verify (bool): run the physics on the survivors. When False the model
             score is reported alone, which is what a run without NUPACK does.
         nupack_model (nupack.Model, optional): the thermodynamic model. Defaults
@@ -70,21 +77,23 @@ def triage(frame, model_name=DEFAULT_MODEL, threshold=DEFAULT_THRESHOLD,
 
     Raises:
         ValueError: if the screening model does not emit pDup, since a decision
-            score has no threshold in pDup units.
+            score cannot be compared against a cutoff in pDup units.
     """
-    model = load(model_name)
-    if not model.outputs_pdup:
+    from oligominer.models import load
+
+    loaded = load(model)
+    if not loaded.outputs_pdup:
         raise ValueError(
-            f'{model_name} emits a decision score rather than pDup, so it cannot '
-            f'be thresholded at {threshold} in pDup units. Use a model whose '
-            f'outputs_pdup is True.')
+            f'{model} emits a decision score rather than pDup, so it cannot be '
+            f'compared against verify_above={verify_above} in pDup units. Use a '
+            f'model whose outputs_pdup is True.')
 
     out = frame.copy()
-    out[MODEL_COLUMN] = model.predict(frame)
+    out[MODEL_COLUMN] = loaded.predict(frame)
     out[EXACT_COLUMN] = np.nan
 
     verifiable = _verifiable(out)
-    selected = _select_for_verification(out[MODEL_COLUMN], threshold, max_verify)
+    selected = _select_for_verification(out[MODEL_COLUMN], verify_above, max_verify)
     selected = selected & verifiable
 
     if verify and selected.any():
@@ -92,12 +101,12 @@ def triage(frame, model_name=DEFAULT_MODEL, threshold=DEFAULT_THRESHOLD,
             out.loc[selected], nupack_model=nupack_model)
 
     verified = out[EXACT_COLUMN].notna()
-    out[SOURCE_COLUMN] = np.where(verified, 'nupack', model_name)
+    out[SOURCE_COLUMN] = np.where(verified, 'nupack', model)
     out[FINAL_COLUMN] = np.where(verified, out[EXACT_COLUMN], out[MODEL_COLUMN])
 
-    out.attrs['triage'] = {
-        'model': model_name,
-        'threshold': threshold,
+    out.attrs[ATTRS_KEY] = {
+        'model': model,
+        'verify_above': verify_above,
         'n_rows': int(len(out)),
         'n_selected': int(selected.sum()),
         'n_verified': int(verified.sum()),
@@ -131,19 +140,19 @@ def _verifiable(frame):
     return verifiable.fillna(False)
 
 
-def _select_for_verification(scores, threshold, max_verify):
+def _select_for_verification(scores, verify_above, max_verify):
     """
     Choose which rows go to the physics.
 
     Args:
         scores (pandas.Series): the model's pDup estimates.
-        threshold (float): minimum score to be verified.
+        verify_above (float): minimum score to be verified.
         max_verify (int or None): cap on the number verified.
 
     Returns:
         selected (pandas.Series): boolean, True for rows to verify.
     """
-    selected = scores >= threshold
+    selected = scores >= verify_above
 
     if max_verify is not None and selected.sum() > max_verify:
         # keep the highest-scoring rows, which are the ones whose exact value is
@@ -185,18 +194,18 @@ def _exact_pdup(frame, nupack_model=None):
     return values
 
 
-def triage_summary(out):
+def pdup_summary(out):
     """
-    Return how much work the triage avoided.
+    Return how much physics the two-stage prediction avoided.
 
     Args:
-        out (pandas.DataFrame): a frame returned by triage().
+        out (pandas.DataFrame): a frame returned by predict_pdup().
 
     Returns:
-        summary (dict): the triage record, plus the speedup implied by the
+        summary (dict): the prediction record, plus the speedup implied by the
             fraction of rows that reached the physics.
     """
-    summary = dict(out.attrs.get('triage', {}))
+    summary = dict(out.attrs.get(ATTRS_KEY, {}))
     fraction = summary.get('fraction_verified')
     if fraction:
         summary['physics_calls_avoided'] = summary['n_rows'] - summary['n_verified']
