@@ -1,13 +1,22 @@
-from .registry import (
-    REGISTRY,
-    OM2_MODELS,
-    BASELINE_MODELS,
-    DEFAULT_MODEL,
-    spec,
-    available,
-    artifact_path,
-    card_path,
-    missing_artifacts,
-)
-from .loaders import LoadedModel, load, load_all
-from .retrain import build_flat_corpus, retrain, write_card
+from .._lazy import lazy_exports
+
+# public name -> the module that defines it
+_EXPORTS = {
+    'BASELINE_MODELS':    '.registry',
+    'DEFAULT_MODEL':      '.registry',
+    'LoadedModel':        '.loaders',
+    'OM2_MODELS':         '.registry',
+    'REGISTRY':           '.registry',
+    'artifact_path':      '.registry',
+    'available':          '.registry',
+    'build_flat_corpus':  '.retrain',
+    'card_path':          '.registry',
+    'load':               '.loaders',
+    'load_all':           '.loaders',
+    'missing_artifacts':  '.registry',
+    'retrain':            '.retrain',
+    'spec':               '.registry',
+    'write_card':         '.retrain',
+}
+
+__getattr__, __dir__, __all__ = lazy_exports(__name__, _EXPORTS)

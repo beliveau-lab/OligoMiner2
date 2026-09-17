@@ -7,6 +7,8 @@ should fail here rather than in a downstream caller.
 """
 
 import importlib
+import subprocess
+import sys
 
 import pytest
 
@@ -82,6 +84,46 @@ class TestOptionalDependencies:
     def test_the_tree_models_load_without_torch(self):
         from oligominer.models import load
         assert load('physics-xgb').outputs_pdup
+
+
+class TestImportIsLazy:
+    """Importing an entry point must not import the rest of the package.
+
+    A CLI call, a Snakemake rule that shells out per shard and a test collection
+    each pay the import cost once per process, so a package __init__ that drags
+    in a gradient-boosting library to mine probes by nearest-neighbor
+    thermodynamics multiplies that cost by the number of shards.
+
+    Measured in a subprocess because the suite has already imported everything.
+    """
+
+    def _loaded(self, statement):
+        source = (f'import sys; {statement}; '
+                  'print(",".join(sorted(m for m in sys.modules '
+                  'if m in ("xgboost", "sklearn", "torch", "nupack", "Bio"))))')
+        out = subprocess.run([sys.executable, '-c', source],
+                             capture_output=True, text=True, check=True)
+
+        # success
+        return set(filter(None, out.stdout.strip().split(',')))
+
+    def test_a_bare_import_pulls_in_no_model_library(self):
+        assert self._loaded('import oligominer') == set()
+
+    def test_mining_does_not_pay_for_the_model_zoo(self):
+        loaded = self._loaded(
+            'from oligominer.thermodynamics.mining import mine_sequence')
+        assert loaded == set(), (
+            f'mining imported {sorted(loaded)}; nearest-neighbor thermodynamics '
+            f'needs none of them')
+
+    def test_a_re_export_shadowed_by_a_submodule_still_resolves(self):
+        # the function and the module that defines it share a name, so importing
+        # the module first must not leave the module bound in the package
+        self._loaded(
+            'import oligominer.thermodynamics.formamide_correction; '
+            'from oligominer.thermodynamics import formamide_correction; '
+            'assert callable(formamide_correction)')
 
 
 class TestComposition:

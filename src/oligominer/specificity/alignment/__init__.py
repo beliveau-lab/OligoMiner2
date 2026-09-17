@@ -1,11 +1,21 @@
+from ..._lazy import lazy_exports
 
-from .bowtie_build import bowtie_build
-from .bowtie_align import bowtie_align, build_bowtie2_cmd, check_index_exists, validate_index
-from . import bowtie_presets
+# public name -> the module that defines it
+_EXPORTS = {
+    'align_to_bed':        '.stream_align',
+    'bam_to_bed':          '.bam_to_bed',
+    'bowtie_align':        '.bowtie_align',
+    'bowtie_build':        '.bowtie_build',
+    'build_bowtie2_cmd':   '.bowtie_align',
+    'check_index_exists':  '.bowtie_align',
+    'get_fasta':           '.get_fasta',
+    'process_alignments':  '.process_alignments',
+    'trim_bed_coords':     '.trim_bed_coords',
+    'validate_index':      '.bowtie_align',
+    'write_fastq':         '.stream_align',
+}
 
-from .trim_bed_coords import trim_bed_coords
-from .get_fasta import get_fasta
-from .bam_to_bed import bam_to_bed
-from .process_alignments import process_alignments
-from .stream_align import align_to_bed, write_fastq
-from . import duplex
+# submodules reachable as attributes of this package
+_SUBMODULES = ('bowtie_presets', 'duplex')
+
+__getattr__, __dir__, __all__ = lazy_exports(__name__, _EXPORTS, _SUBMODULES)

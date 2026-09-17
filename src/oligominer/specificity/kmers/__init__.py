@@ -1,13 +1,20 @@
+from ..._lazy import lazy_exports
 
-from .backends import (
-    build_index,
-    max_kmer,
-    resolve_backend,
-    have_jellyfish,
-    read_metadata,
-    sidecar_path,
-    write_metadata,
-)
-from .numpy_index import KmerIndex
-from .jellyfish_build import jellyfish_build
-from .jellyfish_query import validate_index, jellyfish_query, calc_max_kmer, calc_max_kmer_multi
+# public name -> the module that defines it
+_EXPORTS = {
+    'KmerIndex':            '.numpy_index',
+    'build_index':          '.backends',
+    'calc_max_kmer':        '.jellyfish_query',
+    'calc_max_kmer_multi':  '.jellyfish_query',
+    'have_jellyfish':       '.backends',
+    'jellyfish_build':      '.jellyfish_build',
+    'jellyfish_query':      '.jellyfish_query',
+    'max_kmer':             '.backends',
+    'read_metadata':        '.backends',
+    'resolve_backend':      '.backends',
+    'sidecar_path':         '.backends',
+    'validate_index':       '.jellyfish_query',
+    'write_metadata':       '.backends',
+}
+
+__getattr__, __dir__, __all__ = lazy_exports(__name__, _EXPORTS)
