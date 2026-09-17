@@ -1,13 +1,12 @@
-
 import nupack
 
-from .config import DEFAULT_NUPACK_MODEL
 from oligominer.utils import seq_utils
+
+from .config import DEFAULT_NUPACK_MODEL
 
 
 def calc_pdup(seq_a, seq_b=None, conc_a=1e-6, conc_b=1e-12, model=None):
-    """
-    Calculate the probability of duplex formation between two sequences.
+    """Calculate the probability of duplex formation between two sequences.
 
     Uses a NUPACK test tube simulation to determine the fraction of the
     lower-concentration strand that is duplexed at equilibrium. When seq_b
@@ -43,9 +42,7 @@ def calc_pdup(seq_a, seq_b=None, conc_a=1e-6, conc_b=1e-12, model=None):
 
     # define test tube
     tube = nupack.Tube(
-        {a: conc_a, b: conc_b},
-        complexes=nupack.SetSpec(max_size=2, include=[ab]),
-        name="tube"
+        {a: conc_a, b: conc_b}, complexes=nupack.SetSpec(max_size=2, include=[ab]), name="tube"
     )
 
     # run nupack test tube simulation
@@ -53,7 +50,7 @@ def calc_pdup(seq_a, seq_b=None, conc_a=1e-6, conc_b=1e-12, model=None):
 
     # get duplex concentration
     ab_conc = tube_result.tubes[tube].complex_concentrations[ab]
-        
+
     # calculate pdup as the fraction of the lower-concentration strand in duplex form
     pdup = ab_conc / min(conc_a, conc_b)
 
@@ -61,11 +58,10 @@ def calc_pdup(seq_a, seq_b=None, conc_a=1e-6, conc_b=1e-12, model=None):
     return pdup
 
 
-
-
-def calc_competitive_pdup(seq_a, seq_b, target_seq, conc_a=1e-6, conc_b=1e-6, target_conc=1e-12, model=None):
-    """
-    Calculate the probability of duplex formation for two probes competing
+def calc_competitive_pdup(
+    seq_a, seq_b, target_seq, conc_a=1e-6, conc_b=1e-6, target_conc=1e-12, model=None
+):
+    """Calculate the probability of duplex formation for two probes competing
     for the same target sequence.
 
     Extends the pDup concept to a competitive binding scenario: two probe
@@ -114,7 +110,7 @@ def calc_competitive_pdup(seq_a, seq_b, target_seq, conc_a=1e-6, conc_b=1e-6, ta
     tube = nupack.Tube(
         {a: conc_a, b: conc_b, target: target_conc},
         complexes=nupack.SetSpec(max_size=2, include=[duplex_at, duplex_bt]),
-        name="tube"
+        name="tube",
     )
 
     # run nupack test tube simulation

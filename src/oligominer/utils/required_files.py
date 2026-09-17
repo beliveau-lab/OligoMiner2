@@ -2,13 +2,12 @@
 
 import os
 
-from .exceptions import MissingInputFile, MissingOutputFile, MissingDirectory, DirectoryPathError
+from .exceptions import DirectoryPathError, MissingDirectory, MissingInputFile, MissingOutputFile
 from .file_paths import get_abs_path
 
 
 def check_input_exists(file_path):
-    """
-    Checks that a required input file exists on disk.
+    """Checks that a required input file exists on disk.
 
     Args:
         file_path (str): path to the input file.
@@ -27,8 +26,7 @@ def check_input_exists(file_path):
 
 
 def check_output_exists(file_path):
-    """
-    Checks that an expected output file exists on disk.
+    """Checks that an expected output file exists on disk.
 
     Args:
         file_path (str): path to the output file.
@@ -47,8 +45,7 @@ def check_output_exists(file_path):
 
 
 def check_dir_exists(dir_path, create=False, parent_dir=False):
-    """
-    Checks that a required directory exists on disk, optionally creating it.
+    """Checks that a required directory exists on disk, optionally creating it.
 
     Args:
         dir_path (str): path to the target directory, or to a file whose
@@ -64,7 +61,6 @@ def check_dir_exists(dir_path, create=False, parent_dir=False):
         DirectoryPathError: if a non-directory file already exists at the path.
         MissingDirectory: if the directory does not exist and create is False.
     """
-
     # optionally resolve to parent directory of a file path
     if parent_dir:
         dir_path = os.path.dirname(get_abs_path(dir_path))

@@ -1,5 +1,4 @@
-"""
-Chromosome sizes utilities.
+"""Chromosome sizes utilities.
 
 Provides functions for looking up and printing chromosome sizes from
 FASTA index (.fai) files, creating them as needed via pyfaidx.
@@ -9,25 +8,24 @@ import os
 
 from pyfaidx import Fasta
 
-from oligominer.utils import get_abs_path, get_dir_name, check_input_exists, check_output_exists
+from oligominer.utils import check_input_exists, check_output_exists, get_abs_path, get_dir_name
+
 from .exceptions import FastaPermissionError
 
 
 def print_chrom_sizes(fasta_path):
-    """
-    Print a genome/chrom.sizes file to stdout for the input fasta file.
+    """Print a genome/chrom.sizes file to stdout for the input fasta file.
 
     Args:
         fasta_path (str): path to the input fasta file.
     """
     chrom_sizes = get_chrom_sizes(fasta_path)
     for chrom in chrom_sizes:
-        print(f'{chrom}\t{chrom_sizes[chrom]}')
+        print(f"{chrom}\t{chrom_sizes[chrom]}")
 
 
 def get_chrom_sizes(fasta_path):
-    """
-    Lookup chromosome sizes for the input fasta file.
+    """Lookup chromosome sizes for the input fasta file.
 
     The .fai genome file corresponding to the input fasta file is created
     as needed, and then its contents are loaded and parsed, storing the
@@ -43,9 +41,9 @@ def get_chrom_sizes(fasta_path):
 
     # parse .fai (tab-separated: name, length, offset, linebases, linewidth)
     chrom_sizes = {}
-    with open(fai_path, 'r') as infile:
+    with open(fai_path) as infile:
         for line in infile:
-            fields = line.strip().split('\t')
+            fields = line.strip().split("\t")
             chrom_sizes[fields[0]] = int(fields[1])
 
     # sort by size descending
@@ -54,9 +52,9 @@ def get_chrom_sizes(fasta_path):
     # success
     return chrom_sizes
 
+
 def get_or_create_fai(fasta_path):
-    """
-    Returns the path of the .fai genome file corresponding to the input
+    """Returns the path of the .fai genome file corresponding to the input
     fasta, creating it as needed.
 
     Args:
@@ -70,17 +68,16 @@ def get_or_create_fai(fasta_path):
     check_input_exists(fasta_path)
 
     # get or create .fai file
-    fai_path = fasta_path + '.fai'
+    fai_path = fasta_path + ".fai"
     if not os.path.exists(fai_path):
         fai_path = create_fai(fasta_path)
-        
-    # success    
+
+    # success
     return fai_path
 
 
 def create_fai(fasta_path):
-    """
-    Creates a .fai genome file using pyfaidx.
+    """Creates a .fai genome file using pyfaidx.
 
     See: https://pypi.org/project/pyfaidx/
 
@@ -103,7 +100,7 @@ def create_fai(fasta_path):
     Fasta(fasta_path)
 
     # ensure target output file is present
-    fai_path = fasta_path + '.fai'
+    fai_path = fasta_path + ".fai"
     check_output_exists(fai_path)
 
     # success

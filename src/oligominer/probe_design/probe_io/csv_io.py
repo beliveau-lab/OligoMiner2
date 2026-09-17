@@ -1,24 +1,27 @@
-"""
-# Probe CSV I/O
+"""# Probe CSV I/O
 
 Read and write probe and alignment DataFrames as CSV files.
 """
 
 import pandas as pd
 
-from oligominer.utils import check_input_exists, check_dir_exists
-from oligominer.thermodynamics.mining import PROBE_COLUMNS
+from oligominer.utils import check_dir_exists, check_input_exists
 
 # expected column order for alignment CSV files
 ALIGN_COLUMNS = [
-    'align_seqid', 'align_start', 'align_stop', 'seqid',
-    'align_score', 'align_strand', 'align_cigar', 'derived_seq'
+    "align_seqid",
+    "align_start",
+    "align_stop",
+    "seqid",
+    "align_score",
+    "align_strand",
+    "align_cigar",
+    "derived_seq",
 ]
 
 
 def read_probe_csv(path):
-    """
-    Read a probe CSV file into a DataFrame.
+    """Read a probe CSV file into a DataFrame.
 
     Args:
         path (str): path to the probe CSV file.
@@ -34,8 +37,7 @@ def read_probe_csv(path):
 
 
 def write_probe_csv(probe_df, path):
-    """
-    Write a probe DataFrame to a CSV file.
+    """Write a probe DataFrame to a CSV file.
 
     Args:
         probe_df (pandas.DataFrame): the probe data.
@@ -46,8 +48,7 @@ def write_probe_csv(probe_df, path):
 
 
 def read_align_csv(path):
-    """
-    Read an alignment CSV file into a DataFrame.
+    """Read an alignment CSV file into a DataFrame.
 
     Args:
         path (str): path to the alignment CSV file.
@@ -63,8 +64,7 @@ def read_align_csv(path):
 
 
 def write_align_csv(align_df, path):
-    """
-    Write an alignment DataFrame to a CSV file.
+    """Write an alignment DataFrame to a CSV file.
 
     Args:
         align_df (pandas.DataFrame): the alignment data.

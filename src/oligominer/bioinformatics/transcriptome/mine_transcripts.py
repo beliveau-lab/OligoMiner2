@@ -1,5 +1,4 @@
-"""
-RNA transcript probe mining.
+"""RNA transcript probe mining.
 
 Convenience functions for mining probes from transcript features. Each
 function extracts the relevant genomic sequences (exons, introns, or
@@ -20,29 +19,23 @@ Two mining strategies are supported:
     transcript, not the genome.
 """
 
-import os
-import tempfile
-
-from oligominer.bioinformatics.file_io import write_fasta
 from oligominer.probe_design.probe_set import ProbeSet
 from oligominer.thermodynamics.mining import mine_sequence
 
 from .transcript_seq import (
     get_exon_seqs,
+    get_flattened_seqs,
     get_intron_seqs,
     get_spliced_seq,
-    get_flattened_seqs,
 )
-
 
 # ---------------------------------------------------------------------------
 # Per-interval mining
 # ---------------------------------------------------------------------------
 
-def mine_exons(gtf_df, fasta_path, transcript_id=None, gene_id=None,
-               cores=1, **mining_params):
-    """
-    Mine probes from exon sequences of a transcript or gene.
+
+def mine_exons(gtf_df, fasta_path, transcript_id=None, gene_id=None, cores=None, **mining_params):
+    """Mine probes from exon sequences of a transcript or gene.
 
     Each exon is mined independently. Probe seq_id values encode the
     genomic locus (e.g. 'chrI:1807-2169(-)') so that coordinates can
@@ -66,8 +59,10 @@ def mine_exons(gtf_df, fasta_path, transcript_id=None, gene_id=None,
         probe_set (ProbeSet): mined probes from all exons.
     """
     seqs = get_exon_seqs(
-        gtf_df, fasta_path,
-        transcript_id=transcript_id, gene_id=gene_id,
+        gtf_df,
+        fasta_path,
+        transcript_id=transcript_id,
+        gene_id=gene_id,
     )
     probe_set = _mine_seq_dict(seqs, cores=cores, **mining_params)
 
@@ -75,10 +70,8 @@ def mine_exons(gtf_df, fasta_path, transcript_id=None, gene_id=None,
     return probe_set
 
 
-def mine_introns(gtf_df, fasta_path, transcript_id, cores=1,
-                 **mining_params):
-    """
-    Mine probes from intron sequences of a transcript.
+def mine_introns(gtf_df, fasta_path, transcript_id, cores=None, **mining_params):
+    """Mine probes from intron sequences of a transcript.
 
     Introns are derived from gaps between consecutive exons. Useful for
     designing probes that detect nascent (unspliced) pre-mRNA, a common
@@ -103,10 +96,8 @@ def mine_introns(gtf_df, fasta_path, transcript_id, cores=1,
     return probe_set
 
 
-def mine_flattened_gene(flat_df, fasta_path, gene_id, cores=1,
-                        **mining_params):
-    """
-    Mine probes from the flattened (pan-isoform) exonic segments of a gene.
+def mine_flattened_gene(flat_df, fasta_path, gene_id, cores=None, **mining_params):
+    """Mine probes from the flattened (pan-isoform) exonic segments of a gene.
 
     Uses the output of flatten_isoforms() to mine probes from regions
     shared across the maximum number of transcript isoforms. This
@@ -134,10 +125,9 @@ def mine_flattened_gene(flat_df, fasta_path, gene_id, cores=1,
 # Spliced transcript mining
 # ---------------------------------------------------------------------------
 
-def mine_spliced_transcript(gtf_df, fasta_path, transcript_id, cores=1,
-                            **mining_params):
-    """
-    Mine probes from a spliced (in silico) transcript sequence.
+
+def mine_spliced_transcript(gtf_df, fasta_path, transcript_id, cores=None, **mining_params):
+    """Mine probes from a spliced (in silico) transcript sequence.
 
     Concatenates exon sequences into a virtual mRNA and mines it as a
     single continuous sequence. This allows the miner to consider Tm
@@ -177,9 +167,9 @@ def mine_spliced_transcript(gtf_df, fasta_path, transcript_id, cores=1,
 # Helpers
 # ---------------------------------------------------------------------------
 
-def _mine_seq_dict(seqs, cores=1, **mining_params):
-    """
-    Mine probes from a dict of {label: sequence} and return a ProbeSet.
+
+def _mine_seq_dict(seqs, cores=None, **mining_params):
+    """Mine probes from a dict of {label: sequence} and return a ProbeSet.
 
     Each sequence is mined independently using the label as seq_id.
     Results are aggregated into a single ProbeSet.

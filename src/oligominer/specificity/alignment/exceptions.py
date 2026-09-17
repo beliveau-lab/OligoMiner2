@@ -1,5 +1,4 @@
-"""
-# Alignment Exceptions
+"""# Alignment Exceptions
 
 Custom exceptions for Bowtie2 index validation and alignment errors.
 """
@@ -7,9 +6,12 @@ Custom exceptions for Bowtie2 index validation and alignment errors.
 from oligominer.utils import get_abs_path
 from oligominer.utils.exceptions import OligominerError
 
+
 class BowtieError(OligominerError):
     """Base class for exceptions in this module."""
+
     __module__ = OligominerError.__module__
+
 
 class BowtieIndexError(BowtieError):
     """Exception raised for invalid index used to query a given Bowtie2 index file."""
@@ -21,10 +23,11 @@ class BowtieIndexError(BowtieError):
 
     def __str__(self):
         error_text = (
-            f'Invalid index for use with Bowtie2 file:\n\n'
-            f'{self.file_path}\n\nError message: {self.error_msg}.\n\nExiting...'
+            f"Invalid index for use with Bowtie2 file:\n\n"
+            f"{self.file_path}\n\nError message: {self.error_msg}.\n\nExiting..."
         )
         return error_text
+
 
 class MissingBowtieIndexError(BowtieError):
     """Exception raised when a Bowtie2 index file is not found during an attempted query."""
@@ -35,7 +38,7 @@ class MissingBowtieIndexError(BowtieError):
 
     def __str__(self):
         error_text = (
-            f'A Bowtie2 file was not found at the specified path:\n\n{self.file_path}\n\n'
-            f'For info on creating this file, run:\n\n  $ oligominer build_bowtie2 --help\n\nExiting...'
+            f"A Bowtie2 file was not found at the specified path:\n\n{self.file_path}\n\n"
+            f"For info on creating this file, run:\n\n  $ oligominer build_bowtie2 --help\n\nExiting..."
         )
         return error_text

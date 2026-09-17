@@ -1,22 +1,28 @@
-"""
-# OligoMiner Command-Line Interface (CLI)
+"""# OligoMiner Command-Line Interface (CLI)
 
-This module sets up the command-line interface for OligoMiner, allowing 
-users to run various commands related to oligonucleotide probe design 
+This module sets up the command-line interface for OligoMiner, allowing
+users to run various commands related to oligonucleotide probe design
 directly from the terminal.
 
-Commands are organized into subcommands, each handled by its own module. 
-This modular design makes it easy to add new functionality in the future.
+Commands are organized into subcommands, each handled by its own module. A
+command module exposes `register(subparsers)`, which adds its parser and sets
+`func` to the callable that runs it; `main` dispatches on that attribute.
 """
-
 
 import argparse
 
 from .. import __version__
-from . import test_cli # import each command module
+
+# The docs site publishes one folder per RELEASE plus a rolling `dev`. A development version
+# has no folder of its own, so point those at dev rather than at a URL that 404s.
+_DOCS_URL = (
+    "https://oligominer.org/dev/"
+    if "dev" in __version__
+    else f"https://oligominer.org/{__version__}/"
+)
 
 # configure main CLI help text
-HELP_TEXT = f'''
+HELP_TEXT = rf"""
   ____  _ _             __  __ _               _____ _____ 
  / __ \| (_)           |  \/  (_)             |_   _|_   _|
 | |  | | |_  __ _  ___ | \  / |_ _ __   ___ _ __| |   | |  
@@ -27,30 +33,23 @@ HELP_TEXT = f'''
             |___/                                          
 
 Version:   {__version__}
-Docs:      https://oligominer.org/docs/{__version__}/
+Docs:      {_DOCS_URL}
 Code:      https://github.com/beliveau-lab/OligoMiner2
-'''
+"""
 
-
-# HELP_TEXT = f'''
-# \b
-#   ____  _ _             __  __ _               _____ _____ 
-#  / __ \| (_)           |  \/  (_)             |_   _|_   _|
-# | |  | | |_  __ _  ___ | \  / |_ _ __   ___ _ __| |   | |  
-# | |  | | | |/ _` |/ _ \| |\/| | | '_ \ / _ \ '__| |   | |  
-# | |__| | | | (_| | (_) | |  | | | | | |  __/ | _| |_ _| |_ 
-#  \____/|_|_|\__, |\___/|_|  |_|_|_| |_|\___|_||_____|_____|
-#              __/ |                                         
-#             |___/                                          
-
-# \b
-# Version:   {__version__}
-# Docs:      https://oligominer.org/docs/{__version__}/
-# Code:      https://github.com/beliveau-lab/OligoMiner2
-# '''
 
 def build_parser():
-    parser = argparse.ArgumentParser(prog="oligominer", description=HELP_TEXT, formatter_class=argparse.RawTextHelpFormatter)
+    """Build the command-line argument parser.
+
+    Each command module registers its own subparser, so adding a command does not
+    require editing this function.
+
+    Returns:
+        parser (argparse.ArgumentParser): the configured parser.
+    """
+    parser = argparse.ArgumentParser(
+        prog="oligominer", description=HELP_TEXT, formatter_class=argparse.RawTextHelpFormatter
+    )
 
     parser.add_argument(
         "--version",
@@ -59,16 +58,23 @@ def build_parser():
         help="show version and exit",
     )
 
-    subparsers = parser.add_subparsers(dest="command")
-
-    # Each command module registers itself with the subparsers
-    # test_cli.register(subparsers)
-    # align.register(subparsers) # TODO
+    # metavar keeps argparse from printing an empty "{}" choice list while no command module
+    # has registered a subparser yet
+    parser.add_subparsers(dest="command", metavar="<command>")
 
     return parser
 
 
 def main(argv=None):
+    """Run the command line interface.
+
+    Args:
+        argv (list, optional): arguments to parse. Defaults to sys.argv.
+
+    Returns:
+        status (int): the process exit status. 1 when no command was given, in
+            which case the help text is printed.
+    """
     parser = build_parser()
     args = parser.parse_args(argv)
 

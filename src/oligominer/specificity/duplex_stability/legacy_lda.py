@@ -1,5 +1,4 @@
-"""
-Legacy LDA-based duplex stability prediction from OligoMiner v1.
+"""Legacy LDA-based duplex stability prediction from OligoMiner v1.
 
 Predicts the probability that a probe has thermodynamically relevant
 off-target binding using pre-fit Linear Discriminant Analysis models at
@@ -15,12 +14,13 @@ import numpy as np
 import pandas as pd
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 
-from oligominer.utils.seq_utils import calc_gc, clamp
 from oligominer.utils.exceptions import ConfigurationError
+from oligominer.utils.seq_utils import calc_gc, clamp
+
 from .config import LDA_TEMPERATURES as AVAILABLE_TEMPERATURES
 
 # ordered feature columns expected by the model
-FEATURE_COLUMNS = ('probe_len', 'align_score', 'probe_gc')
+FEATURE_COLUMNS = ("probe_len", "align_score", "probe_gc")
 
 # pre-fit LDA coefficients from OligoMiner v1, indexed by temperature
 # features are [probe_len, align_score, gc_percentage]
@@ -49,8 +49,7 @@ _model_cache = {}
 
 
 def load_model(temperature):
-    """
-    Load a pre-fit OligoMiner v1 LDA model for a given temperature.
+    """Load a pre-fit OligoMiner v1 LDA model for a given temperature.
 
     Models are constructed from hardcoded coefficients extracted from the
     original OligoMiner outputClean.py and cached after first construction.
@@ -85,8 +84,7 @@ def load_model(temperature):
 
 
 def compute_features(df):
-    """
-    Compute sequence-derived features for LDA duplex prediction.
+    """Compute sequence-derived features for LDA duplex prediction.
 
     Takes a DataFrame with probe_seq and align_score columns and returns
     a feature matrix matching the model's expected input.
@@ -101,19 +99,18 @@ def compute_features(df):
     """
     features = pd.DataFrame()
 
-    features['probe_len'] = df['probe_seq'].str.len().astype(float)
-    features['align_score'] = df['align_score'].astype(float)
+    features["probe_len"] = df["probe_seq"].str.len().astype(float)
+    features["align_score"] = df["align_score"].astype(float)
 
     # gc as percentage (0-100) to match original BioPython GC() used in training
-    features['probe_gc'] = df['probe_seq'].apply(calc_gc, as_percent=True)
+    features["probe_gc"] = df["probe_seq"].apply(calc_gc, as_percent=True)
 
     # success
     return features
 
 
 def predict_duplex_batch(df, temperature=42, normalize=True):
-    """
-    Predict off-target duplex probability for a batch of probe-target pairs.
+    """Predict off-target duplex probability for a batch of probe-target pairs.
 
     Computes features from the input DataFrame and runs the legacy LDA
     model to produce predictions. The model outputs the probability that
@@ -148,8 +145,7 @@ def predict_duplex_batch(df, temperature=42, normalize=True):
 
 
 def predict_duplex(probe_seq, align_score, temperature=42, normalize=True):
-    """
-    Predict off-target duplex probability for a single probe.
+    """Predict off-target duplex probability for a single probe.
 
     Convenience wrapper around predict_duplex_batch for single-probe usage.
 
@@ -164,14 +160,14 @@ def predict_duplex(probe_seq, align_score, temperature=42, normalize=True):
     Returns:
         prediction (float): predicted off-target duplex probability.
     """
-    df = pd.DataFrame({
-        'probe_seq': [probe_seq],
-        'align_score': [align_score],
-    })
-
-    predictions = predict_duplex_batch(
-        df, temperature=temperature, normalize=normalize
+    df = pd.DataFrame(
+        {
+            "probe_seq": [probe_seq],
+            "align_score": [align_score],
+        }
     )
+
+    predictions = predict_duplex_batch(df, temperature=temperature, normalize=normalize)
 
     # success
     return float(predictions[0])

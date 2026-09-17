@@ -1,0 +1,33 @@
+{
+ "name": "om2-bilstm-fish-T69.5-b+10b",
+ "role": "SHIPPING",
+ "labeller": "NUPACK-4.0.2.0/dna04.2",
+ "celsius": 69.5,
+ "sodium": 0.39,
+ "condition_note": "69.5 C effective = 37 C + 50% formamide at 0.65 C/%",
+ "corpus": "chrX 30-spot, om2-aligned to hg38, exact NUPACK",
+ "n_probes_covered": 16000,
+ "of_probes": 30000,
+ "n_shards": 716,
+ "of_shards": 1500,
+ "n_rows_labelled": 7067247,
+ "recipe": "all 22,108 signal rows (pDup decile>0) + 10x ballast",
+ "b": 22108,
+ "n_train": 243188,
+ "ncond": 0,
+ "split": "probe-grouped, leak-asserted",
+ "metrics": {
+  "natural": {
+   "spearman": 0.5625484098011297,
+   "rmse": 0.011864607681880697,
+   "pr_auc": 0.9375791407153936
+  },
+  "tail": {
+   "spearman": 0.7647429421307598,
+   "rmse": 0.2553974766615352,
+   "pr_auc": 0.9806631985395369
+  }
+ },
+ "frame": "sameness; gate passed (0 wrong-frame rows)",
+ "caveat": "trained on the NUPACK shards available at fit time; re-fit as coverage grows and this card's n_probes_covered will say so"
+}

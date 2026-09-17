@@ -1,5 +1,4 @@
-"""
-XGBoost-based duplex stability prediction, inspired by the PaintSHOP pipeline.
+"""XGBoost-based duplex stability prediction, inspired by the PaintSHOP pipeline.
 
 Approximates NUPACK pDup values using pre-trained XGBoost models at various
 temperatures. Each model was trained on NUPACK-computed duplex probabilities
@@ -14,22 +13,35 @@ from importlib.resources import files
 import pandas as pd
 import xgboost as xgb
 
-from oligominer.utils.seq_utils import rev_comp, calc_gc, clamp
 from oligominer.utils.exceptions import ConfigurationError
+from oligominer.utils.seq_utils import calc_gc, clamp, rev_comp
+
 from .config import XGBOOST_TEMPERATURES as AVAILABLE_TEMPERATURES
 
 DINUCLEOTIDES = [
-    'AA', 'AT', 'AG', 'AC',
-    'TA', 'TT', 'TG', 'TC',
-    'GA', 'GT', 'GG', 'GC',
-    'CA', 'CT', 'CG', 'CC',
+    "AA",
+    "AT",
+    "AG",
+    "AC",
+    "TA",
+    "TT",
+    "TG",
+    "TC",
+    "GA",
+    "GT",
+    "GG",
+    "GC",
+    "CA",
+    "CT",
+    "CG",
+    "CC",
 ]
 
 # ordered feature columns expected by the model
 FEATURE_COLUMNS = (
-    ['align_score', 'probe_gc', 'derived_gc', 'probe_len', 'derived_len']
-    + [f'probe_{dn}' for dn in DINUCLEOTIDES]
-    + [f'derived_{dn}' for dn in DINUCLEOTIDES]
+    ["align_score", "probe_gc", "derived_gc", "probe_len", "derived_len"]
+    + [f"probe_{dn}" for dn in DINUCLEOTIDES]
+    + [f"derived_{dn}" for dn in DINUCLEOTIDES]
 )
 
 # cache loaded models to avoid repeated disk reads
@@ -37,8 +49,7 @@ _model_cache = {}
 
 
 def load_model(temperature):
-    """
-    Load a pre-trained PaintSHOP XGBoost model for a given temperature.
+    """Load a pre-trained PaintSHOP XGBoost model for a given temperature.
 
     Models are bundled as package data and cached after first load.
 
@@ -75,10 +86,8 @@ def load_model(temperature):
     return xgb_model
 
 
-
 def compute_features(df):
-    """
-    Compute sequence-derived features for XGBoost duplex prediction.
+    """Compute sequence-derived features for XGBoost duplex prediction.
 
     Takes a DataFrame with probe_seq, derived_seq, and align_score columns
     and returns a feature matrix matching the model's expected input.
@@ -96,23 +105,23 @@ def compute_features(df):
     """
     features = pd.DataFrame()
 
-    features['align_score'] = df['align_score'].values
+    features["align_score"] = df["align_score"].values
 
     # reverse complement derived to match training data orientation
-    derived_rc = df['derived_seq'].apply(rev_comp)
+    derived_rc = df["derived_seq"].apply(rev_comp)
 
     # gc content as percentage to match model training data
-    features['probe_gc'] = df['probe_seq'].apply(calc_gc, as_percent=True)
-    features['derived_gc'] = derived_rc.apply(calc_gc, as_percent=True)
+    features["probe_gc"] = df["probe_seq"].apply(calc_gc, as_percent=True)
+    features["derived_gc"] = derived_rc.apply(calc_gc, as_percent=True)
 
     # sequence lengths
-    features['probe_len'] = df['probe_seq'].str.len()
-    features['derived_len'] = derived_rc.str.len()
+    features["probe_len"] = df["probe_seq"].str.len()
+    features["derived_len"] = derived_rc.str.len()
 
     # dinucleotide counts for both sequences
     for dn in DINUCLEOTIDES:
-        features[f'probe_{dn}'] = df['probe_seq'].str.count(dn)
-        features[f'derived_{dn}'] = derived_rc.str.count(dn)
+        features[f"probe_{dn}"] = df["probe_seq"].str.count(dn)
+        features[f"derived_{dn}"] = derived_rc.str.count(dn)
 
     # reorder to match model expectation
     features = features[FEATURE_COLUMNS]
@@ -122,8 +131,7 @@ def compute_features(df):
 
 
 def predict_duplex_batch(df, temperature=37, normalize=True):
-    """
-    Predict duplex formation probability for a batch of probe-target pairs.
+    """Predict duplex formation probability for a batch of probe-target pairs.
 
     Computes features from the input DataFrame and runs the XGBoost model
     to produce predictions analogous to NUPACK pDup.
@@ -154,10 +162,8 @@ def predict_duplex_batch(df, temperature=37, normalize=True):
     return predictions
 
 
-def predict_duplex(probe_seq, derived_seq, align_score,
-                   temperature=37, normalize=True):
-    """
-    Predict duplex formation probability for a single probe-target pair.
+def predict_duplex(probe_seq, derived_seq, align_score, temperature=37, normalize=True):
+    """Predict duplex formation probability for a single probe-target pair.
 
     Convenience wrapper around predict_duplex_batch for single-pair usage,
     providing a similar interface to calc_pdup.
@@ -174,15 +180,15 @@ def predict_duplex(probe_seq, derived_seq, align_score,
     Returns:
         prediction (float): predicted duplex formation probability.
     """
-    df = pd.DataFrame({
-        'probe_seq': [probe_seq],
-        'derived_seq': [derived_seq],
-        'align_score': [align_score],
-    })
-
-    predictions = predict_duplex_batch(
-        df, temperature=temperature, normalize=normalize
+    df = pd.DataFrame(
+        {
+            "probe_seq": [probe_seq],
+            "derived_seq": [derived_seq],
+            "align_score": [align_score],
+        }
     )
+
+    predictions = predict_duplex_batch(df, temperature=temperature, normalize=normalize)
 
     # success
     return float(predictions[0])

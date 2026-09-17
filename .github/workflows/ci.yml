@@ -1,0 +1,129 @@
+# CI — runs on every push to dev and every pull request into main.
+#
+# Fill in before use:
+#   python-version   the matrix below lists every Python this package supports. Keep it and
+#                    `requires-python` in step, in the same commit.
+name: ci
+
+on:
+  push:
+    branches: [dev]
+  pull_request:
+    branches: [main, master]   # master accepted for repos not yet renamed
+
+concurrency:
+  # A newer push to the same branch cancels the older run; a release must never be cancelled.
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  lint:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: astral-sh/setup-uv@v10.1.0
+        with:
+          enable-cache: true
+      - name: Sync from the lock file
+        # --locked fails if uv.lock no longer matches pyproject.toml, which is the whole point of
+        # committing the lock: CI and every machine resolve to identical versions.
+        run: uv sync --locked
+      - run: uv run ruff format --check .
+      - run: uv run ruff check .
+
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false        # one Python failing must not hide the others
+      matrix:
+        # Every Python this package supports. Keep it and `requires-python` in step, in the
+        # same commit: a version here that requires-python excludes will fail to resolve.
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: astral-sh/setup-uv@v10.1.0
+        with:
+          enable-cache: true
+          python-version: ${{ matrix.python-version }}
+      - run: uv sync --locked
+      - run: uv run pytest
+
+  integration:
+    # The second tier: the tests that invoke real external programs. One job,
+    # one Python, real binaries — NOT skipped when a binary is missing, because a skipped external
+    # test makes CI green having exercised the part most likely to break.
+    #
+    # Fill in the install step for this package's programs, or delete this job if it has none.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: astral-sh/setup-uv@v10.1.0
+        with:
+          enable-cache: true
+      - name: Install the external programs
+        # NUPACK is deliberately absent: it is licence-gated and cannot be fetched here, so the
+        # tests that need it carry needs_nupack and are deselected below rather than skipped.
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y bowtie2 jellyfish bedtools
+      - run: uv sync --locked
+      - run: uv run pytest -m "integration and not needs_nupack" --no-header -ra
+
+  bilstm:
+    # torch is installable, unlike NUPACK, and the BiLSTM is a shipped model — so it is TESTED
+    # rather than skipped. The CPU-only wheel is a fraction of the default one and CI has no GPU.
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: astral-sh/setup-uv@v10.1.0
+        with:
+          enable-cache: true
+      - run: uv sync --locked
+      - name: Install the CPU-only torch wheel
+        run: uv pip install torch --index-url https://download.pytorch.org/whl/cpu
+      - run: uv run pytest -m needs_torch --no-header -ra
+
+  docs:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: astral-sh/setup-uv@v10.1.0
+        with:
+          enable-cache: true
+      - run: uv sync --locked
+      - name: Build the docs, warnings are errors
+        # -W turns a broken reference or a renamed theme option into a failure instead of a line
+        # of log nobody reads. --keep-going reports every problem in one run, not just the first.
+        run: uv run sphinx-build -W --keep-going docs docs/_build/html
+
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: astral-sh/setup-uv@v10.1.0
+      - run: uv build
+      - name: Check the built metadata
+        run: uvx twine check --strict dist/*
+      - uses: actions/upload-artifact@v7.0.1
+        with:
+          name: dist
+          path: dist/
+
+  release-branch-contained-in-dev:
+    # Only on a release pull request. If an urgent fix went to the release branch and was never
+    # merged back,
+    # releasing now would quietly drop it — so refuse until the merge-back has happened.
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          fetch-depth: 0        # the default shallow clone cannot compute ancestry
+      - name: the release branch must be an ancestor of this branch
+        run: |
+          # the release branch is `main`, but accept `master` so a repo that has not been
+          # renamed still releases. Whichever exists on the remote is the release branch.
+          git fetch -q origin main master 2>/dev/null || true
+          RELEASE_BRANCH=$(git rev-parse --verify -q origin/main >/dev/null && echo main || echo master)
+          git merge-base --is-ancestor "origin/$RELEASE_BRANCH" HEAD \
+            || { echo "::error::$RELEASE_BRANCH is not contained in this branch — merge it into dev first"; exit 1; }

@@ -1,2 +1,4 @@
 include src/oligominer/data/models/paintshop/*
+include src/oligominer/data/models/zoo/*
 include src/oligominer/data/appending/paintshop/*
+include src/oligominer/specificity/duplex_stability/l4t/*.json

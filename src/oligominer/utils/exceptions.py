@@ -1,12 +1,12 @@
-"""
-# Custom OligoMiner2 exceptions
+"""# Custom OligoMiner2 exceptions
 
 OligoMiner2 is designed for use in pipelines and larger workflows.
 To facilitate error handling, we define a set of custom exceptions
 that can be raised and caught as needed.
 """
 
-DEFAULT_HELP_URL = 'https://oligominer.org'
+DEFAULT_HELP_URL = "https://oligominer.org"
+
 
 class OligominerError(Exception):
     """Base error for OligoMiner2."""

@@ -1,5 +1,4 @@
-"""
-# Shell Pipeline
+"""# Shell Pipeline
 
 Utilities for running shell commands from Python. Use run_cmd() for single
 commands, or ShellPipeline for chaining multiple commands together with
@@ -10,12 +9,11 @@ RAM and writing final output to a file.
 import subprocess
 import sys
 
-from .exceptions import ExternalCommandFailed, PipelineStateError, MissingOutputFile
+from .exceptions import ExternalCommandFailed, MissingOutputFile, PipelineStateError
 
 
 def run_cmd(cmd, input_data=None, output_file=None, binary=False, verbose=False):
-    """
-    Run a single shell command.
+    """Run a single shell command.
 
     Convenience wrapper around ShellPipeline for the common case of running
     one command without chaining.
@@ -34,17 +32,29 @@ def run_cmd(cmd, input_data=None, output_file=None, binary=False, verbose=False)
     Raises:
         ExternalCommandFailed: if the command fails.
     """
-    result = ShellPipeline(binary=binary).add(cmd).run(
-        input_data=input_data, output_file=output_file, verbose=verbose
+    result = (
+        ShellPipeline(binary=binary)
+        .add(cmd)
+        .run(input_data=input_data, output_file=output_file, verbose=verbose)
     )
 
     # success
     return result
 
+
 class ShellPipeline:
+    """A sequence of shell commands connected by pipes.
+
+    Commands are added in order and run as one pipeline, so each stage's output
+    becomes the next stage's input without passing through Python.
+
+    Attributes:
+        commands (list): the commands added so far, each an argv list.
+        binary (bool): whether the pipeline carries bytes rather than text.
+    """
+
     def __init__(self, binary=False):
-        """
-        Initialize the pipeline.
+        """Initialize the pipeline.
 
         Args:
             binary (bool): if True, operate in binary mode; otherwise, text mode.
@@ -53,8 +63,7 @@ class ShellPipeline:
         self.binary = binary
 
     def add(self, cmd):
-        """
-        Add a command to the pipeline.
+        """Add a command to the pipeline.
 
         Args:
             cmd (list): command and its arguments as a list.
@@ -66,8 +75,7 @@ class ShellPipeline:
         return self
 
     def add_multi(self, *cmds):
-        """
-        Add multiple commands to the pipeline.
+        """Add multiple commands to the pipeline.
 
         Args:
             *cmds (list): commands and their arguments as lists.
@@ -80,8 +88,7 @@ class ShellPipeline:
         return self
 
     def run(self, input_data=None, output_file=None, verbose=False):
-        """
-        Run the entire pipeline.
+        """Run the entire pipeline.
 
         Args:
             input_data (str or bytes, optional): data to pass to the first command.
@@ -113,8 +120,7 @@ class ShellPipeline:
         return current_stdout
 
     def _run_command(self, cmd, input_data, text_mode, verbose):
-        """
-        Run a single command in the pipeline.
+        """Run a single command in the pipeline.
 
         Args:
             cmd (list): command and its arguments as a list.
@@ -135,7 +141,7 @@ class ShellPipeline:
                 stdin=subprocess.PIPE if input_data is not None else None,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
-                text=text_mode
+                text=text_mode,
             ) as p:
                 current_stdout, err = p.communicate(input=input_data)
         except Exception as e:
@@ -150,14 +156,15 @@ class ShellPipeline:
             sys.stderr.flush()
 
         if p.returncode != 0:
-            raise ExternalCommandFailed(cmd, returncode=p.returncode, stderr=err.strip() if err else None)
+            raise ExternalCommandFailed(
+                cmd, returncode=p.returncode, stderr=err.strip() if err else None
+            )
 
         # success
         return current_stdout
 
     def _write_output(self, output_file, data):
-        """
-        Write the final output to a file.
+        """Write the final output to a file.
 
         Args:
             output_file (str): the file to write the output to.
@@ -166,7 +173,7 @@ class ShellPipeline:
         Raises:
             MissingOutputFile: if writing to the file fails.
         """
-        mode = 'wb' if self.binary else 'w'
+        mode = "wb" if self.binary else "w"
         try:
             with open(output_file, mode) as f:
                 f.write(data)

@@ -9,8 +9,7 @@ import pytest
 
 nupack = pytest.importorskip("nupack", reason="NUPACK is not installed")
 
-from oligominer.thermodynamics.nupack.pdup import calc_pdup, calc_competitive_pdup
-
+from oligominer.thermodynamics.nupack.pdup import calc_competitive_pdup, calc_pdup
 
 # a short probe / target pair for fast tests
 PROBE_A = "ATCGATCGATCGATCGATCG"
@@ -22,8 +21,8 @@ TARGET = "CGATCGATCGATCGATCGAT"
 # calc_pdup
 # ---------------------------------------------------------------------------
 
-class TestCalcPdup:
 
+class TestCalcPdup:
     def test_returns_float(self):
         result = calc_pdup(PROBE_A)
         assert isinstance(result, float)
@@ -54,8 +53,8 @@ class TestCalcPdup:
 # calc_competitive_pdup
 # ---------------------------------------------------------------------------
 
-class TestCalcCompetitivePdup:
 
+class TestCalcCompetitivePdup:
     def test_returns_two_floats(self):
         at_pdup, bt_pdup = calc_competitive_pdup(PROBE_A, PROBE_B, TARGET)
         assert isinstance(at_pdup, float)

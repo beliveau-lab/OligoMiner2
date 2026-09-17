@@ -1,17 +1,15 @@
-"""
-# Required dependency helper functions
+"""# Required dependency helper functions
 
 Utilities for checking the presence of required dependencies for OligoMiner2.
 """
 
 from shutil import which
 
-from .exceptions import MissingDependency, DEFAULT_HELP_URL
+from .exceptions import DEFAULT_HELP_URL, MissingDependency
 
 
 def ensure_executable(executable, raise_on_missing=True, help_url=DEFAULT_HELP_URL):
-    """
-    Check if an executable is available in the system PATH.
+    """Check if an executable is available in the system PATH.
 
     Args:
         executable (str): name of the executable to check.
@@ -41,8 +39,7 @@ def ensure_executable(executable, raise_on_missing=True, help_url=DEFAULT_HELP_U
 
 
 def ensure_python_package(package_name, raise_on_missing=True, help_url=DEFAULT_HELP_URL):
-    """
-    Check if a Python package can be imported.
+    """Check if a Python package can be imported.
 
     Args:
         package_name (str): name of the package to check.

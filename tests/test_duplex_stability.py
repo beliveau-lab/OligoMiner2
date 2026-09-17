@@ -12,7 +12,6 @@ import pytest
 
 from oligominer.utils.exceptions import ConfigurationError
 
-
 # ---------------------------------------------------------------------------
 # test sequences and fixtures
 # ---------------------------------------------------------------------------
@@ -21,44 +20,49 @@ PROBE_SEQ = "ATCGATCGATCGATCGATCGATCG"
 DERIVED_SEQ = "CGATCGATCGATCGATCGATCGAT"
 ALIGN_SCORE = -10
 
+
 @pytest.fixture
 def single_pair_df():
     """DataFrame with a single probe-target pair for batch prediction."""
-    return pd.DataFrame({
-        'probe_seq': [PROBE_SEQ],
-        'derived_seq': [DERIVED_SEQ],
-        'align_score': [ALIGN_SCORE],
-    })
+    return pd.DataFrame(
+        {
+            "probe_seq": [PROBE_SEQ],
+            "derived_seq": [DERIVED_SEQ],
+            "align_score": [ALIGN_SCORE],
+        }
+    )
 
 
 @pytest.fixture
 def multi_pair_df():
     """DataFrame with several probe-target pairs for batch prediction."""
-    return pd.DataFrame({
-        'probe_seq': [
-            "ATCGATCGATCGATCGATCGATCG",
-            "GGCCGGCCGGCCGGCCGGCCGGCC",
-            "ATATATATATATATATATATATATAT",
-            "GCGCGCGCGCGCGCGCGCGCGCGC",
-            "AACCTTGGAACCTTGGAACCTTGG",
-        ],
-        'derived_seq': [
-            "CGATCGATCGATCGATCGATCGAT",
-            "GGCCGGCCGGCCGGCCGGCCGGCC",
-            "ATATATATATATATATATATATATAT",
-            "GCGCGCGCGCGCGCGCGCGCGCGC",
-            "CCAAGGTTCCAAGGTTCCAAGGTT",
-        ],
-        'align_score': [-10, -5, -20, -3, -15],
-    })
+    return pd.DataFrame(
+        {
+            "probe_seq": [
+                "ATCGATCGATCGATCGATCGATCG",
+                "GGCCGGCCGGCCGGCCGGCCGGCC",
+                "ATATATATATATATATATATATATAT",
+                "GCGCGCGCGCGCGCGCGCGCGCGC",
+                "AACCTTGGAACCTTGGAACCTTGG",
+            ],
+            "derived_seq": [
+                "CGATCGATCGATCGATCGATCGAT",
+                "GGCCGGCCGGCCGGCCGGCCGGCC",
+                "ATATATATATATATATATATATATAT",
+                "GCGCGCGCGCGCGCGCGCGCGCGC",
+                "CCAAGGTTCCAAGGTTCCAAGGTT",
+            ],
+            "align_score": [-10, -5, -20, -3, -15],
+        }
+    )
 
 
 # ---------------------------------------------------------------------------
 # NUPACK pDup
 # ---------------------------------------------------------------------------
 
-class TestNupackPdup:
 
+class TestNupackPdup:
     @pytest.fixture(autouse=True)
     def _skip_if_no_nupack(self):
         pytest.importorskip("nupack")
@@ -100,15 +104,16 @@ class TestNupackPdup:
 # PaintSHOP XGBoost model
 # ---------------------------------------------------------------------------
 
-class TestPaintshopXgboost:
 
+class TestPaintshopXgboost:
     @pytest.fixture(autouse=True)
     def _skip_if_no_xgboost(self):
         pytest.importorskip("xgboost")
 
     def test_load_model_valid_temperatures(self):
         from oligominer.specificity.duplex_stability.paintshop_xgboost import (
-            load_model, AVAILABLE_TEMPERATURES,
+            AVAILABLE_TEMPERATURES,
+            load_model,
         )
 
         for temp in AVAILABLE_TEMPERATURES:
@@ -134,7 +139,8 @@ class TestPaintshopXgboost:
 
     def test_compute_features_shape(self, multi_pair_df):
         from oligominer.specificity.duplex_stability.paintshop_xgboost import (
-            compute_features, FEATURE_COLUMNS,
+            FEATURE_COLUMNS,
+            compute_features,
         )
 
         features = compute_features(multi_pair_df)
@@ -142,7 +148,8 @@ class TestPaintshopXgboost:
 
     def test_compute_features_columns(self, single_pair_df):
         from oligominer.specificity.duplex_stability.paintshop_xgboost import (
-            compute_features, FEATURE_COLUMNS,
+            FEATURE_COLUMNS,
+            compute_features,
         )
 
         features = compute_features(single_pair_df)
@@ -185,7 +192,8 @@ class TestPaintshopXgboost:
 
     def test_predict_single_matches_batch(self, single_pair_df):
         from oligominer.specificity.duplex_stability.paintshop_xgboost import (
-            predict_duplex, predict_duplex_batch,
+            predict_duplex,
+            predict_duplex_batch,
         )
 
         single = predict_duplex(PROBE_SEQ, DERIVED_SEQ, ALIGN_SCORE, temperature=42)
@@ -206,15 +214,16 @@ class TestPaintshopXgboost:
 # Legacy OligoMiner v1 LDA model
 # ---------------------------------------------------------------------------
 
-class TestLegacyLda:
 
+class TestLegacyLda:
     @pytest.fixture(autouse=True)
     def _skip_if_no_sklearn(self):
         pytest.importorskip("sklearn")
 
     def test_load_model_valid_temperatures(self):
         from oligominer.specificity.duplex_stability.legacy_lda import (
-            load_model, AVAILABLE_TEMPERATURES,
+            AVAILABLE_TEMPERATURES,
+            load_model,
         )
 
         for temp in AVAILABLE_TEMPERATURES:
@@ -240,7 +249,8 @@ class TestLegacyLda:
 
     def test_compute_features_shape(self, multi_pair_df):
         from oligominer.specificity.duplex_stability.legacy_lda import (
-            compute_features, FEATURE_COLUMNS,
+            FEATURE_COLUMNS,
+            compute_features,
         )
 
         features = compute_features(multi_pair_df)
@@ -248,7 +258,8 @@ class TestLegacyLda:
 
     def test_compute_features_columns(self, single_pair_df):
         from oligominer.specificity.duplex_stability.legacy_lda import (
-            compute_features, FEATURE_COLUMNS,
+            FEATURE_COLUMNS,
+            compute_features,
         )
 
         features = compute_features(single_pair_df)
@@ -261,7 +272,7 @@ class TestLegacyLda:
         )
 
         features = compute_features(single_pair_df)
-        gc = features['probe_gc'].iloc[0]
+        gc = features["probe_gc"].iloc[0]
         assert 0.0 <= gc <= 100.0
         # ATCGATCG... is 50% GC
         assert gc == pytest.approx(50.0, abs=1.0)
@@ -303,7 +314,8 @@ class TestLegacyLda:
 
     def test_predict_single_matches_batch(self, single_pair_df):
         from oligominer.specificity.duplex_stability.legacy_lda import (
-            predict_duplex, predict_duplex_batch,
+            predict_duplex,
+            predict_duplex_batch,
         )
 
         single = predict_duplex(PROBE_SEQ, ALIGN_SCORE, temperature=42)
@@ -326,13 +338,15 @@ class TestLegacyLda:
             predict_duplex_batch,
         )
 
-        df = pd.DataFrame({
-            'probe_seq': [
-                "ATATATATATATATATATATATATAT",  # low GC
-                "GCGCGCGCGCGCGCGCGCGCGCGCG",  # high GC
-            ],
-            'align_score': [-10, -10],
-        })
+        df = pd.DataFrame(
+            {
+                "probe_seq": [
+                    "ATATATATATATATATATATATATAT",  # low GC
+                    "GCGCGCGCGCGCGCGCGCGCGCGCG",  # high GC
+                ],
+                "align_score": [-10, -10],
+            }
+        )
 
         preds = predict_duplex_batch(df, temperature=57)
         assert preds[1] > preds[0]
@@ -341,6 +355,7 @@ class TestLegacyLda:
 # ---------------------------------------------------------------------------
 # cross-model consistency
 # ---------------------------------------------------------------------------
+
 
 class TestCrossModelConsistency:
     """Verify that XGBoost and LDA models have consistent interfaces and
@@ -352,11 +367,11 @@ class TestCrossModelConsistency:
         pytest.importorskip("sklearn")
 
     def test_both_models_return_same_shape(self, multi_pair_df):
-        from oligominer.specificity.duplex_stability.paintshop_xgboost import (
-            predict_duplex_batch as xgb_predict,
-        )
         from oligominer.specificity.duplex_stability.legacy_lda import (
             predict_duplex_batch as lda_predict,
+        )
+        from oligominer.specificity.duplex_stability.paintshop_xgboost import (
+            predict_duplex_batch as xgb_predict,
         )
 
         xgb_preds = xgb_predict(multi_pair_df, temperature=37)
@@ -364,11 +379,11 @@ class TestCrossModelConsistency:
         assert xgb_preds.shape == lda_preds.shape
 
     def test_both_models_in_unit_range(self, multi_pair_df):
-        from oligominer.specificity.duplex_stability.paintshop_xgboost import (
-            predict_duplex_batch as xgb_predict,
-        )
         from oligominer.specificity.duplex_stability.legacy_lda import (
             predict_duplex_batch as lda_predict,
+        )
+        from oligominer.specificity.duplex_stability.paintshop_xgboost import (
+            predict_duplex_batch as xgb_predict,
         )
 
         xgb_preds = xgb_predict(multi_pair_df, temperature=37, normalize=True)
@@ -379,11 +394,11 @@ class TestCrossModelConsistency:
             assert np.all(preds <= 1.0)
 
     def test_both_models_in_percent_range(self, multi_pair_df):
-        from oligominer.specificity.duplex_stability.paintshop_xgboost import (
-            predict_duplex_batch as xgb_predict,
-        )
         from oligominer.specificity.duplex_stability.legacy_lda import (
             predict_duplex_batch as lda_predict,
+        )
+        from oligominer.specificity.duplex_stability.paintshop_xgboost import (
+            predict_duplex_batch as xgb_predict,
         )
 
         xgb_preds = xgb_predict(multi_pair_df, temperature=37, normalize=False)

@@ -1,5 +1,4 @@
-"""
-# BAM to BED Conversion
+"""# BAM to BED Conversion
 
 Converts SAM/BAM alignment data to BED format using an AWK script that
 reconstructs full probe-length genomic coordinates from alignment positions
@@ -31,11 +30,14 @@ The AWK script below recovers the full probe footprint on the genome:
 Output columns: chrom, start, end, read_name, align_score, strand, cigar.
 """
 
+from oligominer.utils import check_output_exists, ensure_executable, require_one_of
 from oligominer.utils.shell_pipeline import run_cmd
-from oligominer.utils import require_one_of, check_output_exists, ensure_executable
 
 # AWK script that parses SAM records into BED with full probe coordinates
 AWK_SCRIPT = """
+# header lines are skipped: the SAM spec forbids a read name starting
+# with '@', so this cannot discard an alignment
+/^@/ { next }
 $3 != "*" {
     OFS = "\\t";
     start = $4;
@@ -59,7 +61,7 @@ $3 != "*" {
 
     strand = (int($2 / 16) % 2) ? "-" : "+";
 
-    align_score = "NA";
+    align_score = 0;
     for (i = 12; i <= NF; i++) {
         if (substr($i, 1, 2) == "AS") {
             align_score = substr($i, 6);
@@ -75,9 +77,9 @@ $3 != "*" {
 }
 """
 
+
 def bam_to_bed(input_file=None, bam_data=None, output_file=None, verbose=False):
-    """
-    Convert BAM alignments to BED format.
+    """Convert BAM alignments to BED format.
 
     Args:
         input_file (str, optional): path to the input BAM file.
@@ -92,13 +94,13 @@ def bam_to_bed(input_file=None, bam_data=None, output_file=None, verbose=False):
     Raises:
         ValueError: if neither input_file nor bam_data is provided.
     """
-    require_one_of(input_file, bam_data, 'input_file', 'bam_data')
+    require_one_of(input_file, bam_data, "input_file", "bam_data")
 
     if input_file is not None:
-        ensure_executable('samtools')
-        bam_data = run_cmd(['samtools', 'view', input_file])
+        ensure_executable("samtools")
+        bam_data = run_cmd(["samtools", "view", input_file])
 
-    result = run_cmd(['awk', AWK_SCRIPT], input_data=bam_data, verbose=verbose)
+    result = run_cmd(["awk", AWK_SCRIPT], input_data=bam_data, verbose=verbose)
     if output_file is not None:
         with open(output_file, "w") as f:
             f.write(result)
@@ -109,8 +111,7 @@ def bam_to_bed(input_file=None, bam_data=None, output_file=None, verbose=False):
 
 
 def sam_to_bed(sam_data):
-    """
-    Convert SAM alignments to BED format.
+    """Convert SAM alignments to BED format.
 
     Args:
         sam_data (str): SAM data as a string.
@@ -118,7 +119,7 @@ def sam_to_bed(sam_data):
     Returns:
         result (str): the converted BED data.
     """
-    result = run_cmd(['awk', AWK_SCRIPT], input_data=sam_data)
+    result = run_cmd(["awk", AWK_SCRIPT], input_data=sam_data)
 
     # success
     return result

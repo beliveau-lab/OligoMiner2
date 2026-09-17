@@ -13,21 +13,29 @@
 # project metadata
 #
 
-[project.urls]
-homepage = "https://oligominer.org"
-source = "https://github.com/beliveau-lab/OligoMiner2"
-
 [project]
 name = "oligominer"
 dynamic = ["version"]
 description = "Python package for genome-scale design of oligo probes for DNA/RNA FISH."
-requires-python = ">=3.8,<3.12"
+requires-python = ">=3.10"
 readme = "README.md"
-# license = { file = "LICENSE" }
-# keywords = ["keyword1", "keyword2", ...]
-# documentation = "https://oligominer.org"
+license = "MIT"
+license-files = ["LICENSE"]
 authors = [{ name = "Conor Camplisson", email = "conor@oligominer.org" }]
-# classifiers = []
+keywords = ["FISH", "oligo", "probe design", "DNA-FISH", "RNA-FISH", "genomics", "bioinformatics"]
+
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+]
 
 #
 # required python dependencies
@@ -41,10 +49,11 @@ dependencies = [
     "primer3-py",
     "pyfaidx",
     "pyranges",
+    # pandas needs an engine for the parquet IO in models/retrain.py and the l4t seqprops
+    # loader; without one those call sites raise ImportError at runtime, not at install
+    "pyarrow",
     "xgboost==2.1.1",
     "scikit-learn",
-    "biopython",
-    
 ]
 
 
@@ -52,22 +61,34 @@ dependencies = [
 #  development python dependencies (for docs e.g.)
 #
 
+[project.urls]
+Homepage = "https://oligominer.org"
+Repository = "https://github.com/beliveau-lab/OligoMiner2"
+Issues = "https://github.com/beliveau-lab/OligoMiner2/issues"
+Changelog = "https://github.com/beliveau-lab/OligoMiner2/blob/main/CHANGELOG.md"
+
+
 [project.optional-dependencies]
+
+# the sequence model. torch is ~1.8 GB, so it is not required to mine, screen or
+# score with the tree models
+bilstm = [
+    "torch",
+]
+
+
+# Dev tools are a DEPENDENCY GROUP, not an optional-dependencies extra: an extra is published
+# with the package and installable by users, which these are not. `uv sync` installs groups by
+# default, so the project venv gets its own pytest rather than falling through to whatever pytest
+# happens to be on PATH — which silently imported a different oligominer.
+[dependency-groups]
 dev = [
-    "mkdocs",
-    "mkdocs-material",
-    "mkdocs-gen-files",
-    "mkdocs-literate-nav",
-    "mkdocs-section-index",
-    "mkdocstrings[python]",
-    "mike",
-    "pymdown-extensions",
-    "black",
-
-    "notebook",
-    "mkdocs-jupyter",
-    "pytest",
-
+    "pytest==8.4.2",
+    "ruff==0.14.0",
+    "pre-commit==4.3.0",
+    "sphinx==8.2.3; python_version >= '3.11'",
+    "pydata-sphinx-theme==0.16.1; python_version >= '3.11'",
+    "myst-parser==4.0.1; python_version >= '3.11'",
 ]
 
 
@@ -101,9 +122,61 @@ allow-direct-references = true
 # publishing configuration (using uv)
 #
 
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+# ANN is deliberately absent: this project does not require annotations.
+select = ["E", "W", "F", "I", "B", "UP", "SIM", "RUF", "D"]
+
+# DEBT, to be burned down rather than kept. Adopting the full rule set on a codebase this size
+# left 202 findings that no safe autofix can clear; unsafe fixes were tried and broke 38 tests, so
+# they are not an option. Everything mechanical has been fixed. What is listed here needs a human
+# reading the code, and is ignored so the rest of the rule set can be enforced from today instead
+# of waiting. Delete entries as they are cleared; do not add to it.
+ignore = [
+    # docstring prose: missing docstrings and punctuation on ~110 sites
+    "D100", "D104", "D105", "D107", "D205", "D415", "D417",
+    # each needs a judgement about the surrounding code
+    "B007", "B017", "B904", "E501", "E731", "E741",
+    "F811", "F841",
+    "RUF002", "RUF003", "RUF007", "RUF015", "RUF043", "RUF059",
+    "SIM102", "SIM108", "SIM115", "SIM117", "SIM118",
+    "UP031", "W291",
+]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.per-file-ignores]
+# tests document themselves by their names
+"tests/**" = ["D"]
+# re-exporting the public surface is what these files are FOR, so an import with no local use
+# is the point rather than a mistake
+"**/__init__.py" = ["F401"]
+# these import AFTER a runtime guard on purpose, so a missing optional dependency fails with a
+# message that names it rather than an obscure ImportError from three frames down
+"src/oligominer/thermodynamics/nupack/__init__.py" = ["E402", "F401"]
+"tests/test_nupack.py" = ["E402"]
+# vendored verbatim from the studies that fitted the shipping models; reformatting them risks
+# moving a model's predictions for no documentation gain
+"src/oligominer/specificity/duplex_stability/l4t/**" = ["D", "E", "W", "I", "B", "UP", "SIM", "RUF"]
+"src/oligominer/**/bilstm_arch.py" = ["D", "E", "W", "I", "B", "UP", "SIM", "RUF"]
+
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-pythonpath = ["src"]
+# NOTE: no pythonpath = ["src"]. With a src layout the tests import the INSTALLED package, so a
+# module missing from the wheel fails here instead of passing against the source tree.
+markers = [
+    "integration: needs an external program that CI can install; not run on every push",
+    "needs_nupack: needs NUPACK, which is licence-gated and installable only locally",
+    "needs_torch: needs torch; run in its own CI job against the CPU-only wheel",
+]
+# The default run is the unit tier. CI DESELECTS the other markers explicitly and reports the
+# count, rather than skipping them silently: a suite that goes green having run nothing is worse
+# than one that says what it did not run.
+addopts = "--strict-markers -m 'not integration and not needs_nupack and not needs_torch'"
 
 [[tool.uv.index]]
 name = "testpypi"

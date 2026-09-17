@@ -7,20 +7,21 @@ and nearest-neighbor parameter tables.
 import numpy as np
 import pytest
 
-from oligominer.thermodynamics.mining.int_encoding import seq_to_8bit, DNA_ASCII_LUT
+from oligominer.thermodynamics import formamide_correction
 from oligominer.thermodynamics.mining.calc_tm_2d import (
-    get_dinuc_grid, get_dS_grid, get_dH_grid, get_tm_grid,
+    get_dinuc_grid,
+    get_dS_grid,
+    get_tm_grid,
 )
 from oligominer.thermodynamics.mining.config import GET_DEFAULT_MINING_CONFIG
-from oligominer.thermodynamics import formamide_correction
-
+from oligominer.thermodynamics.mining.int_encoding import seq_to_8bit
 
 # ---------------------------------------------------------------------------
 # integer encoding
 # ---------------------------------------------------------------------------
 
-class TestIntEncoding:
 
+class TestIntEncoding:
     def test_acgt_encoding(self):
         arr = seq_to_8bit("ACGT")
         assert list(arr) == [0, 1, 2, 3]
@@ -50,13 +51,13 @@ class TestIntEncoding:
 # Tm grid calculation
 # ---------------------------------------------------------------------------
 
-class TestTmGrid:
 
+class TestTmGrid:
     @pytest.fixture
     def config(self):
         config = GET_DEFAULT_MINING_CONFIG()
-        config['min_length'] = 18
-        config['max_length'] = 22
+        config["min_length"] = 18
+        config["max_length"] = 22
         return config
 
     @pytest.fixture
@@ -74,12 +75,12 @@ class TestTmGrid:
 
     def test_tm_grid_shape(self, nuc_array, config):
         tm = get_tm_grid(nuc_array, config)
-        n_positions = len(nuc_array) - config['max_length'] + 1
-        n_lengths = config['max_length'] - config['min_length'] + 1
+        n_positions = len(nuc_array) - config["max_length"] + 1
+        n_lengths = config["max_length"] - config["min_length"] + 1
         assert tm.shape == (n_positions, n_lengths)
 
     def test_tm_values_are_reasonable(self, nuc_array, config):
-        config['pct_formamide'] = 0
+        config["pct_formamide"] = 0
         tm = get_tm_grid(nuc_array, config)
         # Tm should be in a reasonable range for short DNA oligos
         assert tm.min() > 0
@@ -87,7 +88,7 @@ class TestTmGrid:
 
     def test_longer_probes_have_higher_tm(self, nuc_array, config):
         """For most sequences, longer probes should have higher Tm."""
-        config['pct_formamide'] = 0
+        config["pct_formamide"] = 0
         tm = get_tm_grid(nuc_array, config)
         # check that column means increase with length (roughly)
         col_means = tm.mean(axis=0)
@@ -108,8 +109,8 @@ class TestTmGrid:
 # formamide correction
 # ---------------------------------------------------------------------------
 
-class TestFormamideCorrection:
 
+class TestFormamideCorrection:
     def test_basic_correction(self):
         result = formamide_correction(37.0, 50, 0.65)
         expected = 37.0 - (50 * 0.65)

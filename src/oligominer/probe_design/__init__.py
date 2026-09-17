@@ -1,21 +1,48 @@
+from .._lazy import lazy_exports
 
-from .pipeline import (
-    mine_probe_candidates,
-    align_probes,
-    add_max_kmer,
-    merge_probes_alignments,
-    add_pdup,
-    design_probes,
-)
-from .appending import (
-    append_same,
-    append_unique,
-    append_multiple,
-    append_custom,
-    append_sequences,
-    append_saber,
-    append_barcodes,
-    build_appending_table,
-)
-from .scoring import label_on_target, score_probes
-from .probe_set import ProbeSet
+# public name -> the module that defines it
+_EXPORTS = {
+    "DomainAssembly": ".domains",
+    "PADLOCK_COLUMNS": ".padlock",
+    "ProbeSet": ".probe_set",
+    "SplitArchitecture": ".split",
+    "add_duplex_pred": ".pipeline",
+    "add_max_kmer": ".pipeline",
+    "add_pdup": ".pipeline",
+    "align_probes": ".pipeline",
+    "append_barcodes": ".appending",
+    "append_custom": ".appending",
+    "append_multiple": ".appending",
+    "append_saber": ".appending",
+    "append_same": ".appending",
+    "append_sequences": ".appending",
+    "append_unique": ".appending",
+    "arm_params": ".padlock",
+    "assemble_padlock": ".domains",
+    "assemble_split": ".split",
+    "assign_units": ".units",
+    "build_appending_table": ".appending",
+    "check_backbone_placement": ".domains",
+    "check_identity": ".padlock",
+    "design_probes": ".pipeline",
+    "design_split": ".split",
+    "drop_incomplete_units": ".units",
+    "exclude_intervals": ".exclusions",
+    "filter_units": ".units",
+    "hcr3": ".split",
+    "label_on_target": ".scoring",
+    "merge_probes_alignments": ".pipeline",
+    "mine_padlock_sequence": ".padlock",
+    "mine_probe_candidates": ".pipeline",
+    "overlaps_intervals": ".exclusions",
+    "padlocks_to_df": ".padlock",
+    "pair_probes": ".split",
+    "pair_summary": ".split",
+    "read_bed": ".exclusions",
+    "score_probes": ".scoring",
+    "split_fish": ".split",
+    "unit_sizes": ".units",
+    "units_to_orders": ".units",
+}
+
+__getattr__, __dir__, __all__ = lazy_exports(__name__, _EXPORTS)

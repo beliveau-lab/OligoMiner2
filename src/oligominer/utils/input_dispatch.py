@@ -1,5 +1,4 @@
-"""
-# Input Dispatch
+"""# Input Dispatch
 
 Validation helper for functions that accept exactly one of two mutually
 exclusive input sources (e.g. a file path or in-memory data).
@@ -9,8 +8,7 @@ from .exceptions import InvalidInputError
 
 
 def require_one_of(a, b, name_a, name_b):
-    """
-    Validate that exactly one of two values is provided (not None).
+    """Validate that exactly one of two values is provided (not None).
 
     Args:
         a: first value.

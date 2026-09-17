@@ -1,0 +1,172 @@
+# Release — the only thing that publishes. Triggered by a tag.
+#
+#   tag vX.Y.Z on main   -> guards -> build once -> TestPyPI -> install test -> APPROVAL -> PyPI
+#   tag vX.Y.Z.devN      -> guards -> build once -> TestPyPI -> install test -> stop (rehearsal)
+#
+# The same artifacts go to TestPyPI and to PyPI, so what was rehearsed is byte-for-byte what ships.
+# Publishing uses an API token per index, taken from a GitHub repository secret.
+# Trusted publishing (OIDC) is the target end state and needs only this file to change; the
+# commented lines in each publish step show the swap.
+#
+# One-time setup this depends on:
+#   - a GitHub environment named `pypi` with the maintainer as a required reviewer
+#   - a PyPI *pending publisher* registered for this repo + workflow filename + environment,
+#     before the first upload; the first run claims the project
+#   - a TestPyPI pending publisher likewise
+name: release
+
+on:
+  push:
+    tags: ["v*"]
+
+jobs:
+  guards:
+    runs-on: ubuntu-latest
+    outputs:
+      is-prerelease: ${{ steps.check.outputs.is_prerelease }}
+    steps:
+      - uses: actions/checkout@v7.0.1
+        with:
+          fetch-depth: 0
+      - id: check
+        name: The tag must match _version.py, and a final release must sit on main
+        run: |
+          set -euo pipefail
+          TAG="${GITHUB_REF#refs/tags/v}"
+          VERSION=$(grep -oP '__version__\s*=\s*"\K[^"]+' src/*/_version.py)
+          [[ "$TAG" == "$VERSION" ]] \
+            || { echo "::error::tag v$TAG does not match _version.py ($VERSION)"; exit 1; }
+          if [[ "$TAG" == *dev* ]]; then
+            echo "is_prerelease=true" >> "$GITHUB_OUTPUT"
+          else
+            echo "is_prerelease=false" >> "$GITHUB_OUTPUT"
+            # the release branch is `main`, but accept `master` so a repo that has not been
+            # renamed still releases. Whichever exists on the remote is the release branch.
+            git fetch -q origin main master 2>/dev/null || true
+            RELEASE_BRANCH=$(git rev-parse --verify -q origin/main >/dev/null && echo main || echo master)
+            git merge-base --is-ancestor HEAD "origin/$RELEASE_BRANCH" \
+              || { echo "::error::a final release tag must be on $RELEASE_BRANCH"; exit 1; }
+          fi
+
+  build:
+    needs: guards
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: astral-sh/setup-uv@v10.1.0
+      - run: uv build
+      - run: uvx twine check --strict dist/*
+      - uses: actions/upload-artifact@v7.0.1
+        with:
+          name: dist
+          path: dist/
+
+  testpypi:
+    needs: build
+    runs-on: ubuntu-latest
+    environment: testpypi
+    steps:
+      - uses: actions/download-artifact@v8.0.1
+        with:
+          name: dist
+          path: dist/
+      - uses: astral-sh/setup-uv@v10.1.0
+      - name: Upload to TestPyPI
+        # --check-url lets a re-run of a partially-failed job skip files already uploaded,
+        # instead of erroring on the index's refusal to accept a version twice.
+        # To move to trusted publishing: drop UV_PUBLISH_TOKEN, add `--trusted-publishing always`,
+        # and give this job `permissions: id-token: write`.
+        env:
+          UV_PUBLISH_TOKEN: ${{ secrets.TESTPYPI_TOKEN }}
+        run: |
+          uv publish \
+            --publish-url https://test.pypi.org/legacy/ \
+            --check-url https://test.pypi.org/simple/
+
+  install-test:
+    # Prove the uploaded artifact actually installs and imports, on every supported Python,
+    # BEFORE anyone is asked to approve the real thing.
+    needs: testpypi
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        # Every Python this package supports. Keep it and `requires-python` in step, in the
+        # same commit: a version here that requires-python excludes will fail to resolve.
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: astral-sh/setup-uv@v10.1.0
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install from TestPyPI and smoke-test
+        run: |
+          set -euo pipefail
+          TAG="${GITHUB_REF#refs/tags/v}"
+          PKG=$(basename $(ls -d src/*/ | head -1))
+          # A VENV, not --system: setup-uv provides a uv-MANAGED interpreter, and --system looks
+          # for a system one, which the runner does not have for every version in the matrix
+          # ("No system Python installation found for Python 3.13").
+          uv venv --python "${UV_PYTHON}" .venv-install-test
+          # TestPyPI does not mirror real dependencies, so resolve those from PyPI.
+          # RETRY: a brand-new project takes a moment to appear in the simple index after its
+          # first upload, so the first release of any package raced the index and failed here.
+          for attempt in 1 2 3 4 5; do
+            if uv pip install --python .venv-install-test/bin/python \
+                 --index-url https://test.pypi.org/simple/ \
+                 --extra-index-url https://pypi.org/simple/ \
+                 "${PKG}==${TAG}"; then
+              break
+            fi
+            if [ "$attempt" = 5 ]; then
+              echo "::error::${PKG}==${TAG} never appeared in the TestPyPI index"
+              exit 1
+            fi
+            echo "not in the index yet; retrying in $((attempt * 10))s"
+            sleep $((attempt * 10))
+          done
+          .venv-install-test/bin/python -c "import ${PKG}; assert ${PKG}.__version__ == '${TAG}', ${PKG}.__version__; print(${PKG}.__version__)"
+
+  pypi:
+    # The gate. GitHub holds this job until a required reviewer approves, which is the moment to
+    # open the TestPyPI page and look at what is about to become permanent.
+    needs: [guards, install-test]
+    if: needs.guards.outputs.is-prerelease == 'false'
+    runs-on: ubuntu-latest
+    environment: pypi
+    steps:
+      - uses: actions/download-artifact@v8.0.1
+        with:
+          name: dist
+          path: dist/
+      - uses: astral-sh/setup-uv@v10.1.0
+      - name: Upload to PyPI
+        # To move to trusted publishing: drop UV_PUBLISH_TOKEN and add
+        # `--trusted-publishing always`, with `permissions: id-token: write` on this job.
+        env:
+          UV_PUBLISH_TOKEN: ${{ secrets.PYPI_TOKEN }}
+        run: uv publish --check-url https://pypi.org/simple/
+
+  github-release:
+    needs: pypi
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v7.0.1
+      - uses: actions/download-artifact@v8.0.1
+        with:
+          name: dist
+          path: dist/
+      - name: Cut the release with this version's changelog section as its notes
+        run: |
+          set -euo pipefail
+          TAG="${GITHUB_REF#refs/tags/v}"
+          awk -v v="$TAG" '
+            $0 ~ "^## \\[?" v "\\]?" {flag=1; next}
+            flag && /^## / {exit}
+            flag {print}
+          ' CHANGELOG.md > notes.md
+          gh release create "v${TAG}" dist/* --title "v${TAG}" --notes-file notes.md
+        env:
+          GH_TOKEN: ${{ github.token }}

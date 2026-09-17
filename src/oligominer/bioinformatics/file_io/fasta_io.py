@@ -1,5 +1,4 @@
-"""
-FASTA file I/O utilities.
+"""FASTA file I/O utilities.
 
 Loading uses pyfaidx for indexed random access (ideal for large genomes).
 Writing, splitting, filtering, and merging use plain Python I/O.
@@ -10,36 +9,49 @@ import re
 
 from pyfaidx import Fasta
 
-from oligominer.utils import get_abs_path, get_dir_name, check_dir_exists, check_input_exists, check_output_exists
+from oligominer.utils import (
+    check_dir_exists,
+    check_output_exists,
+    get_abs_path,
+    get_dir_name,
+)
+
 from .chrom_sizes import get_or_create_fai
-from .exceptions import EmptyExportError
 from .config import FASTA_EXTENSIONS, merge_files_by_extension
+from .exceptions import EmptyExportError
 
 # ---------------------------------------------------------------------------
 # Loading
 # ---------------------------------------------------------------------------
 
-def load_fasta(fasta_path):
-    """
-    Load a FASTA file using pyfaidx for indexed random access.
+
+def load_fasta(fasta_path, upper=False):
+    """Load a FASTA file using pyfaidx for indexed random access.
+
+    Sequence case is preserved, which is how soft-masked (repeat and
+    low-complexity) regions are marked in genome FASTA files.
 
     Args:
         fasta_path (str): path to the input FASTA file.
+        upper (bool): if True, upper-case every sequence on read, discarding
+            soft-masking.
 
     Returns:
         fasta (pyfaidx.Fasta): dict-like object (.keys(), [seq_id] -> sequence).
     """
     get_or_create_fai(fasta_path)
-    return Fasta(fasta_path, sequence_always_upper=True)
+
+    # success
+    return Fasta(fasta_path, sequence_always_upper=upper)
 
 
 # ---------------------------------------------------------------------------
 # Writing
 # ---------------------------------------------------------------------------
 
+
 def write_fasta(seqs, filepath, line_width=60):
-    """
-    Write sequences to a multi-FASTA file.
+    """Write sequences to a multi-FASTA file.
 
     Accepts a plain dict or a pyfaidx.Fasta object.
 
@@ -50,7 +62,7 @@ def write_fasta(seqs, filepath, line_width=60):
         line_width (int): characters per line (None/0 for no wrapping).
     """
     if not seqs:
-        raise EmptyExportError(filepath, 'FASTA')
+        raise EmptyExportError(filepath, "FASTA")
 
     # normalize pyfaidx.Fasta to plain dict
     if isinstance(seqs, Fasta):
@@ -59,19 +71,18 @@ def write_fasta(seqs, filepath, line_width=60):
     # ensure output directory exists
     check_dir_exists(filepath, parent_dir=True, create=True)
 
-    with open(filepath, 'w') as fh:
+    with open(filepath, "w") as fh:
         for seqid, seq in seqs.items():
             fh.write(f">{seqid}\n")
             if line_width:
                 for i in range(0, len(seq), line_width):
-                    fh.write(seq[i:i + line_width] + '\n')
+                    fh.write(seq[i : i + line_width] + "\n")
             else:
-                fh.write(seq + '\n')
+                fh.write(seq + "\n")
 
 
 def split_fasta(seqs, target_dir, line_width=60):
-    """
-    Write each sequence to its own FASTA file (<seqid>.fa).
+    """Write each sequence to its own FASTA file (<seqid>.fa).
 
     Args:
         seqs (dict): {seqid: seq_str} mapping sequence IDs to sequence strings.
@@ -82,7 +93,7 @@ def split_fasta(seqs, target_dir, line_width=60):
         written_paths (list): file paths written.
     """
     if not seqs:
-        raise EmptyExportError(target_dir, 'FASTA')
+        raise EmptyExportError(target_dir, "FASTA")
 
     check_dir_exists(target_dir, create=True)
 
@@ -96,8 +107,7 @@ def split_fasta(seqs, target_dir, line_width=60):
 
 
 def seqs_to_fasta(seq_list, seq_id_list=None):
-    """
-    Convert a list of sequences into a FASTA formatted string.
+    """Convert a list of sequences into a FASTA formatted string.
 
     Args:
         seq_list (list): a list of sequences.
@@ -110,7 +120,7 @@ def seqs_to_fasta(seq_list, seq_id_list=None):
     if seq_id_list is None:
         seq_id_list = [f"seq_{i}" for i in range(len(seq_list))]
 
-    lines = [f">{seq_id}\n{seq}\n" for seq_id, seq in zip(seq_id_list, seq_list)]
+    lines = [f">{seq_id}\n{seq}\n" for seq_id, seq in zip(seq_id_list, seq_list, strict=False)]
     fasta_str = "".join(lines)
 
     # success
@@ -121,9 +131,9 @@ def seqs_to_fasta(seq_list, seq_id_list=None):
 # Filtering
 # ---------------------------------------------------------------------------
 
+
 def filter_seq_ids(seq_source, incl_str=None, excl_str=None):
-    """
-    Filter sequence IDs from any dict-like source (pyfaidx.Fasta or dict).
+    """Filter sequence IDs from any dict-like source (pyfaidx.Fasta or dict).
 
     When both incl_str and excl_str are provided, inclusion is applied
     first, then exclusion.
@@ -150,8 +160,7 @@ def filter_seq_ids(seq_source, incl_str=None, excl_str=None):
 
 
 def filter_seqs(seq_source, incl_str=None, excl_str=None):
-    """
-    Filter sequences from any dict-like source (pyfaidx.Fasta or dict).
+    """Filter sequences from any dict-like source (pyfaidx.Fasta or dict).
 
     Convenience wrapper around filter_seq_ids that returns the filtered
     sequences as a plain dict, ready for write_fasta or split_fasta.
@@ -179,8 +188,7 @@ def filter_seqs(seq_source, incl_str=None, excl_str=None):
 
 
 def merge_fastas(input_dir, output_path):
-    """
-    Merge all FASTA files in a directory into a single file.
+    """Merge all FASTA files in a directory into a single file.
 
     Only files with recognized FASTA extensions (.fa, .fasta, .fna, .fas)
     are included, sorted alphabetically by filename.
@@ -198,7 +206,7 @@ def merge_fastas(input_dir, output_path):
 
     merged = merge_files_by_extension(input_dir, output_path, FASTA_EXTENSIONS)
     if not merged:
-        raise EmptyExportError(output_path, 'FASTA')
+        raise EmptyExportError(output_path, "FASTA")
 
     check_output_exists(output_path)
 
