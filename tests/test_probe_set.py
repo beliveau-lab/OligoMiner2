@@ -6,16 +6,14 @@ seqid column auto-generation.
 """
 
 import os
-
 import shutil
 
 import pandas as pd
 import pytest
 
-from oligominer import ProbeSet, mine_fasta
+from oligominer import ProbeSet
 from oligominer.thermodynamics.mining import probes_to_df
 from oligominer.utils.exceptions import PipelineStateError
-
 
 # ---------------------------------------------------------------------------
 # construction

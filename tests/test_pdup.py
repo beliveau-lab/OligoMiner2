@@ -17,8 +17,8 @@ from oligominer.specificity.duplex_stability.pdup import (
     FINAL_COLUMN,
     MODEL_COLUMN,
     SOURCE_COLUMN,
-    predict_pdup,
     pdup_summary,
+    predict_pdup,
 )
 from oligominer.utils.seq_utils import rev_comp
 
@@ -27,7 +27,7 @@ nupack = pytest.importorskip("nupack")
 
 def cigar_from(probe, target):
     """Build an xeq CIGAR from two equal-length sequences."""
-    ops = ["=" if a == b else "X" for a, b in zip(probe, target)]
+    ops = ["=" if a == b else "X" for a, b in zip(probe, target, strict=False)]
     out, run, current = [], 0, ops[0]
     for op in ops:
         if op == current:

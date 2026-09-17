@@ -12,7 +12,6 @@ import pytest
 
 from oligominer.utils.exceptions import ConfigurationError
 
-
 # ---------------------------------------------------------------------------
 # test sequences and fixtures
 # ---------------------------------------------------------------------------
@@ -113,8 +112,8 @@ class TestPaintshopXgboost:
 
     def test_load_model_valid_temperatures(self):
         from oligominer.specificity.duplex_stability.paintshop_xgboost import (
-            load_model,
             AVAILABLE_TEMPERATURES,
+            load_model,
         )
 
         for temp in AVAILABLE_TEMPERATURES:
@@ -140,8 +139,8 @@ class TestPaintshopXgboost:
 
     def test_compute_features_shape(self, multi_pair_df):
         from oligominer.specificity.duplex_stability.paintshop_xgboost import (
-            compute_features,
             FEATURE_COLUMNS,
+            compute_features,
         )
 
         features = compute_features(multi_pair_df)
@@ -149,8 +148,8 @@ class TestPaintshopXgboost:
 
     def test_compute_features_columns(self, single_pair_df):
         from oligominer.specificity.duplex_stability.paintshop_xgboost import (
-            compute_features,
             FEATURE_COLUMNS,
+            compute_features,
         )
 
         features = compute_features(single_pair_df)
@@ -223,8 +222,8 @@ class TestLegacyLda:
 
     def test_load_model_valid_temperatures(self):
         from oligominer.specificity.duplex_stability.legacy_lda import (
-            load_model,
             AVAILABLE_TEMPERATURES,
+            load_model,
         )
 
         for temp in AVAILABLE_TEMPERATURES:
@@ -250,8 +249,8 @@ class TestLegacyLda:
 
     def test_compute_features_shape(self, multi_pair_df):
         from oligominer.specificity.duplex_stability.legacy_lda import (
-            compute_features,
             FEATURE_COLUMNS,
+            compute_features,
         )
 
         features = compute_features(multi_pair_df)
@@ -259,8 +258,8 @@ class TestLegacyLda:
 
     def test_compute_features_columns(self, single_pair_df):
         from oligominer.specificity.duplex_stability.legacy_lda import (
-            compute_features,
             FEATURE_COLUMNS,
+            compute_features,
         )
 
         features = compute_features(single_pair_df)
@@ -368,11 +367,11 @@ class TestCrossModelConsistency:
         pytest.importorskip("sklearn")
 
     def test_both_models_return_same_shape(self, multi_pair_df):
-        from oligominer.specificity.duplex_stability.paintshop_xgboost import (
-            predict_duplex_batch as xgb_predict,
-        )
         from oligominer.specificity.duplex_stability.legacy_lda import (
             predict_duplex_batch as lda_predict,
+        )
+        from oligominer.specificity.duplex_stability.paintshop_xgboost import (
+            predict_duplex_batch as xgb_predict,
         )
 
         xgb_preds = xgb_predict(multi_pair_df, temperature=37)
@@ -380,11 +379,11 @@ class TestCrossModelConsistency:
         assert xgb_preds.shape == lda_preds.shape
 
     def test_both_models_in_unit_range(self, multi_pair_df):
-        from oligominer.specificity.duplex_stability.paintshop_xgboost import (
-            predict_duplex_batch as xgb_predict,
-        )
         from oligominer.specificity.duplex_stability.legacy_lda import (
             predict_duplex_batch as lda_predict,
+        )
+        from oligominer.specificity.duplex_stability.paintshop_xgboost import (
+            predict_duplex_batch as xgb_predict,
         )
 
         xgb_preds = xgb_predict(multi_pair_df, temperature=37, normalize=True)
@@ -395,11 +394,11 @@ class TestCrossModelConsistency:
             assert np.all(preds <= 1.0)
 
     def test_both_models_in_percent_range(self, multi_pair_df):
-        from oligominer.specificity.duplex_stability.paintshop_xgboost import (
-            predict_duplex_batch as xgb_predict,
-        )
         from oligominer.specificity.duplex_stability.legacy_lda import (
             predict_duplex_batch as lda_predict,
+        )
+        from oligominer.specificity.duplex_stability.paintshop_xgboost import (
+            predict_duplex_batch as xgb_predict,
         )
 
         xgb_preds = xgb_predict(multi_pair_df, temperature=37, normalize=False)

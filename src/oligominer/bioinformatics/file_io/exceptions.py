@@ -1,5 +1,4 @@
-"""
-# File I/O Exceptions
+"""# File I/O Exceptions
 
 Custom exceptions for file I/O operations.
 """
@@ -26,12 +25,12 @@ class FastaPermissionError(FileIOError):
         super().__init__(f"Directory not writeable for FASTA index: {self.fasta_dir}")
 
     def __str__(self):
-        error_text = f"Error creating .fai file.\n\nThe directory containing the "
-        error_text += f"input fasta is not writeable:\n\n"
+        error_text = "Error creating .fai file.\n\nThe directory containing the "
+        error_text += "input fasta is not writeable:\n\n"
         error_text += f"  directory: {self.fasta_dir}\n\n"
         error_text += f"  fasta file: {self.fasta_path}\n\n"
-        error_text += f"Please copy this fasta file to a writeable location or\n"
-        error_text += f"modify permissions as needed and try again.\n\nExiting..."
+        error_text += "Please copy this fasta file to a writeable location or\n"
+        error_text += "modify permissions as needed and try again.\n\nExiting..."
         return error_text
 
 
@@ -53,6 +52,6 @@ class EmptyExportError(FileIOError):
 
     def __str__(self):
         error_text = f"No records present during attempted {self.format_name} export. This\n"
-        error_text += f"can happen if you apply a filter such that all records are removed.\n\n"
+        error_text += "can happen if you apply a filter such that all records are removed.\n\n"
         error_text += f"The target export path provided was:\n\n{self.file_path}\n\nExiting..."
         return error_text

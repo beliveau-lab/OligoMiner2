@@ -1,5 +1,4 @@
-"""
-Isoform flattening utilities.
+"""Isoform flattening utilities.
 
 Collapses transcript isoforms for each gene into the segments shared
 across the maximum number of isoforms. This produces a simplified
@@ -12,8 +11,7 @@ import pandas as pd
 
 
 def flatten_isoforms(df):
-    """
-    Collapse transcript isoforms to maximally shared exonic segments.
+    """Collapse transcript isoforms to maximally shared exonic segments.
 
     Groups exon records by gene_id and, for each gene, identifies the
     genomic intervals that are covered by the largest number of
@@ -58,8 +56,7 @@ def flatten_isoforms(df):
 
 
 def _flatten_gene_exons(row):
-    """
-    Flatten exon intervals for a single gene to maximally shared segments.
+    """Flatten exon intervals for a single gene to maximally shared segments.
 
     For genes with overlapping exons across isoforms, finds the segments
     covered by the maximum number of isoforms. For genes with no overlap

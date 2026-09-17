@@ -1,5 +1,4 @@
-"""
-Legacy LDA-based duplex stability prediction from OligoMiner v1.
+"""Legacy LDA-based duplex stability prediction from OligoMiner v1.
 
 Predicts the probability that a probe has thermodynamically relevant
 off-target binding using pre-fit Linear Discriminant Analysis models at
@@ -15,8 +14,9 @@ import numpy as np
 import pandas as pd
 from sklearn.discriminant_analysis import LinearDiscriminantAnalysis
 
-from oligominer.utils.seq_utils import calc_gc, clamp
 from oligominer.utils.exceptions import ConfigurationError
+from oligominer.utils.seq_utils import calc_gc, clamp
+
 from .config import LDA_TEMPERATURES as AVAILABLE_TEMPERATURES
 
 # ordered feature columns expected by the model
@@ -49,8 +49,7 @@ _model_cache = {}
 
 
 def load_model(temperature):
-    """
-    Load a pre-fit OligoMiner v1 LDA model for a given temperature.
+    """Load a pre-fit OligoMiner v1 LDA model for a given temperature.
 
     Models are constructed from hardcoded coefficients extracted from the
     original OligoMiner outputClean.py and cached after first construction.
@@ -85,8 +84,7 @@ def load_model(temperature):
 
 
 def compute_features(df):
-    """
-    Compute sequence-derived features for LDA duplex prediction.
+    """Compute sequence-derived features for LDA duplex prediction.
 
     Takes a DataFrame with probe_seq and align_score columns and returns
     a feature matrix matching the model's expected input.
@@ -112,8 +110,7 @@ def compute_features(df):
 
 
 def predict_duplex_batch(df, temperature=42, normalize=True):
-    """
-    Predict off-target duplex probability for a batch of probe-target pairs.
+    """Predict off-target duplex probability for a batch of probe-target pairs.
 
     Computes features from the input DataFrame and runs the legacy LDA
     model to produce predictions. The model outputs the probability that
@@ -148,8 +145,7 @@ def predict_duplex_batch(df, temperature=42, normalize=True):
 
 
 def predict_duplex(probe_seq, align_score, temperature=42, normalize=True):
-    """
-    Predict off-target duplex probability for a single probe.
+    """Predict off-target duplex probability for a single probe.
 
     Convenience wrapper around predict_duplex_batch for single-probe usage.
 

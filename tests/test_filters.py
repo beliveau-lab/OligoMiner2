@@ -4,9 +4,7 @@ Covers the dinucleotide entropy filter across sequence classes, and BED-based
 exclusion including the overlap cases that a naive containment check misses.
 """
 
-import numpy as np
 import pandas as pd
-import pytest
 
 from oligominer.probe_design import exclude_intervals, overlaps_intervals, read_bed
 from oligominer.thermodynamics.mining import mine_sequence

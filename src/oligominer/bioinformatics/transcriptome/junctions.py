@@ -1,5 +1,4 @@
-"""
-# Exon-exon junctions and isoform-discriminating regions
+"""# Exon-exon junctions and isoform-discriminating regions
 
 Two capabilities that need the transcript rather than the genome.
 
@@ -34,8 +33,7 @@ DISCRIMINATING_COLUMNS = ["gene_id", "transcript_id", "seqid", "start", "end", "
 
 
 def exon_order(gtf_df, transcript_id):
-    """
-    Return a transcript's exons in transcript order, 5' to 3'.
+    """Return a transcript's exons in transcript order, 5' to 3'.
 
     Args:
         gtf_df (pandas.DataFrame): parsed GTF carrying exon records.
@@ -52,8 +50,7 @@ def exon_order(gtf_df, transcript_id):
 
 
 def junction_offsets(gtf_df, transcript_id):
-    """
-    Return where each exon-exon junction falls in the spliced transcript.
+    """Return where each exon-exon junction falls in the spliced transcript.
 
     Args:
         gtf_df (pandas.DataFrame): parsed GTF carrying exon records.
@@ -77,8 +74,7 @@ def junction_offsets(gtf_df, transcript_id):
 
 
 def junction_windows(gtf_df, fasta, transcript_id, flank=DEFAULT_FLANK):
-    """
-    Return the spliced sequence around each exon-exon junction.
+    """Return the spliced sequence around each exon-exon junction.
 
     A window is the last `flank` bases of one exon followed by the first `flank`
     bases of the next, taken from the spliced transcript so the two halves are
@@ -118,8 +114,7 @@ def junction_windows(gtf_df, fasta, transcript_id, flank=DEFAULT_FLANK):
 
 
 def spans_junction(start, stop, junction_offset, min_overhang=1):
-    """
-    Report whether a probe covers a junction with enough sequence on both sides.
+    """Report whether a probe covers a junction with enough sequence on both sides.
 
     Args:
         start (int): probe start within the window.
@@ -135,8 +130,7 @@ def spans_junction(start, stop, junction_offset, min_overhang=1):
 
 
 def junction_probes(probes, junction_offset, min_overhang=1):
-    """
-    Keep only the probes that straddle a junction.
+    """Keep only the probes that straddle a junction.
 
     Args:
         probes (list): (seq_id, start, stop, probe_seq, tm) tuples mined from a
@@ -152,8 +146,7 @@ def junction_probes(probes, junction_offset, min_overhang=1):
 
 
 def discriminating_regions(gtf_df, gene_id=None, min_length=1):
-    """
-    Return the genomic intervals unique to each transcript of a gene.
+    """Return the genomic intervals unique to each transcript of a gene.
 
     An interval is discriminating when it is exonic in one transcript and in no
     other transcript of the same gene. A transcript whose exons are all shared
@@ -217,8 +210,7 @@ def discriminating_regions(gtf_df, gene_id=None, min_length=1):
 
 
 def _interval_set(block):
-    """
-    Return every genomic position covered by a set of exons.
+    """Return every genomic position covered by a set of exons.
 
     Args:
         block (pandas.DataFrame): exon records with start and end.
@@ -227,7 +219,7 @@ def _interval_set(block):
         positions (set): the covered genomic positions.
     """
     positions = set()
-    for start, end in zip(block["start"], block["end"]):
+    for start, end in zip(block["start"], block["end"], strict=False):
         positions.update(range(int(start), int(end) + 1))
 
     # success
@@ -235,8 +227,7 @@ def _interval_set(block):
 
 
 def _merge_positions(positions):
-    """
-    Collapse a set of positions into contiguous intervals.
+    """Collapse a set of positions into contiguous intervals.
 
     Args:
         positions (set): genomic positions.

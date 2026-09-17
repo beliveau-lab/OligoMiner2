@@ -1,5 +1,4 @@
-"""
-# Bowtie2 Presets
+"""# Bowtie2 Presets
 
 Named parameter presets and shared constants for Bowtie2. Presets are dicts of
 seed and alignment parameters that can be passed directly to bowtie_align().

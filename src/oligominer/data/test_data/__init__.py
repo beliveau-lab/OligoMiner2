@@ -1,5 +1,4 @@
-"""
-Bundled test data and convenience loaders.
+"""Bundled test data and convenience loaders.
 
 Provides helper functions to load test datasets from package data via
 importlib.resources, so that tests and demo scripts can access them
@@ -12,8 +11,7 @@ from importlib.resources import files
 
 
 def load_test_probes():
-    """
-    Load the bundled test probe CSV as a ProbeSet.
+    """Load the bundled test probe CSV as a ProbeSet.
 
     Returns:
         probes (ProbeSet): the test probe set.
@@ -28,8 +26,7 @@ def load_test_probes():
 
 
 def load_example_fasta():
-    """
-    Load the bundled example FASTA file using pyfaidx.
+    """Load the bundled example FASTA file using pyfaidx.
 
     Returns:
         fasta (pyfaidx.Fasta): dict-like object (.keys(), [seq_id] -> sequence).
@@ -44,8 +41,7 @@ def load_example_fasta():
 
 
 def get_example_fasta_path():
-    """
-    Return the path to the bundled example FASTA file.
+    """Return the path to the bundled example FASTA file.
 
     Returns:
         path (str): absolute path to example.fa.
@@ -58,8 +54,7 @@ def get_example_fasta_path():
 
 
 def load_example_gtf():
-    """
-    Load the bundled example GTF annotation file as a DataFrame.
+    """Load the bundled example GTF annotation file as a DataFrame.
 
     Returns:
         df (pandas.DataFrame): one row per annotation record with columns
@@ -76,8 +71,7 @@ def load_example_gtf():
 
 
 def get_example_gtf_path():
-    """
-    Return the path to the bundled example GTF annotation file.
+    """Return the path to the bundled example GTF annotation file.
 
     Returns:
         path (str): absolute path to example.gtf.

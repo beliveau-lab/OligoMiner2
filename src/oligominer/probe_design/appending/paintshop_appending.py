@@ -1,5 +1,4 @@
-"""
-PaintSHOP-specific probe appending functions.
+"""PaintSHOP-specific probe appending functions.
 
 Ports the PaintSHOP Shiny app appending interface (R) to Python.
 The probe anatomy after full PaintSHOP appending is:
@@ -17,8 +16,8 @@ import numpy as np
 import pandas as pd
 
 from oligominer.utils.exceptions import InvalidInputError
-from .appending import append_sequences
 
+from .appending import append_sequences
 
 # ------------------------------------------------------------------
 # SABER handler
@@ -26,8 +25,7 @@ from .appending import append_sequences
 
 
 def append_saber(probes, sequences, scheme, target_column=None, n_per_target=None, ranges=None):
-    """
-    Append SABER concatemer sequences to probes.
+    """Append SABER concatemer sequences to probes.
 
     SABER sequences are always appended to the 3' end in forward
     orientation.
@@ -73,8 +71,7 @@ MHD4_WEIGHT = 4
 
 
 def collect_indices(barcode):
-    """
-    Convert a 16-bit MHD4 barcode string to bridge indices.
+    """Convert a 16-bit MHD4 barcode string to bridge indices.
 
     Args:
         barcode (str): a 16-character binary string, e.g.
@@ -107,8 +104,7 @@ def collect_indices(barcode):
 
 
 def add_bridges(probes, bridges, indices, seed=None):
-    """
-    Append MERFISH bridges to probes for a single target.
+    """Append MERFISH bridges to probes for a single target.
 
     Each probe gets 3 of the 4 bridges indicated by *indices*. One
     bridge is dropped randomly per probe. If the dropped bridge is in
@@ -171,8 +167,7 @@ def add_bridges(probes, bridges, indices, seed=None):
 
 
 def append_barcodes(probes, bridges, barcodes, target_column="refseq"):
-    """
-    Append MERFISH barcode-encoded bridges to a probe set.
+    """Append MERFISH barcode-encoded bridges to a probe set.
 
     Each unique target is assigned a barcode from *barcodes*. The
     barcode determines which 4 of 16 bridges are used for that target.

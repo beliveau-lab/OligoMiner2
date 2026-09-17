@@ -1,5 +1,4 @@
-"""
-Sequence utility functions.
+"""Sequence utility functions.
 
 General-purpose helpers for working with DNA sequences, including reverse
 complement, GC content calculation, and numeric clamping.
@@ -11,8 +10,7 @@ COMPLEMENT = str.maketrans("ACGTacgt", "TGCAtgca")
 
 
 def rev_comp(seq):
-    """
-    Return the reverse complement of a DNA sequence.
+    """Return the reverse complement of a DNA sequence.
 
     Args:
         seq (str): the input DNA sequence.
@@ -27,8 +25,7 @@ def rev_comp(seq):
 
 
 def calc_gc(seq, as_percent=False):
-    """
-    Calculate GC content as a decimal (0.0 - 1.0) or percentage (0-100).
+    """Calculate GC content as a decimal (0.0 - 1.0) or percentage (0-100).
 
     Args:
         seq (str): the input DNA sequence.
@@ -51,8 +48,7 @@ def calc_gc(seq, as_percent=False):
 
 
 def clamp(values, lo, hi):
-    """
-    Clamp array or scalar values to [lo, hi] range.
+    """Clamp array or scalar values to [lo, hi] range.
 
     Args:
         values (numpy.ndarray or float): the values to clamp.

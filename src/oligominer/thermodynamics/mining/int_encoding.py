@@ -27,8 +27,7 @@ SOFTMASK_ASCII_LUT[[ord(base) for base in "ACGT"]] = [0, 1, 2, 3]
 
 
 def seq_to_8bit(seq, mask_soft=False):
-    """
-    Returns an 8-bit integer representation of the input sequence.
+    """Returns an 8-bit integer representation of the input sequence.
 
     Args:
         seq (str): the input DNA sequence.

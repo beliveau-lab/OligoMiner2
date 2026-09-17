@@ -1,5 +1,4 @@
-"""
-Formamide corrections for DNA melting temperatures.
+"""Formamide corrections for DNA melting temperatures.
 
 Formamide is a denaturant commonly used in FISH hybridization buffers. It lowers
 the melting temperature of DNA duplexes in a concentration-dependent manner,
@@ -23,8 +22,7 @@ probability rather than raising an error.
 
 
 def formamide_correction(temp, pct_fmd, fmd_factor=0.65):
-    """
-    Lower a melting temperature to account for formamide in the buffer.
+    """Lower a melting temperature to account for formamide in the buffer.
 
     Args:
         temp (float): the melting temperature without formamide, in Celsius.
@@ -42,8 +40,7 @@ def formamide_correction(temp, pct_fmd, fmd_factor=0.65):
 
 
 def effective_hyb_temperature(temp, pct_fmd, fmd_factor=0.65):
-    """
-    Return the formamide-free temperature equivalent to a hybridization condition.
+    """Return the formamide-free temperature equivalent to a hybridization condition.
 
     A model with no formamide term is run at this temperature to represent
     hybridization carried out in formamide at ``temp``.

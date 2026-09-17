@@ -1,5 +1,4 @@
-"""
-# Probe Design Pipeline
+"""# Probe Design Pipeline
 
 High-level functions that compose the lower-level OligoMiner2 primitives into
 a probe design workflow:
@@ -12,12 +11,10 @@ a probe design workflow:
   6. Optionally predict duplex stability via XGBoost (PaintSHOP model)
 """
 
-import pandas as pd
 
-from oligominer.thermodynamics.mining import mine_fasta, mine_sequence, probes_to_df
 from oligominer.bioinformatics.file_io import seqs_to_fastq
 from oligominer.specificity.alignment import bowtie_align, bowtie_presets, process_alignments
-from oligominer.specificity.kmers import calc_max_kmer_multi
+from oligominer.thermodynamics.mining import mine_fasta, mine_sequence, probes_to_df
 from oligominer.utils.exceptions import InvalidInputError
 
 
@@ -27,8 +24,7 @@ def _make_seqid(row):
 
 
 def _check_mining_params(mining_params):
-    """
-    Verify every keyword forwarded to mining is one mining accepts.
+    """Verify every keyword forwarded to mining is one mining accepts.
 
     `design_probes` takes its own arguments by name and forwards the rest to
     `mine_sequence`. A keyword meant for another stage -- an aligner flag, a
@@ -62,8 +58,7 @@ def _check_mining_params(mining_params):
 
 
 def mine_probe_candidates(input_fasta, cores=None, **mining_params):
-    """
-    Mine candidate probes from a FASTA file.
+    """Mine candidate probes from a FASTA file.
 
     Thin wrapper around mine_fasta that returns a DataFrame with an added
     seqid column for downstream merging.
@@ -93,8 +88,7 @@ def mine_probe_candidates(input_fasta, cores=None, **mining_params):
 def align_probes(
     probe_df, bt2_index, ref_fasta, preset=None, k=100, threads=None, verbose=False, **bt2_params
 ):
-    """
-    Align probe candidates to a reference genome.
+    """Align probe candidates to a reference genome.
 
     Converts probe sequences to FASTQ, aligns with Bowtie2, and processes
     the results into an alignment DataFrame with derived sequences.
@@ -141,8 +135,7 @@ def align_probes(
 
 
 def add_max_kmer(probe_df, index_path, k=18, backend="auto", verbose=False):
-    """
-    Add a max_kmer column to the probe DataFrame.
+    """Add a max_kmer column to the probe DataFrame.
 
     Queries a k-mer index for the highest count among each probe's k-mers.
     Lower values indicate higher specificity. The index may be a Jellyfish
@@ -172,8 +165,7 @@ def add_max_kmer(probe_df, index_path, k=18, backend="auto", verbose=False):
 
 
 def merge_probes_alignments(probe_df, align_df):
-    """
-    Merge probe and alignment tables into a duplex table.
+    """Merge probe and alignment tables into a duplex table.
 
     Each row in the result represents one probe-to-genome alignment (a
     potential duplex). Probes with no alignments are dropped.
@@ -193,8 +185,7 @@ def merge_probes_alignments(probe_df, align_df):
 
 
 def add_pdup(merged_df, model=None, conc_a=1e-6, conc_b=1e-12):
-    """
-    Add a pdup column to the merged duplex DataFrame.
+    """Add a pdup column to the merged duplex DataFrame.
 
     Computes the duplex formation probability between each probe sequence
     and its derived off-target sequence using NUPACK.
@@ -227,8 +218,7 @@ def add_pdup(merged_df, model=None, conc_a=1e-6, conc_b=1e-12):
 
 
 def add_duplex_pred(merged_df, temperature=37, normalize=True):
-    """
-    Add a duplex_pred column to the merged duplex DataFrame.
+    """Add a duplex_pred column to the merged duplex DataFrame.
 
     Uses a pre-trained PaintSHOP XGBoost model to predict duplex formation
     probability, providing a fast approximation of NUPACK pDup without
@@ -276,8 +266,7 @@ def design_probes(
     duplex_pred_temperature=37,
     **mining_params,
 ):
-    """
-    End-to-end probe design pipeline.
+    """End-to-end probe design pipeline.
 
     Mines candidate probes, aligns them to a reference genome, and
     optionally computes max kmer counts and duplex formation probabilities.

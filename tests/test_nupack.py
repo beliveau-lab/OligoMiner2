@@ -9,8 +9,7 @@ import pytest
 
 nupack = pytest.importorskip("nupack", reason="NUPACK is not installed")
 
-from oligominer.thermodynamics.nupack.pdup import calc_pdup, calc_competitive_pdup
-
+from oligominer.thermodynamics.nupack.pdup import calc_competitive_pdup, calc_pdup
 
 # a short probe / target pair for fast tests
 PROBE_A = "ATCGATCGATCGATCGATCG"

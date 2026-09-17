@@ -1,5 +1,4 @@
-"""
-# Streaming alignment
+"""# Streaming alignment
 
 Aligns probes and writes the resulting BED straight to disk, connecting bowtie2 to
 the BED conversion with an OS pipe so neither the SAM nor the BED is ever a Python
@@ -21,16 +20,16 @@ import subprocess
 import tempfile
 from pathlib import Path
 
-from oligominer.utils.cores import resolve_cores
 from oligominer.utils import ensure_executable
+from oligominer.utils.cores import resolve_cores
 from oligominer.utils.exceptions import ExternalCommandFailed
+
 from .bam_to_bed import AWK_SCRIPT
 from .bowtie_align import build_bowtie2_cmd
 
 
 def write_fastq(seqs, seq_ids, out_path):
-    """
-    Write a FASTQ file one record at a time.
+    """Write a FASTQ file one record at a time.
 
     Args:
         seqs (iterable): the sequences.
@@ -42,7 +41,7 @@ def write_fastq(seqs, seq_ids, out_path):
     """
     n = 0
     with open(out_path, "w") as handle:
-        for seq_id, seq in zip(seq_ids, seqs):
+        for seq_id, seq in zip(seq_ids, seqs, strict=False):
             seq = str(seq)
             handle.write(f"@{seq_id}\n{seq}\n+\n{'I' * len(seq)}\n")
             n += 1
@@ -62,8 +61,7 @@ def align_to_bed(
     keep_fastq=False,
     **bt2_kwargs,
 ):
-    """
-    Align probes and write BED to disk without holding the SAM in memory.
+    """Align probes and write BED to disk without holding the SAM in memory.
 
     Args:
         probe_df (pandas.DataFrame): probes carrying seq_col and id_col.
@@ -119,8 +117,7 @@ def align_to_bed(
 
 
 def _run_stream(cmd, out_bed):
-    """
-    Run bowtie2 piped into the BED conversion, writing to a file.
+    """Run bowtie2 piped into the BED conversion, writing to a file.
 
     Args:
         cmd (list): the bowtie2 argv.

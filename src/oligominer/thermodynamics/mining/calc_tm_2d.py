@@ -20,12 +20,12 @@ is the effective total strand concentration.
 import numpy as np
 
 from .nn_tables import (
-    DINUC_DS_LUT,
     DINUC_DH_LUT,
-    TERMINAL_5_DS_LUT,
-    TERMINAL_5_DH_LUT,
-    TERMINAL_3_DS_LUT,
+    DINUC_DS_LUT,
     TERMINAL_3_DH_LUT,
+    TERMINAL_3_DS_LUT,
+    TERMINAL_5_DH_LUT,
+    TERMINAL_5_DS_LUT,
 )
 
 
@@ -89,7 +89,6 @@ def get_dS_grid(dinuc_grid, min_length, max_length, Na=50, K=0, Tris=0, Mg=0, dN
     Raises:
         ValueError: if the total monovalent ion concentration is zero.
     """
-
     # look up dS values in lookup table
     dS_grid = DINUC_DS_LUT[dinuc_grid[:, 0, :], dinuc_grid[:, 1, :]]
 
@@ -149,7 +148,6 @@ def get_dH_grid(dinuc_grid, min_length, max_length):
             the total dH (kcal/mol) for the corresponding probe, including
             terminal corrections.
     """
-
     # look up dH values in lookup table
     dH_grid = DINUC_DH_LUT[dinuc_grid[:, 0, :], dinuc_grid[:, 1, :]]
 
@@ -205,7 +203,6 @@ def get_tm_grid(nuc_array, config):
             N_lengths = max_length - min_length + 1. Each value is the
             predicted Tm in degrees Celsius for the corresponding probe.
     """
-
     # get a grid from the dinucleotide array using a sliding window
     dinuc_grid = get_dinuc_grid(nuc_array, config["max_length"])
 

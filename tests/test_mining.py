@@ -6,17 +6,13 @@ homopolymer, prohibited_seqs, salt/formamide params).
 """
 
 import os
-import tempfile
 
-import numpy as np
 import pandas as pd
 import pytest
 
+from oligominer import mine_fasta, mine_sequence, write_probes
+from oligominer.thermodynamics.mining import PROBE_COLUMNS, probes_to_df
 from oligominer.utils.exceptions import ConfigurationError
-
-from oligominer import mine_sequence, mine_fasta, write_probes
-from oligominer.thermodynamics.mining import probes_to_df, PROBE_COLUMNS
-
 
 # ---------------------------------------------------------------------------
 # mine_sequence

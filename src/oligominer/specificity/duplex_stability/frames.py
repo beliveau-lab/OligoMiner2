@@ -1,5 +1,4 @@
-"""
-# Duplex frames
+"""# Duplex frames
 
 Shapes a merged probe and alignment table into the frame the duplex-stability
 encoders read.
@@ -17,7 +16,6 @@ so those two must be per-row columns. Passing ``celsius=None`` keeps whatever th
 frame already carries, which is what a multi-temperature corpus requires.
 """
 
-import numpy as np
 import pandas as pd
 
 # alignment operations that consume a base from both the probe and the target.
@@ -36,8 +34,7 @@ DEFAULT_SODIUM = 0.39
 
 
 def expand_cigar(cigar):
-    """
-    Expand a CIGAR string into one operation character per alignment column.
+    """Expand a CIGAR string into one operation character per alignment column.
 
     '36M' becomes 36 'M' characters.
 
@@ -61,8 +58,7 @@ def expand_cigar(cigar):
 
 
 def build_aln(probe, target, ops):
-    """
-    Build the gapped alignment strings for one duplex.
+    """Build the gapped alignment strings for one duplex.
 
     Args:
         probe (str): the probe sequence.
@@ -105,8 +101,7 @@ def build_aln(probe, target, ops):
 def build_duplex_frame(
     merged_df, celsius=DEFAULT_CELSIUS, sodium=DEFAULT_SODIUM, drop_malformed=True
 ):
-    """
-    Shape a merged probe and alignment table into an encoder-ready frame.
+    """Shape a merged probe and alignment table into an encoder-ready frame.
 
     Rows whose sequences run short against their CIGAR cannot be aligned and are
     dropped by default, because a truncated alignment scores without error. The
@@ -145,7 +140,7 @@ def build_duplex_frame(
         df["ops"] = df["align_cigar"].map(expand_cigar)
 
     probe_aln, target_aln = [], []
-    for probe, target, ops in zip(df["probe_seq"], df["target_seq"], df["ops"]):
+    for probe, target, ops in zip(df["probe_seq"], df["target_seq"], df["ops"], strict=False):
         aligned_probe, aligned_target = build_aln(str(probe), str(target), str(ops))
         probe_aln.append(aligned_probe)
         target_aln.append(aligned_target)
@@ -177,8 +172,7 @@ def build_duplex_frame(
 
 
 def _check_ops_distinguish_matches(df):
-    """
-    Verify the CIGARs distinguish matches from mismatches.
+    """Verify the CIGARs distinguish matches from mismatches.
 
     The thermodynamic features are built from runs of '=' operations. A CIGAR
     written with 'M', which bowtie2 emits without --xeq, marks matches and
@@ -211,8 +205,7 @@ def _check_ops_distinguish_matches(df):
 
 
 def _apply_condition(df, celsius, sodium):
-    """
-    Set the per-row condition columns the physics encoder reads.
+    """Set the per-row condition columns the physics encoder reads.
 
     Args:
         df (pandas.DataFrame): the frame being built.

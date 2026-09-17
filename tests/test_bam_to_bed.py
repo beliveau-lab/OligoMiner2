@@ -4,7 +4,6 @@ import pytest
 
 from oligominer.specificity.alignment.bam_to_bed import sam_to_bed
 
-
 # ---------------------------------------------------------------------------
 # helpers
 # ---------------------------------------------------------------------------

@@ -15,7 +15,6 @@ from oligominer.specificity.alignment.duplex import (
     BED_COLUMNS,
     chrom_sizes,
     clamp_intervals,
-    fetch_derived_seqs,
     load_reference,
     reconstruct,
 )
@@ -208,7 +207,7 @@ class TestBedtoolsParity:
             s.upper() for s in get_fasta(bed_data=trimmed, fasta_path=str(path)).strip().split("\n")
         ]
 
-        mismatches = [i for i, (a, b) in enumerate(zip(fast, slow)) if a != b]
+        mismatches = [i for i, (a, b) in enumerate(zip(fast, slow, strict=False)) if a != b]
         assert mismatches == [], (
             f"{len(mismatches)}/{len(align_df)} rows differ, first at {mismatches[:3]}"
         )

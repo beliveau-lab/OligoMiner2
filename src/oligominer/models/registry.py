@@ -1,5 +1,4 @@
-"""
-# Model registry
+"""# Model registry
 
 The single declaration of which duplex-stability models ship and what each one is.
 Every consumer reads this rather than naming an artifact path, so a model's
@@ -95,8 +94,7 @@ DEFAULT_MODEL = "physics-xgb"
 
 
 def spec(name):
-    """
-    Return one model's registry entry.
+    """Return one model's registry entry.
 
     Args:
         name (str): a registry key.
@@ -115,8 +113,7 @@ def spec(name):
 
 
 def artifact_path(name):
-    """
-    Return the path to a model's artifact file.
+    """Return the path to a model's artifact file.
 
     Args:
         name (str): a registry key.
@@ -129,8 +126,7 @@ def artifact_path(name):
 
 
 def card_path(name):
-    """
-    Return the path to a model's card.
+    """Return the path to a model's card.
 
     Args:
         name (str): a registry key.
@@ -143,8 +139,7 @@ def card_path(name):
 
 
 def available():
-    """
-    Return the registered model names.
+    """Return the registered model names.
 
     Returns:
         names (list): every key of the registry, sorted.
@@ -154,8 +149,7 @@ def available():
 
 
 def missing_artifacts():
-    """
-    Return any registered artifact or card that is not present on disk.
+    """Return any registered artifact or card that is not present on disk.
 
     Returns:
         missing (list): 'name:key -> filename' for each absent file.

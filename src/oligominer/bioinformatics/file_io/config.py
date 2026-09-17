@@ -1,5 +1,4 @@
-"""
-Configuration constants and shared helpers for the file_io sub-package.
+"""Configuration constants and shared helpers for the file_io sub-package.
 """
 
 import os
@@ -41,8 +40,7 @@ DEFAULT_CLASSIFICATION_RULES = {
 
 
 def merge_files_by_extension(input_dir, output_path, extensions):
-    """
-    Concatenate all files matching the given extensions into a single file.
+    """Concatenate all files matching the given extensions into a single file.
 
     Files are read in sorted filename order. Each file is written verbatim,
     with a newline appended if the file does not end with one.
@@ -66,7 +64,7 @@ def merge_files_by_extension(input_dir, output_path, extensions):
 
     with open(output_path, "w") as outfile:
         for fpath in merged_paths:
-            with open(fpath, "r") as infile:
+            with open(fpath) as infile:
                 for line in infile:
                     outfile.write(line)
                 if not line.endswith("\n"):

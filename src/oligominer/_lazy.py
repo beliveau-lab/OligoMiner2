@@ -1,5 +1,4 @@
-"""
-# Lazy package exports
+"""# Lazy package exports
 
 Builds the PEP 562 hooks that let a package re-export a name without importing
 the module that defines it.
@@ -32,8 +31,7 @@ from types import ModuleType
 
 
 class _LazyPackage(ModuleType):
-    """
-    A package whose re-exported names win against same-named submodules.
+    """A package whose re-exported names win against same-named submodules.
 
     Most lazy names need nothing but `__getattr__`, which runs only when normal
     lookup fails. A name that collides with a submodule defeats that: importing
@@ -72,8 +70,7 @@ class _LazyPackage(ModuleType):
 
 
 def lazy_exports(package, exports, submodules=()):
-    """
-    Build the `__getattr__`, `__dir__` and `__all__` a lazy package needs.
+    """Build the `__getattr__`, `__dir__` and `__all__` a lazy package needs.
 
     Args:
         package (str): the importing package's `__name__`.

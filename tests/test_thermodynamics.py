@@ -7,16 +7,14 @@ and nearest-neighbor parameter tables.
 import numpy as np
 import pytest
 
-from oligominer.thermodynamics.mining.int_encoding import seq_to_8bit, DNA_ASCII_LUT
+from oligominer.thermodynamics import formamide_correction
 from oligominer.thermodynamics.mining.calc_tm_2d import (
     get_dinuc_grid,
     get_dS_grid,
-    get_dH_grid,
     get_tm_grid,
 )
 from oligominer.thermodynamics.mining.config import GET_DEFAULT_MINING_CONFIG
-from oligominer.thermodynamics import formamide_correction
-
+from oligominer.thermodynamics.mining.int_encoding import seq_to_8bit
 
 # ---------------------------------------------------------------------------
 # integer encoding

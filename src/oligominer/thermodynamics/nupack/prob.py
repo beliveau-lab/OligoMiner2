@@ -4,8 +4,7 @@ from .config import DEFAULT_NUPACK_MODEL
 
 
 def calc_prob(seq, model=None):
-    """
-    Calculate the probability that a sequence is entirely unpaired.
+    """Calculate the probability that a sequence is entirely unpaired.
 
     Returns the NUPACK structure probability for the all-unpaired
     secondary structure (all dots).

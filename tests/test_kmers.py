@@ -5,7 +5,6 @@ reject a mismatched query, and agreement between the two backends on the same
 reference. The Jellyfish tests skip when the binary is not installed.
 """
 
-import json
 import random
 
 import numpy as np

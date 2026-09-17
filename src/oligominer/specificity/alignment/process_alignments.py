@@ -1,23 +1,20 @@
-"""
-# Process Alignments
+"""# Process Alignments
 
 End-to-end pipeline for processing alignment results. Takes SAM data or a BAM
 file, converts to BED, builds a DataFrame of alignment metadata, and optionally
 looks up derived sequences from a reference genome.
 """
 
-import pandas as pd
 
-from oligominer.specificity.alignment import bam_to_bed, trim_bed_coords, get_fasta
 from oligominer.bioinformatics.file_io.bed_io import bed_to_df
 from oligominer.bioinformatics.file_io.sam_bam_io import load_bam_file
+from oligominer.specificity.alignment import bam_to_bed, get_fasta, trim_bed_coords
 from oligominer.utils import require_one_of
 from oligominer.utils.exceptions import InvalidInputError
 
 
 def process_alignments(sam_data=None, bam_path=None, ref_fasta=None, to_upper=True):
-    """
-    Process alignment data into a structured DataFrame.
+    """Process alignment data into a structured DataFrame.
 
     Converts SAM/BAM alignment data to BED format, parses it into a DataFrame
     with alignment metadata, and optionally looks up derived sequences from

@@ -1,5 +1,4 @@
-"""
-# Batched pDup
+"""# Batched pDup
 
 Computes the same pDup values as ``calc_pdup`` for many duplexes at once.
 
@@ -52,8 +51,7 @@ _STRAND_CACHE = {}
 
 
 def low_level_available():
-    """
-    Report whether NUPACK's low-level batch API can be used.
+    """Report whether NUPACK's low-level batch API can be used.
 
     Returns:
         available (bool): True when the batch submit path is importable.
@@ -71,8 +69,7 @@ def low_level_available():
 
 
 def _strand(seq):
-    """
-    Return one Strand object per distinct sequence.
+    """Return one Strand object per distinct sequence.
 
     Reusing a single object per sequence is required for correctness: a homodimer
     built from two differently named Strand objects is treated as two
@@ -95,8 +92,7 @@ def _strand(seq):
 
 
 def _complex(*seqs):
-    """
-    Build a complex from sequences, reusing cached strand objects.
+    """Build a complex from sequences, reusing cached strand objects.
 
     Args:
         *seqs (str): the sequences in the complex.
@@ -111,8 +107,7 @@ def _complex(*seqs):
 
 
 def _options():
-    """
-    Build the compute options carrying NUPACK's executor and cache budget.
+    """Build the compute options carrying NUPACK's executor and cache budget.
 
     Rebuilt per batch because the options hold the executor handle, and a stale
     handle serializes the batch.
@@ -128,8 +123,7 @@ def _options():
 
 
 def _logq(result, complex_):
-    """
-    Return one complex's symmetry-corrected log partition function.
+    """Return one complex's symmetry-corrected log partition function.
 
     Args:
         result: the map returned by submit(...).get().
@@ -145,8 +139,7 @@ def _logq(result, complex_):
 
 
 def _solve(logq, model):
-    """
-    Solve the two-strand equilibrium for pDup.
+    """Solve the two-strand equilibrium for pDup.
 
     Args:
         logq (list): log partition functions for A.B, A, B, A.A and B.B.
@@ -172,8 +165,7 @@ def _solve(logq, model):
 
 
 def calc_pdup_many(pairs, model=None, batch_complexes=BATCH_COMPLEXES):
-    """
-    Compute pDup for many probe and target pairs.
+    """Compute pDup for many probe and target pairs.
 
     Args:
         pairs (sequence): (probe_seq, target_seq) tuples.
@@ -207,8 +199,7 @@ def calc_pdup_many(pairs, model=None, batch_complexes=BATCH_COMPLEXES):
 
 
 def _pdup_batch(pairs, model):
-    """
-    Compute pDup for one batch of pairs in a single submit.
+    """Compute pDup for one batch of pairs in a single submit.
 
     Args:
         pairs (list): (probe_seq, target_seq) tuples.
@@ -238,8 +229,7 @@ def _pdup_batch(pairs, model):
 
 
 def calc_pdup_one_to_many(probe, targets, model=None, batch_complexes=BATCH_COMPLEXES):
-    """
-    Compute pDup for one probe against many targets.
+    """Compute pDup for one probe against many targets.
 
     Q(A) and Q(A.A) depend only on the probe, so they are computed once for the
     whole target list rather than once per target. A.A is a two-strand complex, so
@@ -275,8 +265,7 @@ def calc_pdup_one_to_many(probe, targets, model=None, batch_complexes=BATCH_COMP
 
 
 def _pdup_one_to_many_batch(probe, targets, model):
-    """
-    Compute pDup for one probe against one batch of targets.
+    """Compute pDup for one probe against one batch of targets.
 
     Args:
         probe (str): the probe sequence.
@@ -308,8 +297,7 @@ def _pdup_one_to_many_batch(probe, targets, model):
 def add_pdup_batch(
     merged_df, model=None, probe_col="probe_seq", target_col="derived_seq", out_col="pdup"
 ):
-    """
-    Add a pDup column to a duplex table.
+    """Add a pDup column to a duplex table.
 
     Rows are grouped by probe so the probe-only partition functions are shared
     across every target that probe aligns to.

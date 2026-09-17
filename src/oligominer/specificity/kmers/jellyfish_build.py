@@ -1,5 +1,4 @@
-"""
-# Jellyfish Index Building
+"""# Jellyfish Index Building
 
 Builds a Jellyfish kmer count index from a FASTA/FASTQ file using
 jellyfish count. After building, validates the index. See jellyfish_query.py
@@ -8,24 +7,22 @@ for querying a built index.
 
 import os
 
-from oligominer.utils.cores import resolve_cores
-from oligominer.utils.shell_pipeline import run_cmd
 from oligominer.utils import (
-    get_abs_path,
     check_dir_exists,
     check_input_exists,
     check_output_exists,
     ensure_executable,
+    get_abs_path,
 )
-
+from oligominer.utils.cores import resolve_cores
+from oligominer.utils.shell_pipeline import run_cmd
 
 # smallest hash to ask for, so a tiny input does not get a degenerate table
 MIN_HASH_SIZE = 1_000_000
 
 
 def estimate_hash_size(input_file, floor=MIN_HASH_SIZE):
-    """
-    Estimate Jellyfish's initial hash size from the input.
+    """Estimate Jellyfish's initial hash size from the input.
 
     Jellyfish sizes its hash by the number of distinct k-mers it expects, which
     for a genome is close to its length. Asking for a fixed large size makes a
@@ -66,8 +63,7 @@ def jellyfish_build(
     U=None,
     verbose=False,
 ):
-    """
-    Build a Jellyfish kmer count index (wrapper for 'jellyfish count').
+    """Build a Jellyfish kmer count index (wrapper for 'jellyfish count').
 
     Args:
         input_file (str): path to the input FASTA/FASTQ file.

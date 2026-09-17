@@ -1,5 +1,4 @@
-"""
-# Probe Scoring
+"""# Probe Scoring
 
 Functions for computing on-target and off-target scores from duplex
 stability predictions.
@@ -15,12 +14,10 @@ These scores help rank probes by specificity: ideal probes have high
 on-target scores and low off-target scores.
 """
 
-import pandas as pd
 
 
 def label_on_target(merged_df):
-    """
-    Add an ``on_target`` boolean column to a merged duplex DataFrame.
+    """Add an ``on_target`` boolean column to a merged duplex DataFrame.
 
     A row is on-target when the alignment location matches the probe's
     origin coordinates (same sequence ID and start position).
@@ -44,8 +41,7 @@ def label_on_target(merged_df):
 
 
 def score_probes(merged_df, pred_column="duplex_pred"):
-    """
-    Compute on-target and off-target scores for each probe.
+    """Compute on-target and off-target scores for each probe.
 
     Groups the merged duplex table by probe ``seqid`` and aggregates
     the duplex predictions into per-probe scores.

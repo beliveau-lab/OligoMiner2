@@ -1,5 +1,4 @@
-"""
-# Core-count resolution
+"""# Core-count resolution
 
 Resolves how many workers a parallel stage should use when running under a batch
 scheduler, and supplies the default for every ``cores`` and ``threads`` argument in the
@@ -36,8 +35,7 @@ ENV_VAR = "OLIGOMINER_THREADS"
 
 
 def _scheduler_grant():
-    """
-    Return the core count the batch scheduler granted this job.
+    """Return the core count the batch scheduler granted this job.
 
     Returns:
         grant (int or None): the granted core count, or None if not running
@@ -55,8 +53,7 @@ def _scheduler_grant():
 
 
 def _affinity():
-    """
-    Return how many cores this process is allowed to run on.
+    """Return how many cores this process is allowed to run on.
 
     Returns:
         n (int): the affinity mask size, falling back to the machine core
@@ -72,8 +69,7 @@ def _affinity():
 
 
 def resolve_cores(n=None, env_var=ENV_VAR, cap=None):
-    """
-    Return the number of workers to use.
+    """Return the number of workers to use.
 
     Resolution order: an explicit ``n``, then ``env_var``, then the batch
     scheduler's granted core count, then this process's CPU affinity.
@@ -105,8 +101,7 @@ def resolve_cores(n=None, env_var=ENV_VAR, cap=None):
 
 
 def describe():
-    """
-    Report every core count this process can see, for a provenance record.
+    """Report every core count this process can see, for a provenance record.
 
     Records the value used alongside the ones that were rejected, so an
     oversubscribed run can be diagnosed from its manifest.

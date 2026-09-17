@@ -41,7 +41,6 @@ summarised rather than enumerated, so the vector is 103 wide for a 10-mer and fo
 No alignment-width contract, no truncation path, no re-fit for a longer probe.
 """
 
-import sys
 from pathlib import Path
 
 import numpy as np

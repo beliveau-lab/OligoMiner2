@@ -1,5 +1,4 @@
-"""
-Split-architecture probe design.
+"""Split-architecture probe design.
 
 A split architecture places one functional element across two oligos that bind
 adjacent sites on the same target. The element is only complete when both
@@ -46,8 +45,7 @@ SPLIT_LAYOUT = ["append_5p", "homology", "append_3p"]
 
 
 class SplitArchitecture:
-    """
-    What each member of a split pair carries, and how close the pair must be.
+    """What each member of a split pair carries, and how close the pair must be.
 
     Attributes:
         name (str): the chemistry this describes, recorded on the output.
@@ -86,8 +84,7 @@ class SplitArchitecture:
         self.max_gap = max_gap
 
     def append_for(self, role, end):
-        """
-        Return the sequence this architecture appends to one end of one member.
+        """Return the sequence this architecture appends to one end of one member.
 
         Args:
             role (str): 'upstream' or 'downstream'.
@@ -109,8 +106,7 @@ class SplitArchitecture:
 
 
 def hcr3(initiator_5p, initiator_3p, name="hcr3", spacer="AA", min_gap=0, max_gap=2):
-    """
-    Build the architecture for an HCR 3.0 split-initiator pair.
+    """Build the architecture for an HCR 3.0 split-initiator pair.
 
     The amplifier's initiator is split in two. The upstream member carries the
     3' half on its 3' end and the downstream member carries the 5' half on its
@@ -145,8 +141,7 @@ def hcr3(initiator_5p, initiator_3p, name="hcr3", spacer="AA", min_gap=0, max_ga
 
 
 def split_fish(bridge_5p, bridge_3p, name="split-fish", spacer="", min_gap=0, max_gap=1):
-    """
-    Build the architecture for a split-FISH bridge pair.
+    """Build the architecture for a split-FISH bridge pair.
 
     Each member carries half of the readout bridge on the end facing away from
     its partner, so the two halves sit at the outer ends of the bound pair and
@@ -177,8 +172,7 @@ def split_fish(bridge_5p, bridge_3p, name="split-fish", spacer="", min_gap=0, ma
 
 
 def pair_probes(df, architecture, by="seq_id", start_column="start", end_column="stop"):
-    """
-    Pair probes whose footprints are adjacent on the target.
+    """Pair probes whose footprints are adjacent on the target.
 
     Within each target the probes are taken in coordinate order and paired
     greedily: the first probe pairs with the nearest following probe whose gap
@@ -250,8 +244,7 @@ def pair_probes(df, architecture, by="seq_id", start_column="start", end_column=
 
 
 def assemble_split(pairs, architecture, homology_column="probe_seq"):
-    """
-    Attach the architecture's domains to each member of each pair.
+    """Attach the architecture's domains to each member of each pair.
 
     Args:
         pairs (pandas.DataFrame): the output of pair_probes.
@@ -295,8 +288,7 @@ def design_split(
     end_column="stop",
     homology_column="probe_seq",
 ):
-    """
-    Pair adjacent probes and assemble both members of every pair.
+    """Pair adjacent probes and assemble both members of every pair.
 
     Args:
         df (pandas.DataFrame): probe table to design from.
@@ -321,8 +313,7 @@ def design_split(
 
 
 def pair_summary(df, pairs):
-    """
-    Report how much of a probe table the pairing consumed.
+    """Report how much of a probe table the pairing consumed.
 
     Args:
         df (pandas.DataFrame): the probe table pairing ran on.

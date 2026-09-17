@@ -5,32 +5,29 @@ SABER appending, MERFISH barcodes, master table, scoring functions,
 and the ProbeSet appending API.
 """
 
-import numpy as np
 import pandas as pd
 import pytest
 
-from oligominer.probe_design.appending.appending import append_sequences
-from oligominer.utils.exceptions import InvalidInputError
-
+from oligominer import ProbeSet
 from oligominer.data.appending import (
     load_bridges,
-    load_outer_forward,
     load_inner_forward,
-    load_saber_1x,
     load_merfish_bridges,
+    load_outer_forward,
+    load_saber_1x,
 )
 from oligominer.probe_design.appending import (
+    append_barcodes,
+    append_custom,
+    append_multiple,
+    append_saber,
     append_same,
     append_unique,
-    append_multiple,
-    append_custom,
-    append_saber,
-    append_barcodes,
     build_appending_table,
 )
+from oligominer.probe_design.appending.appending import append_sequences
 from oligominer.probe_design.scoring import label_on_target, score_probes
-from oligominer import ProbeSet
-
+from oligominer.utils.exceptions import InvalidInputError
 
 # ---------------------------------------------------------------------------
 # appending schemes
@@ -127,7 +124,7 @@ class TestSaberAppending:
         )
         assert len(result) == len(synthetic_probe_df)
         # sequences should be longer after appending
-        for orig, appended in zip(synthetic_probe_df["sequence"], result["sequence"]):
+        for orig, appended in zip(synthetic_probe_df["sequence"], result["sequence"], strict=False):
             assert len(appended) > len(orig)
 
 
@@ -156,7 +153,7 @@ class TestMerfishBarcodes:
             target_column="refseq",
         )
         assert len(result) == len(synthetic_probe_df)
-        for orig, appended in zip(synthetic_probe_df["sequence"], result["sequence"]):
+        for orig, appended in zip(synthetic_probe_df["sequence"], result["sequence"], strict=False):
             assert len(appended) > len(orig)
 
 

@@ -1,5 +1,4 @@
-"""
-# Genomic duplex reconstruction
+"""# Genomic duplex reconstruction
 
 Recovers the reference sequence under each alignment interval, which is what a
 duplex-stability model scores a probe against.
@@ -34,8 +33,7 @@ BED_COLUMNS = [
 
 
 def load_reference(fasta_path):
-    """
-    Open a reference FASTA for repeated interval lookups.
+    """Open a reference FASTA for repeated interval lookups.
 
     Args:
         fasta_path (str): path to the reference FASTA. A .fai index is created
@@ -51,8 +49,7 @@ def load_reference(fasta_path):
 
 
 def chrom_sizes(fasta):
-    """
-    Return a chromosome name to length mapping.
+    """Return a chromosome name to length mapping.
 
     Args:
         fasta (pyfaidx.Fasta): an opened reference.
@@ -65,8 +62,7 @@ def chrom_sizes(fasta):
 
 
 def clamp_intervals(align_df, sizes):
-    """
-    Clamp alignment intervals to chromosome boundaries.
+    """Clamp alignment intervals to chromosome boundaries.
 
     An alignment near a chromosome end can produce a span running past the end of
     the sequence. Fetching such a span either errors or silently returns a short
@@ -107,8 +103,7 @@ def clamp_intervals(align_df, sizes):
 
 
 def fetch_derived_seqs(align_df, fasta, to_upper=True):
-    """
-    Look up the reference sequence under every alignment interval.
+    """Look up the reference sequence under every alignment interval.
 
     Args:
         align_df (pandas.DataFrame): clamped intervals with align_seqid,
@@ -147,8 +142,7 @@ def fetch_derived_seqs(align_df, fasta, to_upper=True):
 
 
 def reconstruct(align_df, fasta_path, to_upper=True):
-    """
-    Add the reference sequence under each alignment to an alignment table.
+    """Add the reference sequence under each alignment to an alignment table.
 
     Args:
         align_df (pandas.DataFrame): alignment records carrying BED_COLUMNS.

@@ -1,5 +1,4 @@
-"""
-# Get FASTA
+"""# Get FASTA
 
 Extracts sequences from a reference genome at positions specified by BED
 coordinates, using bedtools getfasta under the hood.
@@ -8,17 +7,16 @@ coordinates, using bedtools getfasta under the hood.
 from oligominer.utils import (
     check_input_exists,
     check_output_exists,
-    require_one_of,
     ensure_executable,
+    require_one_of,
 )
-from oligominer.utils.shell_pipeline import run_cmd, ShellPipeline
+from oligominer.utils.shell_pipeline import ShellPipeline, run_cmd
 
 
 def get_fasta(
     bed_path=None, bed_data=None, fasta_path=None, output_file=None, verbose=False, strip_col=True
 ):
-    """
-    Extract sequences from a reference FASTA at BED-specified coordinates.
+    """Extract sequences from a reference FASTA at BED-specified coordinates.
 
     Uses bedtools getfasta to look up sequences. Accepts BED input either as
     a file path or as piped string data. When strip_col is True, pipes through

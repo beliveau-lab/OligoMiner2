@@ -1,5 +1,4 @@
-"""
-# Re-training the OligoMiner2 models
+"""# Re-training the OligoMiner2 models
 
 Fits `physics-xgb` or `duplex-BiLSTM` on a new corpus and writes a card recording
 what was fitted and on what.
@@ -47,8 +46,7 @@ N_DECILES = 10
 
 
 def _sha256(path):
-    """
-    Return a file's SHA-256 digest.
+    """Return a file's SHA-256 digest.
 
     Args:
         path (str or pathlib.Path): the file.
@@ -66,8 +64,7 @@ def _sha256(path):
 
 
 def build_flat_corpus(duplexes, out, celsius=None, n_per_decile=None, seed=0, label_col="pdup"):
-    """
-    Cut a corpus with equal representation in every pDup decile.
+    """Cut a corpus with equal representation in every pDup decile.
 
     Args:
         duplexes (pandas.DataFrame or str): duplex rows, or a parquet path. Must
@@ -113,7 +110,7 @@ def build_flat_corpus(duplexes, out, celsius=None, n_per_decile=None, seed=0, la
     cut.to_parquet(out)
 
     sidecar = {
-        "rows": int(len(cut)),
+        "rows": len(cut),
         "n_per_decile": int(n_per_decile),
         "celsius": celsius,
         "seed": seed,
@@ -130,8 +127,7 @@ def build_flat_corpus(duplexes, out, celsius=None, n_per_decile=None, seed=0, la
 
 
 def _check_not_registered(out):
-    """
-    Refuse to write over a registered artifact.
+    """Refuse to write over a registered artifact.
 
     Args:
         out (pathlib.Path): the destination path.
@@ -155,8 +151,7 @@ def _check_not_registered(out):
 
 
 def _warn_off_regime(name, celsius):
-    """
-    Warn when a model is being fitted away from its shipping regime.
+    """Warn when a model is being fitted away from its shipping regime.
 
     Args:
         name (str): the registry key.
@@ -165,7 +160,7 @@ def _warn_off_regime(name, celsius):
     Returns:
         ok (bool): True when the regime matches, False when a warning was issued.
     """
-    expected = SHIPPING_CELSIUS.get(name, None)
+    expected = SHIPPING_CELSIUS.get(name)
 
     if name == "duplex-BiLSTM" and celsius is None:
         warnings.warn(
@@ -191,8 +186,7 @@ def _warn_off_regime(name, celsius):
 
 
 def _corpus_digest(corpus):
-    """
-    Return the corpus checksum when the corpus is a file on disk.
+    """Return the corpus checksum when the corpus is a file on disk.
 
     An in-memory frame has no stable identity to record, which is itself worth
     knowing: such a fit cannot be reproduced from the card alone.
@@ -211,8 +205,7 @@ def _corpus_digest(corpus):
 
 
 def write_card(name, out, corpus, celsius, seed, extra=None):
-    """
-    Write the card recording what was fitted and on what.
+    """Write the card recording what was fitted and on what.
 
     Args:
         name (str): the registry key the fit is based on.
@@ -251,8 +244,7 @@ def write_card(name, out, corpus, celsius, seed, extra=None):
 
 
 def retrain(name, corpus, out, celsius=None, seed=0, label_col="pdup", hyperparams=None):
-    """
-    Fit a registered model on a new corpus and write its card.
+    """Fit a registered model on a new corpus and write its card.
 
     Args:
         name (str): the registry key to re-fit, 'physics-xgb' or 'duplex-BiLSTM'.
@@ -293,7 +285,7 @@ def retrain(name, corpus, out, celsius=None, seed=0, label_col="pdup", hyperpara
         )
 
     info["card"] = str(
-        write_card(name, out, corpus, celsius, seed, extra={"n_train": int(len(df))})
+        write_card(name, out, corpus, celsius, seed, extra={"n_train": len(df)})
     )
 
     # success
@@ -301,8 +293,7 @@ def retrain(name, corpus, out, celsius=None, seed=0, label_col="pdup", hyperpara
 
 
 def _fit_xgb(name, df, out, label_col, seed, hyperparams):
-    """
-    Fit the tree model on a corpus and save it.
+    """Fit the tree model on a corpus and save it.
 
     Args:
         name (str): the registry key.
@@ -349,7 +340,7 @@ def _fit_xgb(name, df, out, label_col, seed, hyperparams):
     # success
     return {
         "artifact": str(out),
-        "n_train": int(len(df)),
+        "n_train": len(df),
         "n_features": int(features.shape[1]),
         "params": params,
     }

@@ -5,25 +5,23 @@ and input_dispatch.
 """
 
 import os
-import tempfile
 
 import pytest
 
-from oligominer.utils.seq_utils import rev_comp, calc_gc
-from oligominer.utils.file_paths import get_abs_path, get_dir_name
-from oligominer.utils.required_files import (
-    check_input_exists,
-    check_output_exists,
-    check_dir_exists,
-)
-from oligominer.utils.input_dispatch import require_one_of
 from oligominer.utils.exceptions import (
+    InvalidInputError,
+    MissingDirectory,
     MissingInputFile,
     MissingOutputFile,
-    MissingDirectory,
-    InvalidInputError,
 )
-
+from oligominer.utils.file_paths import get_abs_path, get_dir_name
+from oligominer.utils.input_dispatch import require_one_of
+from oligominer.utils.required_files import (
+    check_dir_exists,
+    check_input_exists,
+    check_output_exists,
+)
+from oligominer.utils.seq_utils import calc_gc, rev_comp
 
 # ---------------------------------------------------------------------------
 # seq_utils

@@ -1,5 +1,4 @@
-"""
-XGBoost-based duplex stability prediction, inspired by the PaintSHOP pipeline.
+"""XGBoost-based duplex stability prediction, inspired by the PaintSHOP pipeline.
 
 Approximates NUPACK pDup values using pre-trained XGBoost models at various
 temperatures. Each model was trained on NUPACK-computed duplex probabilities
@@ -14,8 +13,9 @@ from importlib.resources import files
 import pandas as pd
 import xgboost as xgb
 
-from oligominer.utils.seq_utils import rev_comp, calc_gc, clamp
 from oligominer.utils.exceptions import ConfigurationError
+from oligominer.utils.seq_utils import calc_gc, clamp, rev_comp
+
 from .config import XGBOOST_TEMPERATURES as AVAILABLE_TEMPERATURES
 
 DINUCLEOTIDES = [
@@ -49,8 +49,7 @@ _model_cache = {}
 
 
 def load_model(temperature):
-    """
-    Load a pre-trained PaintSHOP XGBoost model for a given temperature.
+    """Load a pre-trained PaintSHOP XGBoost model for a given temperature.
 
     Models are bundled as package data and cached after first load.
 
@@ -88,8 +87,7 @@ def load_model(temperature):
 
 
 def compute_features(df):
-    """
-    Compute sequence-derived features for XGBoost duplex prediction.
+    """Compute sequence-derived features for XGBoost duplex prediction.
 
     Takes a DataFrame with probe_seq, derived_seq, and align_score columns
     and returns a feature matrix matching the model's expected input.
@@ -133,8 +131,7 @@ def compute_features(df):
 
 
 def predict_duplex_batch(df, temperature=37, normalize=True):
-    """
-    Predict duplex formation probability for a batch of probe-target pairs.
+    """Predict duplex formation probability for a batch of probe-target pairs.
 
     Computes features from the input DataFrame and runs the XGBoost model
     to produce predictions analogous to NUPACK pDup.
@@ -166,8 +163,7 @@ def predict_duplex_batch(df, temperature=37, normalize=True):
 
 
 def predict_duplex(probe_seq, derived_seq, align_score, temperature=37, normalize=True):
-    """
-    Predict duplex formation probability for a single probe-target pair.
+    """Predict duplex formation probability for a single probe-target pair.
 
     Convenience wrapper around predict_duplex_batch for single-pair usage,
     providing a similar interface to calc_pdup.

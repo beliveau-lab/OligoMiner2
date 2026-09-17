@@ -215,7 +215,8 @@ class TestComposition:
         assert len(counts) == len(probes)
 
     def test_padlock_then_assemble_then_unit(self):
-        import pandas as pd
+
+        import random
 
         from oligominer.probe_design import (
             assemble_padlock,
@@ -223,8 +224,6 @@ class TestComposition:
             mine_padlock_sequence,
             padlocks_to_df,
         )
-
-        import random
 
         random.seed(12)
         target = "".join(random.choice("ACGT") for _ in range(4000))

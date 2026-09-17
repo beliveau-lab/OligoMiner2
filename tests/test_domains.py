@@ -42,7 +42,7 @@ def padlock_df():
 class TestDomainAssembly:
     def _seamless(self, asm):
         """Clear the default linker from every join in a layout."""
-        for left, right in zip(asm.layout, asm.layout[1:]):
+        for left, right in zip(asm.layout, asm.layout[1:], strict=False):
             asm.set_linker(left, right, "")
         return asm
 

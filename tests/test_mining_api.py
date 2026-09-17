@@ -10,10 +10,9 @@ import inspect
 
 import pytest
 
-from oligominer.thermodynamics.mining import mine_sequence, mine_fasta
+from oligominer.thermodynamics.mining import mine_fasta, mine_sequence
 from oligominer.thermodynamics.mining.config import GET_DEFAULT_MINING_CONFIG
 from oligominer.utils.exceptions import ConfigurationError
-
 
 # parameters of mine_sequence that describe the input rather than the mining regime
 _NOT_CONFIG = {"seq", "seq_id"}
@@ -132,7 +131,7 @@ class TestAllowOverlap:
     def test_non_overlapping_probes_do_not_overlap(self):
         probes = mine_sequence(self.SEQ, allow_overlap=False, **self._params())
         spans = sorted((start, stop) for _, start, stop, _, _ in probes)
-        assert all(a[1] <= b[0] for a, b in zip(spans, spans[1:]))
+        assert all(a[1] <= b[0] for a, b in zip(spans, spans[1:], strict=False))
 
 
 class TestExhaustiveGuard:

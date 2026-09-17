@@ -57,7 +57,7 @@ class TestExactness:
         reference = [calc_pdup(a, b, conc_a=1e-6, conc_b=1e-12) for a, b in duplex_pairs]
 
         assert len(batched) == len(reference)
-        worst = max(abs(x - y) for x, y in zip(batched, reference))
+        worst = max(abs(x - y) for x, y in zip(batched, reference, strict=False))
         assert worst < EXACT, f"largest deviation {worst:.3e} over {len(batched)} pairs"
 
     def test_one_to_many_matches_calc_pdup(self, duplex_pairs):
@@ -67,7 +67,7 @@ class TestExactness:
         batched = calc_pdup_one_to_many(probe, targets)
         reference = [calc_pdup(probe, t, conc_a=1e-6, conc_b=1e-12) for t in targets]
 
-        worst = max(abs(x - y) for x, y in zip(batched, reference))
+        worst = max(abs(x - y) for x, y in zip(batched, reference, strict=False))
         assert worst < EXACT, f"largest deviation {worst:.3e}"
 
     def test_a_self_complementary_probe_is_handled(self):

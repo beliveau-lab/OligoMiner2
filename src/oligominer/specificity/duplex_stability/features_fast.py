@@ -1,5 +1,4 @@
-"""
-A vectorized L4t encoder, bit-identical to the vendored one.
+"""A vectorized L4t encoder, bit-identical to the vendored one.
 
 # The problem
 
@@ -43,8 +42,8 @@ is not an optimization, it is a different model.
 import numpy as np
 import pandas as pd
 
-from .l4t import features as _F  # noqa: E402
-from .l4t import thermo as _T  # noqa: E402
+from .l4t import features as _F
+from .l4t import thermo as _T
 
 # 128x128 lookup so a step is indexed by its two ASCII bytes directly. Entries absent from
 # _STACK_HS (any step containing N, or a non-ACGT byte) stay NaN and are masked out, which
@@ -69,8 +68,7 @@ for _a in "ACGT":
 
 
 def _as_matrix(strings, width):
-    """
-    Pack a sequence of strings into a (rows, width) uint8 matrix, zero-padded.
+    """Pack a sequence of strings into a (rows, width) uint8 matrix, zero-padded.
 
     Args:
         strings (iterable): the alignment strings.
@@ -90,8 +88,7 @@ def _as_matrix(strings, width):
 
 
 def stacking_profile_batch(probe_alns, ops_list, celsius, width=None):
-    """
-    Per-column stacking free energy for many duplexes at once.
+    """Per-column stacking free energy for many duplexes at once.
 
     Reproduces ``thermo.stacking_profile`` exactly, including its treatment of run boundaries
     and non-ACGT steps, but computes every row in a handful of array operations.
@@ -147,8 +144,7 @@ def stacking_profile_batch(probe_alns, ops_list, celsius, width=None):
 
 
 def terminal_block_batch(prof, lengths, K):
-    """
-    The terminal/interior block for every row at once.
+    """The terminal/interior block for every row at once.
 
     Reproduces ``features._terminal_block`` exactly. The trick that makes it cheap is that the
     loops run over COLUMNS (width ~40) rather than over rows (millions): a column loop broadcast
@@ -245,8 +241,7 @@ def terminal_block_batch(prof, lengths, K):
 
 
 def enc_om2_fast(df, celsius=None, sodium=None, K=None):
-    """
-    The L4t encoding, vectorized. Same 103 columns, same values, same order.
+    """The L4t encoding, vectorized. Same 103 columns, same values, same order.
 
     Args:
         df (pandas.DataFrame): duplex frame with ``probe_aln``, ``target_aln``, ``ops``.
@@ -278,7 +273,7 @@ def enc_om2_fast(df, celsius=None, sodium=None, K=None):
     th = pd.DataFrame(
         [
             _T._features_cached(pa, ta, op, float(c), float(s))
-            for pa, ta, op, c, s in zip(df.probe_aln, df.target_aln, df.ops, cel, na)
+            for pa, ta, op, c, s in zip(df.probe_aln, df.target_aln, df.ops, cel, na, strict=False)
         ],
         columns=_T.FEATURE_COLUMNS,
     )[_F.THERMO_COLS]
@@ -306,8 +301,7 @@ def enc_om2_fast(df, celsius=None, sodium=None, K=None):
 
 
 def verify(df, verbose=True):
-    """
-    Assert the fast encoder is bit-identical to the vendored one.
+    """Assert the fast encoder is bit-identical to the vendored one.
 
     This is a shipping gate, not a smoke test. Float32 output means arithmetic order matters,
     so "close" is not good enough: an encoder that changes a feature value is a different
@@ -346,7 +340,7 @@ def verify(df, verbose=True):
         )
 
     report = {
-        "n_rows": int(len(df)),
+        "n_rows": len(df),
         "n_columns": int(slow.shape[1]),
         "max_abs_diff": worst,
         "bit_identical": True,

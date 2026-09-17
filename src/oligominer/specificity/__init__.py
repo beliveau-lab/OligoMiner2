@@ -1,5 +1,4 @@
-"""
-Specificity analysis sub-package.
+"""Specificity analysis sub-package.
 
 Tools for assessing probe specificity through genome alignment (Bowtie2),
 kmer frequency analysis (Jellyfish), and duplex stability prediction

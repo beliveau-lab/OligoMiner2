@@ -1,5 +1,4 @@
-"""
-Transcript sequence extraction primitives.
+"""Transcript sequence extraction primitives.
 
 Given a parsed GTF annotation DataFrame and a genome FASTA, extracts
 genomic sequences for transcript features: exons, introns, spliced
@@ -11,12 +10,10 @@ function returns a dict of {feature_id: sequence} suitable for
 write_fasta / split_fasta or direct use with mine_sequence.
 """
 
-import numpy as np
 from pyfaidx import Fasta
 
 from oligominer.bioinformatics.file_io import load_fasta
 from oligominer.utils.seq_utils import rev_comp
-
 
 # ---------------------------------------------------------------------------
 # Exon sequences
@@ -24,8 +21,7 @@ from oligominer.utils.seq_utils import rev_comp
 
 
 def get_exon_seqs(gtf_df, fasta, transcript_id=None, gene_id=None):
-    """
-    Extract individual exon sequences from the genome.
+    """Extract individual exon sequences from the genome.
 
     Returns one sequence per exon, keyed by a genomic coordinate string
     that encodes the locus and strand. Sequences are returned on the
@@ -66,8 +62,7 @@ def get_exon_seqs(gtf_df, fasta, transcript_id=None, gene_id=None):
 
 
 def get_intron_seqs(gtf_df, fasta, transcript_id):
-    """
-    Extract intron sequences for a specific transcript isoform.
+    """Extract intron sequences for a specific transcript isoform.
 
     Introns are derived from the gaps between consecutive exons of the
     transcript, sorted by genomic position, and span only the bases between
@@ -122,8 +117,7 @@ def get_intron_seqs(gtf_df, fasta, transcript_id):
 
 
 def get_spliced_seq(gtf_df, fasta, transcript_id):
-    """
-    Construct the spliced mRNA sequence for a transcript by concatenating
+    """Construct the spliced mRNA sequence for a transcript by concatenating
     its exon sequences in transcript order (5' to 3').
 
     For plus-strand genes, exons are concatenated in ascending genomic
@@ -167,8 +161,7 @@ def get_spliced_seq(gtf_df, fasta, transcript_id):
 
 
 def get_flattened_seqs(flat_df, fasta, gene_id):
-    """
-    Extract sequences for the flattened (pan-isoform) exonic segments
+    """Extract sequences for the flattened (pan-isoform) exonic segments
     of a gene.
 
     Takes the output of flatten_isoforms() and extracts the corresponding
@@ -205,8 +198,7 @@ def get_flattened_seqs(flat_df, fasta, gene_id):
 
 
 def parse_interval_label(label):
-    """
-    Parse a genomic interval label back into its components.
+    """Parse a genomic interval label back into its components.
 
     Accepts labels in the format 'seqid:start-end(strand)' as produced
     by get_exon_seqs, get_intron_seqs, and get_flattened_seqs.
@@ -230,8 +222,7 @@ def parse_interval_label(label):
 
 
 def local_to_genomic(seq_id, local_start, local_stop):
-    """
-    Convert probe coordinates local to a mined interval back to absolute
+    """Convert probe coordinates local to a mined interval back to absolute
     genomic coordinates.
 
     The seq_id is expected to be a genomic interval label as produced by
@@ -279,8 +270,7 @@ def local_to_genomic(seq_id, local_start, local_stop):
 
 
 def _resolve_fasta(fasta):
-    """
-    Accept a file path or a pre-loaded pyfaidx.Fasta and return a Fasta object.
+    """Accept a file path or a pre-loaded pyfaidx.Fasta and return a Fasta object.
 
     This avoids redundant index loads when the caller already has a Fasta
     open (e.g. when calling multiple extraction functions on the same genome).
@@ -300,8 +290,7 @@ def _resolve_fasta(fasta):
 
 
 def _select_features(gtf_df, transcript_id=None, gene_id=None):
-    """
-    Select exon records from a GTF DataFrame by transcript or gene.
+    """Select exon records from a GTF DataFrame by transcript or gene.
 
     Filters to exon-type records only. If the input GTF contains mixed
     feature types (exon, CDS, transcript, etc.), only exons are returned.
@@ -347,8 +336,7 @@ def _select_features(gtf_df, transcript_id=None, gene_id=None):
 
 
 def _extract_seq(fasta, seqid, start, end, strand):
-    """
-    Extract a genomic sequence, reverse-complementing for minus strand.
+    """Extract a genomic sequence, reverse-complementing for minus strand.
 
     Coordinates are GTF coordinates: 1-based and inclusive of both ends, so the
     feature spans end - start + 1 bases.
@@ -372,8 +360,7 @@ def _extract_seq(fasta, seqid, start, end, strand):
 
 
 def _interval_label(seqid, start, end, strand):
-    """
-    Format a genomic interval as a string label.
+    """Format a genomic interval as a string label.
 
     Args:
         seqid (str): chromosome name.

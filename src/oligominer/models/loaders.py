@@ -1,5 +1,4 @@
-"""
-# Model loading and scoring
+"""# Model loading and scoring
 
 Loads a registered model and gives every model the same ``predict`` interface, so
 a caller can iterate over the zoo without knowing what kind each entry is.
@@ -25,6 +24,7 @@ import pickle
 import numpy as np
 
 from oligominer.utils.exceptions import MissingDependency
+
 from .registry import artifact_path, card_path, spec
 
 # alignment width assumed when a model card does not record one
@@ -32,8 +32,7 @@ DEFAULT_ALN_WIDTH = 42
 
 
 def _read_card(name):
-    """
-    Read a model's card.
+    """Read a model's card.
 
     Args:
         name (str): a registry key.
@@ -49,8 +48,7 @@ def _read_card(name):
 
 
 def _encode(encoding, df, width):
-    """
-    Encode a duplex frame into the feature matrix a tabular model expects.
+    """Encode a duplex frame into the feature matrix a tabular model expects.
 
     Args:
         encoding (str): 'L4t', 'paintshop-37feat' or 'alignment-3feat'.
@@ -80,8 +78,7 @@ def _encode(encoding, df, width):
 
 
 def _enc_alignment_3feat(df):
-    """
-    Encode the three alignment features the OligoMiner1 model reads.
+    """Encode the three alignment features the OligoMiner1 model reads.
 
     Args:
         df (pandas.DataFrame): a duplex frame with probe_seq, derived_seq and
@@ -107,8 +104,7 @@ def _enc_alignment_3feat(df):
 
 
 class LoadedModel:
-    """
-    A loaded model exposing a uniform predict.
+    """A loaded model exposing a uniform predict.
 
     Attributes:
         name (str): the registry key.
@@ -123,12 +119,11 @@ class LoadedModel:
     """
 
     def __init__(self, name, entry, model, card=None):
-        """
-        Args:
-            name (str): the registry key.
-            entry (dict): the registry declaration.
-            model: the loaded estimator.
-            card (dict, optional): the model card.
+        """Args:
+        name (str): the registry key.
+        entry (dict): the registry declaration.
+        model: the loaded estimator.
+        card (dict, optional): the model card.
         """
         self.name = name
         self.entry = entry
@@ -150,8 +145,7 @@ class LoadedModel:
         )
 
     def predict(self, df):
-        """
-        Score a duplex frame.
+        """Score a duplex frame.
 
         Args:
             df (pandas.DataFrame): must carry the aligned columns the encoding
@@ -176,8 +170,7 @@ class LoadedModel:
         return values
 
     def _predict_tabular(self, df):
-        """
-        Encode a frame, predict, and invert the link when the model has one.
+        """Encode a frame, predict, and invert the link when the model has one.
 
         Args:
             df (pandas.DataFrame): the duplex frame.
@@ -203,8 +196,7 @@ class LoadedModel:
         return np.clip(values, 0, 1) if self.outputs_pdup else values
 
     def _predict_bilstm(self, df):
-        """
-        Tokenize the aligned duplex and score it.
+        """Tokenize the aligned duplex and score it.
 
         Args:
             df (pandas.DataFrame): the duplex frame.
@@ -226,8 +218,7 @@ class LoadedModel:
         return np.clip(values, 0, 1)
 
     def feature_names(self, df):
-        """
-        Return the encoder's column names.
+        """Return the encoder's column names.
 
         Args:
             df (pandas.DataFrame): a small duplex frame to encode.
@@ -244,8 +235,7 @@ class LoadedModel:
 
 
 def load(name, device=None):
-    """
-    Load a registered model.
+    """Load a registered model.
 
     Args:
         name (str): a registry key. See registry.available().
@@ -278,8 +268,7 @@ def load(name, device=None):
 
 
 def _load_pickle(path):
-    """
-    Load a pickled estimator.
+    """Load a pickled estimator.
 
     Args:
         path: the artifact path.
@@ -298,8 +287,7 @@ def _load_pickle(path):
 
 
 def _load_bilstm(path, device=None):
-    """
-    Load the BiLSTM checkpoint.
+    """Load the BiLSTM checkpoint.
 
     Args:
         path: the artifact path.
@@ -326,8 +314,7 @@ def _load_bilstm(path, device=None):
 
 
 def load_all(include_baselines=True):
-    """
-    Load every registered model.
+    """Load every registered model.
 
     Args:
         include_baselines (bool): include the incumbent baselines as well as the

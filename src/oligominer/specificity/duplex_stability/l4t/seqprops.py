@@ -20,11 +20,10 @@ computed by NUPACK 4.0.2.0 would differ for reasons that have nothing to do with
 
 import math
 import sys
-from pathlib import Path
 
 import numpy as np
 
-from .thermo import _STACK_HS, TERM_PEN_dG, TERM_PEN_dH, JOIN_dG, JOIN_dH, _dS, _revcomp, T37
+from .thermo import _STACK_HS, TERM_PEN_dG, TERM_PEN_dH, JOIN_dG, JOIN_dH, _dS, _revcomp
 
 R = 1.9872  # cal / (mol K)
 CT = 1e-6  # total strand concentration, M -- the standard 1 uM working concentration

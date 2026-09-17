@@ -1,6 +1,5 @@
-from ._version import __version__
-
 from ._lazy import lazy_exports
+from ._version import __version__
 
 # public name -> the module that defines it
 _EXPORTS = {

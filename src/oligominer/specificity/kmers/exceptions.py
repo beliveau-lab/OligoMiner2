@@ -1,5 +1,4 @@
-"""
-# Kmer Exceptions
+"""# Kmer Exceptions
 
 Custom exceptions for k-mer index construction, validation and query errors.
 """

@@ -1,5 +1,4 @@
-"""
-Default NUPACK model.
+"""Default NUPACK model.
 
 The default represents the standard FISH condition: hybridization at 37 C in 50%
 formamide, at 390 mM sodium. A NUPACK model has no formamide term, so it is run at

@@ -1,5 +1,4 @@
-"""
-# Alignment Exceptions
+"""# Alignment Exceptions
 
 Custom exceptions for Bowtie2 index validation and alignment errors.
 """

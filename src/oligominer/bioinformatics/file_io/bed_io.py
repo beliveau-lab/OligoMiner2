@@ -1,5 +1,4 @@
-"""
-# BED I/O
+"""# BED I/O
 
 Utilities for reading and converting BED format data into pandas DataFrames
 for downstream analysis.
@@ -11,8 +10,7 @@ import pandas as pd
 
 
 def bed_to_df(bed_data):
-    """
-    Convert BED data to a pandas DataFrame.
+    """Convert BED data to a pandas DataFrame.
 
     Args:
         bed_data (str): BED data as a string.

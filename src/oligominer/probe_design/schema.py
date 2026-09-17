@@ -1,5 +1,4 @@
-"""
-# Probe set schema and provenance
+"""# Probe set schema and provenance
 
 Defines the on-disk format for a probe set: a version, the probe table, and the
 record of how the probes were produced.
@@ -36,8 +35,7 @@ class SchemaError(Exception):
 
 
 def utc_now():
-    """
-    Return the current UTC time as an ISO 8601 string.
+    """Return the current UTC time as an ISO 8601 string.
 
     Returns:
         stamp (str): the timestamp, second resolution, with a Z suffix.
@@ -47,8 +45,7 @@ def utc_now():
 
 
 def new_manifest(name=None):
-    """
-    Build an empty manifest at the current schema version.
+    """Build an empty manifest at the current schema version.
 
     Args:
         name (str, optional): a human-readable name for the probe set.
@@ -71,8 +68,7 @@ def new_manifest(name=None):
 
 
 def _package_version():
-    """
-    Return the installed oligominer version.
+    """Return the installed oligominer version.
 
     Returns:
         version (str): the version string, or 'unknown' if unavailable.
@@ -87,8 +83,7 @@ def _package_version():
 
 
 def record_stage(manifest, name, params=None, n_in=None, n_out=None, **details):
-    """
-    Append a pipeline stage to a manifest.
+    """Append a pipeline stage to a manifest.
 
     Each stage records what ran, the parameters it ran under, and how many probes
     entered and left, which is what makes a short probe set explainable rather
@@ -140,8 +135,7 @@ def record_stage(manifest, name, params=None, n_in=None, n_out=None, **details):
 
 
 def attrition_summary(manifest):
-    """
-    Summarize where probes were lost across the recorded stages.
+    """Summarize where probes were lost across the recorded stages.
 
     Args:
         manifest (dict): a manifest carrying stages.
@@ -166,8 +160,7 @@ def attrition_summary(manifest):
 
 
 def validate_manifest(manifest):
-    """
-    Check a manifest carries the fields this schema requires.
+    """Check a manifest carries the fields this schema requires.
 
     Args:
         manifest (dict): the manifest to check.
@@ -203,8 +196,7 @@ MIGRATIONS = {}
 
 
 def upgrade_manifest(manifest):
-    """
-    Upgrade a manifest to the current schema version.
+    """Upgrade a manifest to the current schema version.
 
     Args:
         manifest (dict): a manifest at any supported version.
@@ -230,8 +222,7 @@ def upgrade_manifest(manifest):
 
 
 def dumps(manifest):
-    """
-    Serialize a manifest to JSON.
+    """Serialize a manifest to JSON.
 
     Args:
         manifest (dict): the manifest.
@@ -244,8 +235,7 @@ def dumps(manifest):
 
 
 def loads(text):
-    """
-    Read a manifest from JSON, upgrading it if it is older than this release.
+    """Read a manifest from JSON, upgrading it if it is older than this release.
 
     Args:
         text (str): the JSON document.

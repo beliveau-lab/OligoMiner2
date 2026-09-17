@@ -1,5 +1,4 @@
-"""
-Sequence record classification utilities.
+"""Sequence record classification utilities.
 
 Provides functions for classifying sequence IDs by user-defined regex
 rules (e.g. canonical, alt, hap, fix, unlocalized, unplaced).
@@ -9,13 +8,13 @@ import re
 
 import pandas as pd
 
+from oligominer.utils import check_dir_exists, get_dir_name
+
 from .config import DEFAULT_CLASSIFICATION_RULES
-from oligominer.utils import get_dir_name, check_dir_exists
 
 
 def classify_seq_ids(seq_source, rules=None, default_category="canonical"):
-    """
-    Classify sequence IDs from any dict-like source by regex rules.
+    """Classify sequence IDs from any dict-like source by regex rules.
 
     Rules are evaluated in order; the first matching pattern wins.
     Sequence IDs that match no rule receive the default_category label.
@@ -54,8 +53,7 @@ def classify_seq_ids(seq_source, rules=None, default_category="canonical"):
 
 
 def classify_and_write(seq_source, output_path, rules=None, default_category="canonical"):
-    """
-    Classify sequence IDs and write the results to a TSV file.
+    """Classify sequence IDs and write the results to a TSV file.
 
     Convenience wrapper around classify_seq_ids that also writes the
     classification table to disk. Returns the DataFrame for further use.

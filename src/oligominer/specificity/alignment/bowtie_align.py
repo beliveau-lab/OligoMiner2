@@ -1,5 +1,4 @@
-"""
-# Bowtie2 Alignment
+"""# Bowtie2 Alignment
 
 Aligns reads to a reference genome using Bowtie2. Uses run_cmd for single
 commands (index validation) and ShellPipeline for multi-step pipes (alignment
@@ -7,22 +6,22 @@ with BAM conversion). For building new indexes, see bowtie_build.py. For
 preset parameter configurations, see bowtie_presets.py.
 """
 
-from oligominer.utils.cores import resolve_cores
-from oligominer.utils.shell_pipeline import run_cmd, ShellPipeline
 from oligominer.utils import (
-    get_abs_path,
     check_dir_exists,
     check_output_exists,
-    require_one_of,
     ensure_executable,
+    get_abs_path,
+    require_one_of,
 )
-from .exceptions import MissingBowtieIndexError
+from oligominer.utils.cores import resolve_cores
+from oligominer.utils.shell_pipeline import ShellPipeline, run_cmd
+
 from .bowtie_presets import BT2_INDEX_EXTENSIONS
+from .exceptions import MissingBowtieIndexError
 
 
 def check_index_exists(index_path):
-    """
-    Check that all expected Bowtie2 index files exist on disk.
+    """Check that all expected Bowtie2 index files exist on disk.
 
     Args:
         index_path (str): base path to the Bowtie2 index.
@@ -41,8 +40,7 @@ def check_index_exists(index_path):
 
 
 def validate_index(index_path, verbose=False):
-    """
-    Validate a Bowtie2 index using bowtie2-inspect.
+    """Validate a Bowtie2 index using bowtie2-inspect.
 
     Args:
         index_path (str): base path to the Bowtie2 index.
@@ -101,8 +99,7 @@ def build_bowtie2_cmd(
     time=False,
     bt2_verbose=False,
 ):
-    """
-    Build the bowtie2 argv for an alignment.
+    """Build the bowtie2 argv for an alignment.
 
     Both the buffered path in bowtie_align() and the streaming path in
     stream_align.py construct their command here, so the two cannot diverge on a
@@ -264,8 +261,7 @@ def bowtie_align(
     verbose=False,
     bt2_verbose=False,
 ):
-    """
-    Align reads to a reference genome using Bowtie2.
+    """Align reads to a reference genome using Bowtie2.
 
     Args:
         index_path (str): base path to the Bowtie2 index files.

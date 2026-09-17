@@ -1,5 +1,4 @@
-"""
-# Custom OligoMiner2 exceptions
+"""# Custom OligoMiner2 exceptions
 
 OligoMiner2 is designed for use in pipelines and larger workflows.
 To facilitate error handling, we define a set of custom exceptions

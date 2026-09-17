@@ -1,5 +1,4 @@
-"""
-Bioinformatics sub-package.
+"""Bioinformatics sub-package.
 
 Provides I/O utilities for common bioinformatics file formats (FASTA, FASTQ,
 BED, SAM/BAM) and sequence classification tools. Transcriptome analysis

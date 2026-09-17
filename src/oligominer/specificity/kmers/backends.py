@@ -1,5 +1,4 @@
-"""
-# K-mer backend dispatch
+"""# K-mer backend dispatch
 
 One k-mer screening interface served by two interchangeable backends: Jellyfish
 when it is installed, and the pure-numpy index otherwise.
@@ -28,6 +27,7 @@ from pathlib import Path
 import numpy as np
 
 from oligominer.utils.cores import resolve_cores
+
 from .exceptions import KmerIndexError
 from .numpy_index import KmerIndex, build_numpy_index
 
@@ -38,8 +38,7 @@ SIDECAR_SUFFIX = ".om2meta.json"
 
 
 def have_jellyfish():
-    """
-    Return the path to the jellyfish binary, or None if it is not installed.
+    """Return the path to the jellyfish binary, or None if it is not installed.
 
     Returns:
         path (str or None): the executable path, or None.
@@ -49,8 +48,7 @@ def have_jellyfish():
 
 
 def resolve_backend(index_path, backend="auto"):
-    """
-    Decide which backend answers for an index.
+    """Decide which backend answers for an index.
 
     Args:
         index_path (str or pathlib.Path): the k-mer index path.
@@ -91,8 +89,7 @@ def resolve_backend(index_path, backend="auto"):
 
 
 def sidecar_path(index_path):
-    """
-    Return the metadata sidecar path for an index.
+    """Return the metadata sidecar path for an index.
 
     Args:
         index_path (str or pathlib.Path): the index path.
@@ -105,8 +102,7 @@ def sidecar_path(index_path):
 
 
 def write_metadata(index_path, info):
-    """
-    Write an index's metadata sidecar.
+    """Write an index's metadata sidecar.
 
     Args:
         index_path (str or pathlib.Path): the index path.
@@ -123,8 +119,7 @@ def write_metadata(index_path, info):
 
 
 def read_metadata(index_path):
-    """
-    Read an index's metadata sidecar.
+    """Read an index's metadata sidecar.
 
     Args:
         index_path (str or pathlib.Path): the index path.
@@ -150,8 +145,7 @@ def build_index(
     canonical=False,
     verbose=False,
 ):
-    """
-    Build a k-mer index with whichever backend is selected.
+    """Build a k-mer index with whichever backend is selected.
 
     Writes a metadata sidecar recording k and canonicality beside the index.
 
@@ -215,8 +209,7 @@ def build_index(
 
 
 def _size_hash_from_fasta(fasta_path):
-    """
-    Choose a Jellyfish hash size from the size of the input FASTA.
+    """Choose a Jellyfish hash size from the size of the input FASTA.
 
     Args:
         fasta_path (pathlib.Path): the reference FASTA.
@@ -231,8 +224,7 @@ def _size_hash_from_fasta(fasta_path):
 
 
 def max_kmer(index_path, seqs, k=18, backend="auto", expect_canonical=None, verbose=False):
-    """
-    Return the maximum k-mer count within each sequence.
+    """Return the maximum k-mer count within each sequence.
 
     A probe whose most abundant k-mer occurs once in the reference has no
     repetitive content at that k, so lower counts indicate higher specificity.
@@ -273,8 +265,7 @@ def max_kmer(index_path, seqs, k=18, backend="auto", expect_canonical=None, verb
 
 
 def _check_metadata(index_path, k, expect_canonical):
-    """
-    Verify a query's k and canonicality against the index's recorded metadata.
+    """Verify a query's k and canonicality against the index's recorded metadata.
 
     Args:
         index_path (pathlib.Path): the index path.
@@ -311,8 +302,7 @@ def _check_metadata(index_path, k, expect_canonical):
 
 
 def _max_kmer_numpy(index_path, seqs, k):
-    """
-    Query a numpy index for the maximum k-mer count of each sequence.
+    """Query a numpy index for the maximum k-mer count of each sequence.
 
     Args:
         index_path (pathlib.Path): the '.npz' index.
@@ -334,8 +324,7 @@ def _max_kmer_numpy(index_path, seqs, k):
 
 
 def _max_kmer_jellyfish(index_path, seqs, k):
-    """
-    Query a Jellyfish index for the maximum k-mer count of each sequence.
+    """Query a Jellyfish index for the maximum k-mer count of each sequence.
 
     Runs one subprocess for the whole batch and consumes its output line by line,
     so neither the k-mer stream nor the result stream is held in memory.

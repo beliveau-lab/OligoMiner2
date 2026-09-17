@@ -1,5 +1,4 @@
-"""
-# Interval exclusion
+"""# Interval exclusion
 
 Removes probes overlapping regions a user wants avoided, named by a BED file.
 
@@ -19,8 +18,7 @@ BED_COLUMNS = ["chrom", "start", "stop"]
 
 
 def read_bed(path):
-    """
-    Read the first three columns of a BED file.
+    """Read the first three columns of a BED file.
 
     Lines beginning with 'track', 'browser' or '#' are skipped.
 
@@ -48,8 +46,7 @@ def read_bed(path):
 
 
 def _merge_intervals(starts, stops):
-    """
-    Merge overlapping intervals on one chromosome.
+    """Merge overlapping intervals on one chromosome.
 
     Args:
         starts (numpy.ndarray): interval starts.
@@ -63,7 +60,7 @@ def _merge_intervals(starts, stops):
     starts, stops = starts[order], stops[order]
 
     merged_starts, merged_stops = [], []
-    for start, stop in zip(starts, stops):
+    for start, stop in zip(starts, stops, strict=False):
         if merged_stops and start <= merged_stops[-1]:
             merged_stops[-1] = max(merged_stops[-1], stop)
         else:
@@ -75,8 +72,7 @@ def _merge_intervals(starts, stops):
 
 
 def overlaps_intervals(probe_df, intervals, chrom_col="seq_id", start_col="start", stop_col="stop"):
-    """
-    Return which probes overlap any of the given intervals.
+    """Return which probes overlap any of the given intervals.
 
     Args:
         probe_df (pandas.DataFrame): probes with chromosome, start and stop.
@@ -125,8 +121,7 @@ def overlaps_intervals(probe_df, intervals, chrom_col="seq_id", start_col="start
 
 
 def exclude_intervals(probe_df, bed_path, chrom_col="seq_id", start_col="start", stop_col="stop"):
-    """
-    Drop probes overlapping any interval in a BED file.
+    """Drop probes overlapping any interval in a BED file.
 
     Args:
         probe_df (pandas.DataFrame): probes with chromosome, start and stop.

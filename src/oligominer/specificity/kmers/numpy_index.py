@@ -1,5 +1,4 @@
-"""
-# Pure-numpy k-mer counting
+"""# Pure-numpy k-mer counting
 
 A k-mer count index built and queried with numpy alone, so k-mer screening works
 without Jellyfish installed.
@@ -23,6 +22,7 @@ import tempfile
 import numpy as np
 
 from oligominer.utils.cores import resolve_cores
+
 from .exceptions import KmerIndexError
 
 # A=0, C=1, G=2, T=3 in either case; everything else 255
@@ -43,8 +43,7 @@ QUERY_BATCH = 400_000
 
 
 def encode_sequence(seq):
-    """
-    Encode a DNA sequence as a uint8 array.
+    """Encode a DNA sequence as a uint8 array.
 
     Args:
         seq (str): the DNA sequence.
@@ -59,8 +58,7 @@ def encode_sequence(seq):
 
 
 def kmers_to_uint64(encoded, k):
-    """
-    Convert an encoded sequence into one uint64 hash per k-mer window.
+    """Convert an encoded sequence into one uint64 hash per k-mer window.
 
     Accumulates one column at a time so memory stays at two arrays of n_kmers
     rather than an n-by-k matrix.
@@ -94,8 +92,7 @@ def kmers_to_uint64(encoded, k):
 
 
 def _encode_concat(seqs, k):
-    """
-    Concatenate sequences separated by k-1 N's and encode them in one call.
+    """Concatenate sequences separated by k-1 N's and encode them in one call.
 
     The separators guarantee that any k-mer window spanning two sequences contains
     an N and is therefore sentinelled, so no boundary bookkeeping is needed.
@@ -123,8 +120,7 @@ def _encode_concat(seqs, k):
 
 
 class KmerIndex:
-    """
-    A sorted k-mer count index supporting maximum-count queries.
+    """A sorted k-mer count index supporting maximum-count queries.
 
     Attributes:
         kmers (numpy.ndarray): uint64 k-mer hashes, sorted ascending.
@@ -134,12 +130,11 @@ class KmerIndex:
     """
 
     def __init__(self, kmers, counts, k, min_count=2):
-        """
-        Args:
-            kmers (numpy.ndarray): sorted uint64 k-mer hashes, no sentinels.
-            counts (numpy.ndarray): counts parallel to kmers.
-            k (int): k-mer length.
-            min_count (int): the minimum count stored when building.
+        """Args:
+        kmers (numpy.ndarray): sorted uint64 k-mer hashes, no sentinels.
+        counts (numpy.ndarray): counts parallel to kmers.
+        k (int): k-mer length.
+        min_count (int): the minimum count stored when building.
         """
         self.kmers = kmers
         self.counts = counts
@@ -154,8 +149,7 @@ class KmerIndex:
 
     @staticmethod
     def build(fasta_path, k=18, min_count=2, n_bins=256, tmp_dir=None):
-        """
-        Build a k-mer count index from a FASTA file.
+        """Build a k-mer count index from a FASTA file.
 
         Args:
             fasta_path (str): path to the reference FASTA.
@@ -235,8 +229,7 @@ class KmerIndex:
         return KmerIndex(all_kmers, all_counts, k, min_count=min_count)
 
     def save(self, path):
-        """
-        Save the index to a compressed .npz file.
+        """Save the index to a compressed .npz file.
 
         Args:
             path (str): destination path.
@@ -257,8 +250,7 @@ class KmerIndex:
 
     @staticmethod
     def load(path):
-        """
-        Load an index from a .npz file.
+        """Load an index from a .npz file.
 
         Args:
             path (str): the index path.
@@ -273,8 +265,7 @@ class KmerIndex:
         return KmerIndex(data["kmers"], data["counts"], int(data["k"][0]), min_count=min_count)
 
     def query_probes(self, probe_seqs, batch=QUERY_BATCH):
-        """
-        Return the maximum k-mer count within each probe sequence.
+        """Return the maximum k-mer count within each probe sequence.
 
         Probes are hashed in batches, concatenated and encoded in one call per
         batch rather than one call per probe.
@@ -315,8 +306,7 @@ class KmerIndex:
         return out
 
     def lookup(self, hashes):
-        """
-        Return the stored count for each k-mer hash.
+        """Return the stored count for each k-mer hash.
 
         A hash absent from the index occurred fewer than min_count times when the
         index was built, so it is reported as min_count - 1.
@@ -342,8 +332,7 @@ class KmerIndex:
 
 
 def _write_bins(hashes, bin_shift, bin_files):
-    """
-    Append each hash to the bin file selected by its top bits.
+    """Append each hash to the bin file selected by its top bits.
 
     Args:
         hashes (numpy.ndarray): uint64 hashes with sentinels already removed.
@@ -372,8 +361,7 @@ def _write_bins(hashes, bin_shift, bin_files):
 def build_numpy_index(
     fasta_path, output_file, k=18, min_count=2, n_bins=256, tmp_dir=None, cores=None
 ):
-    """
-    Build a numpy k-mer index from a FASTA file and save it.
+    """Build a numpy k-mer index from a FASTA file and save it.
 
     Args:
         fasta_path (str): path to the reference FASTA.

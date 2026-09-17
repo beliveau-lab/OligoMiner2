@@ -71,8 +71,8 @@ class TestMining:
 
     def test_footprints_do_not_overlap_by_default(self, target):
         df = padlocks_to_df(mine_padlock_sequence(target, seq_id="chr1"))
-        spans = sorted(zip(df["start"], df["stop"]))
-        assert all(a[1] <= b[0] for a, b in zip(spans, spans[1:]))
+        spans = sorted(zip(df["start"], df["stop"], strict=False))
+        assert all(a[1] <= b[0] for a, b in zip(spans, spans[1:], strict=False))
 
 
 class TestIdentity:

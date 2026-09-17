@@ -9,24 +9,22 @@ import os
 import pandas as pd
 import pytest
 
-from oligominer import get_example_fasta_path, load_example_fasta, ProbeSet
-from oligominer.data.test_data import load_test_probes
+from oligominer import ProbeSet, get_example_fasta_path, load_example_fasta
 from oligominer.data.appending import (
-    load_appending_data,
     load_bridges,
-    load_outer_forward,
-    load_outer_reverse,
     load_inner_forward,
     load_inner_reverse,
-    load_saber_1x,
-    load_saber_2x,
-    load_merfish_bridges,
-    load_merfish_primers,
     load_kishi_bridges,
     load_mateo_bridges,
+    load_merfish_bridges,
+    load_merfish_primers,
+    load_outer_forward,
+    load_outer_reverse,
+    load_saber_1x,
+    load_saber_2x,
     load_xia_bridges,
 )
-
+from oligominer.data.test_data import load_test_probes
 
 # ---------------------------------------------------------------------------
 # test data loaders

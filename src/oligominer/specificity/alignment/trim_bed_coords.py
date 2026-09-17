@@ -1,27 +1,25 @@
-"""
-# Trim BED Coordinates
+"""# Trim BED Coordinates
 
 Clamps BED coordinates to chromosome boundaries using bedtools slop, ensuring
 that downstream tools like bedtools getfasta do not attempt to access positions
 outside the reference genome.
 """
 
+from oligominer.bioinformatics.file_io import get_or_create_fai
 from oligominer.utils import (
     check_input_exists,
     check_output_exists,
-    run_cmd,
+    ensure_executable,
     get_abs_path,
     require_one_of,
-    ensure_executable,
+    run_cmd,
 )
-from oligominer.bioinformatics.file_io import get_or_create_fai
 
 
 def trim_bed_coords(
     bed_path=None, bed_data=None, fasta_path=None, fai_path=None, output_file=None, verbose=False
 ):
-    """
-    Trim BED coordinates to fit within chromosome boundaries.
+    """Trim BED coordinates to fit within chromosome boundaries.
 
     Uses bedtools slop with -b 0 to clamp coordinates that extend beyond
     the ends of chromosomes. Requires either a FASTA path (from which a

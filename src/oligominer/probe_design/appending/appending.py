@@ -1,5 +1,4 @@
-"""
-Generic sequence appending primitives.
+"""Generic sequence appending primitives.
 
 Functions for appending synthetic sequences to probe homology regions
 using various assignment schemes: same, unique, multiple, or custom.
@@ -18,10 +17,10 @@ Appending schemes
 
 import pandas as pd
 
-from oligominer.utils.seq_utils import rev_comp
 from oligominer.utils.exceptions import InvalidInputError
-from .config import LINKER
+from oligominer.utils.seq_utils import rev_comp
 
+from .config import LINKER
 
 # ------------------------------------------------------------------
 # internal helpers
@@ -36,8 +35,7 @@ def _maybe_rc(seq, rc):
 
 
 def _parse_ranges(range_strings):
-    """
-    Convert a list of ``"start-stop"`` strings to (start, stop) tuples.
+    """Convert a list of ``"start-stop"`` strings to (start, stop) tuples.
 
     Indices are 1-based and inclusive.
 
@@ -67,8 +65,7 @@ def _join(left_seq, right_seq, linker):
 
 
 def append_same(probes, sequences, left=True, rc=False, linker=LINKER):
-    """
-    Append the same sequence to every probe.
+    """Append the same sequence to every probe.
 
     Args:
         probes (pandas.DataFrame): probe data with a ``sequence`` column.
@@ -104,8 +101,7 @@ def append_same(probes, sequences, left=True, rc=False, linker=LINKER):
 
 
 def append_unique(probes, sequences, target_column, left=True, rc=False, linker=LINKER):
-    """
-    Append one unique sequence per target.
+    """Append one unique sequence per target.
 
     Each unique value in *target_column* is assigned a different
     sequence from *sequences*. All probes sharing the same target get
@@ -165,8 +161,7 @@ def append_unique(probes, sequences, target_column, left=True, rc=False, linker=
 def append_multiple(
     probes, sequences, n_per_target, target_column, left=True, rc=False, linker=LINKER
 ):
-    """
-    Append N sequences per target in round-robin fashion.
+    """Append N sequences per target in round-robin fashion.
 
     Each target is assigned *n_per_target* consecutive sequences from
     *sequences*. Within a target's probes, sequences are cycled so
@@ -233,8 +228,7 @@ def append_multiple(
 
 
 def append_custom(probes, sequences, ranges, left=True, rc=False, linker=LINKER):
-    """
-    Append one unique sequence per custom probe index range.
+    """Append one unique sequence per custom probe index range.
 
     Each range in *ranges* receives a different sequence from
     *sequences*. Ranges are 1-based and inclusive.
@@ -305,8 +299,7 @@ SCHEME_REQUIREMENTS = {
 
 
 def _check_scheme_arguments(scheme, target_column, n_per_target, ranges):
-    """
-    Verify a scheme was given the arguments it needs.
+    """Verify a scheme was given the arguments it needs.
 
     Each scheme reaches for its argument deep inside the assignment, where a
     missing one surfaces as a KeyError on None or an arithmetic error rather
@@ -345,8 +338,7 @@ def append_sequences(
     rc=False,
     linker=LINKER,
 ):
-    """
-    Append sequences to probes using the specified scheme.
+    """Append sequences to probes using the specified scheme.
 
     This is a convenience dispatcher that routes to the appropriate
     appending function based on *scheme*.
@@ -407,8 +399,7 @@ def append_sequences(
 
 
 def build_appending_table(probes, entries_dict):
-    """
-    Assemble a table recording which sequences were appended to each probe.
+    """Assemble a table recording which sequences were appended to each probe.
 
     The table has one row per probe and one column per appending step.
 

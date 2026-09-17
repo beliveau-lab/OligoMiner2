@@ -1,5 +1,4 @@
-"""
-GTF/GFF annotation file I/O utilities.
+"""GTF/GFF annotation file I/O utilities.
 
 Loading parses standard GTF/GFF format into a pandas DataFrame. Filtering,
 writing, splitting, and merging mirror the structure of fasta_io for a
@@ -11,15 +10,15 @@ import os
 import pandas as pd
 
 from oligominer.utils import (
-    get_abs_path,
-    get_dir_name,
     check_dir_exists,
     check_input_exists,
     check_output_exists,
+    get_abs_path,
+    get_dir_name,
 )
-from .exceptions import EmptyExportError
-from .config import GTF_EXTENSIONS, GTF_COLUMNS, merge_files_by_extension
 
+from .config import GTF_COLUMNS, merge_files_by_extension
+from .exceptions import EmptyExportError
 
 # ---------------------------------------------------------------------------
 # Loading
@@ -27,8 +26,7 @@ from .config import GTF_EXTENSIONS, GTF_COLUMNS, merge_files_by_extension
 
 
 def load_gtf(gtf_path):
-    """
-    Load a GTF/GFF annotation file into a pandas DataFrame.
+    """Load a GTF/GFF annotation file into a pandas DataFrame.
 
     Skips comment lines (starting with '#') and parses the standard
     9-column GTF format. The attributes column is left unparsed; use
@@ -63,8 +61,7 @@ def load_gtf(gtf_path):
 
 
 def parse_attributes(df):
-    """
-    Expand the GTF attributes column into individual DataFrame columns.
+    """Expand the GTF attributes column into individual DataFrame columns.
 
     Parses the semicolon-delimited key-value pairs in the attributes field
     and adds gene_id, gene_name, transcript_id, and transcript_id_full
@@ -102,8 +99,7 @@ def parse_attributes(df):
 
 
 def filter_gtf(df, chrom_names=None, feature_type="exon", incl_str=None, excl_str=None):
-    """
-    Filter a GTF DataFrame by chromosome names, feature type, and regex.
+    """Filter a GTF DataFrame by chromosome names, feature type, and regex.
 
     When multiple filters are provided they are applied in order:
     chrom_names, then feature_type, then incl_str, then excl_str.
@@ -144,8 +140,7 @@ def filter_gtf(df, chrom_names=None, feature_type="exon", incl_str=None, excl_st
 
 
 def write_gtf(df, filepath):
-    """
-    Write a GTF DataFrame to a tab-separated file.
+    """Write a GTF DataFrame to a tab-separated file.
 
     If the DataFrame contains parsed attribute columns (gene_id,
     transcript_id, etc.) but no 'attributes' column, those columns are
@@ -163,8 +158,7 @@ def write_gtf(df, filepath):
 
 
 def write_bed(df, filepath):
-    """
-    Write a GTF DataFrame as a BED file.
+    """Write a GTF DataFrame as a BED file.
 
     Selects BED-compatible columns (seqid, start, end, transcript_id,
     score, strand, transcript_id_full, gene_id) and writes them
@@ -202,8 +196,7 @@ def write_bed(df, filepath):
 
 
 def split_gtf(df, target_dir, suffix="_filtered_gtf.tsv"):
-    """
-    Split a GTF DataFrame into per-chromosome files.
+    """Split a GTF DataFrame into per-chromosome files.
 
     Each chromosome's records are written to a separate TSV file named
     <seqid><suffix> inside target_dir. This is analogous to split_fasta
@@ -238,8 +231,7 @@ def split_gtf(df, target_dir, suffix="_filtered_gtf.tsv"):
 
 
 def merge_annotation_beds(input_dir, output_path, extension=".bed"):
-    """
-    Merge per-chromosome annotation BED files into a single file.
+    """Merge per-chromosome annotation BED files into a single file.
 
     Concatenates all files matching the given extension inside input_dir,
     sorted alphabetically by filename. This is the annotation-side
@@ -275,8 +267,7 @@ def merge_annotation_beds(input_dir, output_path, extension=".bed"):
 
 
 def _parse_attr_string(data):
-    """
-    Parse a single GTF attributes string into a dict.
+    """Parse a single GTF attributes string into a dict.
 
     Handles both GTF (space-separated key "value") and GFF3 (key=value)
     attribute formats.

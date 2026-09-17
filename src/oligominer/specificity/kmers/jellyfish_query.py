@@ -1,5 +1,4 @@
-"""
-# Jellyfish Query
+"""# Jellyfish Query
 
 Functions for querying a Jellyfish kmer count index, including validation,
 raw queries, and higher-level kmer count operations on sequences. For building
@@ -9,16 +8,15 @@ new indexes, see jellyfish_build.py.
 import re
 import tempfile
 
-from oligominer.utils.shell_pipeline import run_cmd
-from oligominer.utils import get_abs_path, check_input_exists, ensure_executable
 from oligominer.bioinformatics.file_io.fasta_io import seqs_to_fasta
+from oligominer.utils import check_input_exists, ensure_executable, get_abs_path
+from oligominer.utils.shell_pipeline import run_cmd
 
-from .exceptions import JellyfishIndexError, MissingJellyfishIndexError
+from .exceptions import JellyfishIndexError
 
 
 def validate_index(index_path, k=None, verbose=False):
-    """
-    Validate a Jellyfish index file and extract its metadata.
+    """Validate a Jellyfish index file and extract its metadata.
 
     Checks that the file exists, runs jellyfish info to extract the k value
     and canonical flag, and optionally verifies that k matches an expected
@@ -68,8 +66,7 @@ def validate_index(index_path, k=None, verbose=False):
 def jellyfish_query(
     index_path, mers=None, fasta_path=None, output=None, load=False, no_load=False, verbose=False
 ):
-    """
-    Query a Jellyfish database (wrapper for 'jellyfish query').
+    """Query a Jellyfish database (wrapper for 'jellyfish query').
 
     Args:
         index_path (str): path to the Jellyfish index file.
@@ -108,8 +105,7 @@ def jellyfish_query(
 
 
 def _get_kmers(seq, k):
-    """
-    Decompose a sequence into overlapping k-mers.
+    """Decompose a sequence into overlapping k-mers.
 
     Args:
         seq (str): the input DNA sequence.
@@ -125,8 +121,7 @@ def _get_kmers(seq, k):
 
 
 def calc_max_kmer(index_path, seq, k, load=False, no_load=False, verbose=False):
-    """
-    Find the maximum k-mer count in a given sequence using a Jellyfish database.
+    """Find the maximum k-mer count in a given sequence using a Jellyfish database.
 
     Decomposes the sequence into overlapping k-mers, queries the index for
     each, and returns the highest count.
@@ -161,8 +156,7 @@ def calc_max_kmer(index_path, seq, k, load=False, no_load=False, verbose=False):
 
 
 def calc_max_kmer_multi(index_path, seqs, k, verbose=False):
-    """
-    Calculate the maximum k-mer count for each sequence in a list.
+    """Calculate the maximum k-mer count for each sequence in a list.
 
     Writes all sequences to a temporary FASTA file, queries the Jellyfish
     index for all k-mers in one batch, then partitions the results by

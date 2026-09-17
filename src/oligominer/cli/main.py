@@ -1,5 +1,4 @@
-"""
-# OligoMiner Command-Line Interface (CLI)
+"""# OligoMiner Command-Line Interface (CLI)
 
 This module sets up the command-line interface for OligoMiner, allowing
 users to run various commands related to oligonucleotide probe design
@@ -32,8 +31,7 @@ Code:      https://github.com/beliveau-lab/OligoMiner2
 
 
 def build_parser():
-    """
-    Build the command-line argument parser.
+    """Build the command-line argument parser.
 
     Each command module registers its own subparser, so adding a command does not
     require editing this function.
@@ -58,8 +56,7 @@ def build_parser():
 
 
 def main(argv=None):
-    """
-    Run the command line interface.
+    """Run the command line interface.
 
     Args:
         argv (list, optional): arguments to parse. Defaults to sys.argv.

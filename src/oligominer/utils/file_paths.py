@@ -1,5 +1,4 @@
-"""
-# File path helpers
+"""# File path helpers
 
 Utilities for working with file paths. These helpers normalize user-provided
 paths to absolute paths, expanding user home directories as needed.

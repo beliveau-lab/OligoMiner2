@@ -24,7 +24,7 @@ from oligominer.specificity.duplex_stability.l4t import features as l4t_features
 
 def cigar_from(probe, target):
     """Build an xeq CIGAR from two equal-length sequences."""
-    ops = ["=" if a == b else "X" for a, b in zip(probe, target)]
+    ops = ["=" if a == b else "X" for a, b in zip(probe, target, strict=False)]
     out, run, current = [], 0, ops[0]
     for op in ops:
         if op == current:

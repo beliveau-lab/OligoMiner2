@@ -31,7 +31,6 @@ and nothing else. A net fitted with length in channel 1 and served with temperat
 detectably broken -- it is just wrong. The spec is written into every artifact and asserted on load.
 """
 
-import sys
 from pathlib import Path
 
 import numpy as np

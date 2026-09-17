@@ -1,5 +1,4 @@
-"""
-Domain-aware appending.
+"""Domain-aware appending.
 
 An oligo is built from an ordered list of named domains, assembled 5'->3'.
 Appending targets a named slot rather than an end, so a domain can sit between
@@ -40,8 +39,7 @@ LINEAR_LAYOUT = ["outer_5p", "inner_5p", "homology", "inner_3p", "outer_3p"]
 
 
 class DomainAssembly:
-    """
-    An ordered set of named sequence domains, assembled into one oligo.
+    """An ordered set of named sequence domains, assembled into one oligo.
 
     Each domain holds a per-row sequence (a pandas Series) or is empty. Joins between
     adjacent domains carry their own linker, so a ligation junction can be linker-free
@@ -55,10 +53,9 @@ class DomainAssembly:
     """
 
     def __init__(self, index, layout):
-        """
-        Args:
-            index (pandas.Index): the row index every domain is aligned to.
-            layout (list): domain names in 5'->3' order.
+        """Args:
+        index (pandas.Index): the row index every domain is aligned to.
+        layout (list): domain names in 5'->3' order.
         """
         if len(set(layout)) != len(layout):
             raise InvalidInputError(f"duplicate domain names in layout: {layout}")
@@ -72,8 +69,7 @@ class DomainAssembly:
         self.entries = {}
 
     def set_domain(self, name, values):
-        """
-        Fill a domain with per-row sequences.
+        """Fill a domain with per-row sequences.
 
         Args:
             name (str): a domain name from the layout.
@@ -91,8 +87,7 @@ class DomainAssembly:
         return self
 
     def set_linker(self, left, right, linker):
-        """
-        Set the linker inserted between two adjacent domains.
+        """Set the linker inserted between two adjacent domains.
 
         Args:
             left (str): the 5' domain name.
@@ -123,8 +118,7 @@ class DomainAssembly:
         ranges=None,
         probes=None,
     ):
-        """
-        Assign sequences into a domain using one of the four appending schemes.
+        """Assign sequences into a domain using one of the four appending schemes.
 
         Delegates assignment to the vendored ``append_sequences`` so scheme behaviour
         and the ``entries`` tracking strings stay bit-identical to the package; only the
@@ -174,8 +168,7 @@ class DomainAssembly:
         return self
 
     def assemble(self):
-        """
-        Concatenate the domains in layout order, inserting each join's linker.
+        """Concatenate the domains in layout order, inserting each join's linker.
 
         A join's linker is skipped when either neighbour is empty on that row, so an
         unused domain does not leave a dangling linker in the product.
@@ -217,8 +210,7 @@ class DomainAssembly:
         return seqs
 
     def table(self):
-        """
-        Build the appending table recording what went into each domain.
+        """Build the appending table recording what went into each domain.
 
         Returns:
             table (pandas.DataFrame): one row per oligo, one column per appending step.
@@ -236,8 +228,7 @@ class DomainAssembly:
 
 
 def assemble_padlock(padlock_df, backbone, linker_5p="", linker_3p="", backbone_id="backbone"):
-    """
-    Insert a backbone between the two homology arms of every padlock.
+    """Insert a backbone between the two homology arms of every padlock.
 
     This is the operation the edge-anchored interface cannot express. Both joins default
     to a **seamless** linker: the arm ends must abut their target for ligase to seal the
@@ -276,8 +267,7 @@ def assemble_padlock(padlock_df, backbone, linker_5p="", linker_3p="", backbone_
 
 
 def check_backbone_placement(row):
-    """
-    Assert the backbone landed between the arms and did not disturb them.
+    """Assert the backbone landed between the arms and did not disturb them.
 
     Args:
         row (dict or pandas.Series): a row from ``assemble_padlock``'s result, plus the

@@ -27,12 +27,13 @@ import warnings
 
 import numpy as np
 
-from .int_encoding import seq_to_8bit
-from .calc_tm_2d import get_tm_grid
-from .config import GET_DEFAULT_MINING_CONFIG, WRITE_BUFFER_SIZE
 from oligominer.utils import check_dir_exists
 from oligominer.utils.cores import resolve_cores
 from oligominer.utils.exceptions import ConfigurationError
+
+from .calc_tm_2d import get_tm_grid
+from .config import GET_DEFAULT_MINING_CONFIG, WRITE_BUFFER_SIZE
+from .int_encoding import seq_to_8bit
 
 # Column order for probe result tuples: (seq_id, start, stop, probe_seq, tm)
 PROBE_COLUMNS = ["seq_id", "start", "stop", "probe_seq", "tm"]
@@ -126,7 +127,6 @@ def mine_sequence(
         probes (list): list of tuples (seq_id, start, stop, probe_seq, tm).
             Use probes_to_df() to convert to a pandas DataFrame.
     """
-
     if exhaustive and (not allow_overlap or spacing > 0):
         raise ConfigurationError(
             "exhaustive mode is incompatible with allow_overlap=False and "
@@ -319,7 +319,7 @@ def _collect_probes(seq_id, seq_str, chunk_results, allow_overlap, spacing):
         starts = coord_result[:, 0].tolist()
         stops = coord_result[:, 1].tolist()
         tms = tm_result.tolist()
-        for probe_start, probe_stop, tm in zip(starts, stops, tms):
+        for probe_start, probe_stop, tm in zip(starts, stops, tms, strict=False):
             if not allow_overlap and probe_start < current_probe_stop:
                 continue
             if spacing > 0 and probe_start < current_probe_stop + spacing:
@@ -351,7 +351,6 @@ def chunk_generator(seq_id, nuc_array, config):
         chunk (tuple): (seq_id, chunk_nuc_arr, chunk_start, chunk_stop, config)
             for each chunk.
     """
-
     num_chunks = np.ceil(nuc_array.size / config["chunk_size"]).astype(int)
 
     chunk_start = 0
@@ -382,7 +381,6 @@ def process_chunk(_seq_id, chunk_nuc_arr, chunk_start, _chunk_stop, config):
         tm_result (numpy.ndarray): 1D array of Tm values (°C) for each
             selected probe.
     """
-
     min_length = config["min_length"]
     max_length = config["max_length"]
     n_lengths = max_length - min_length + 1

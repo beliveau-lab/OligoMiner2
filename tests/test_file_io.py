@@ -5,26 +5,22 @@ sequence classification, and chrom sizes.
 """
 
 import os
-import tempfile
-
-import pytest
 
 from oligominer.bioinformatics.file_io import (
-    load_fasta,
-    write_fasta,
-    split_fasta,
-    seqs_to_fasta,
-    seqs_to_fastq,
+    classify_seq_ids,
     filter_seq_ids,
     filter_seqs,
+    load_fasta,
     merge_fastas,
-    classify_seq_ids,
+    seqs_to_fasta,
+    seqs_to_fastq,
+    split_fasta,
+    write_fasta,
 )
 from oligominer.bioinformatics.file_io.chrom_sizes import (
     get_chrom_sizes,
     get_or_create_fai,
 )
-
 
 # ---------------------------------------------------------------------------
 # FASTA loading

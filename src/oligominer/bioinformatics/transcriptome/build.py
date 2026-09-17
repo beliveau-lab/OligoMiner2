@@ -1,5 +1,4 @@
-"""
-# Transcriptome construction
+"""# Transcriptome construction
 
 Builds a transcriptome FASTA from a reference genome and an annotation, so
 probes can be screened against transcripts rather than against genomic sequence.
@@ -14,15 +13,14 @@ Each record is one spliced transcript, named by its transcript id, so an aligner
 index built from the output reports transcript identifiers directly.
 """
 
-from .transcript_seq import _resolve_fasta, _select_features, get_spliced_seq
+from .transcript_seq import _resolve_fasta, get_spliced_seq
 
 # sequence characters per line in the written FASTA
 LINE_WIDTH = 60
 
 
 def transcript_ids(gtf_df, gene_id=None):
-    """
-    Return the transcript ids present in an annotation.
+    """Return the transcript ids present in an annotation.
 
     Args:
         gtf_df (pandas.DataFrame): parsed GTF carrying transcript_id.
@@ -42,8 +40,7 @@ def transcript_ids(gtf_df, gene_id=None):
 
 
 def build_transcriptome(gtf_df, fasta, out_fasta, gene_id=None, min_length=1, skip_errors=True):
-    """
-    Write a FASTA of spliced transcript sequences.
+    """Write a FASTA of spliced transcript sequences.
 
     Args:
         gtf_df (pandas.DataFrame): parsed GTF carrying exon records with
@@ -100,8 +97,7 @@ def build_transcriptome(gtf_df, fasta, out_fasta, gene_id=None, min_length=1, sk
 
 
 def transcript_lengths(gtf_df, gene_id=None):
-    """
-    Return each transcript's spliced length without building its sequence.
+    """Return each transcript's spliced length without building its sequence.
 
     Args:
         gtf_df (pandas.DataFrame): parsed GTF carrying exon records.

@@ -4,8 +4,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from oligominer import get_example_fasta_path, mine_fasta, mine_sequence, ProbeSet
-
+from oligominer import ProbeSet, get_example_fasta_path, mine_fasta
 
 # ---------------------------------------------------------------------------
 # paths

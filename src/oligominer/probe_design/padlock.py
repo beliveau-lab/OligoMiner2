@@ -1,5 +1,4 @@
-"""
-Padlock (split-homology) probe mining, built on OM2's existing 2D Tm grid.
+"""Padlock (split-homology) probe mining, built on OM2's existing 2D Tm grid.
 
 # The topology, and why one contiguous window is enough
 
@@ -86,8 +85,7 @@ DEFAULT_ARM = {
 
 
 def arm_params(**overrides):
-    """
-    Build one arm's parameter dict, starting from the padlock defaults.
+    """Build one arm's parameter dict, starting from the padlock defaults.
 
     Args:
         **overrides: any of min_length, max_length, min_tm, max_tm, tm_target,
@@ -107,8 +105,7 @@ def arm_params(**overrides):
 
 
 def _arm_config(params, thermo):
-    """
-    Turn an arm parameter dict into an OM2 mining config in exhaustive mode.
+    """Turn an arm parameter dict into an OM2 mining config in exhaustive mode.
 
     Args:
         params (dict): as returned by arm_params().
@@ -133,8 +130,7 @@ def _arm_config(params, thermo):
 
 
 def _candidates(nuc_arr, config, offset):
-    """
-    Run OM2's chunk filters and return every valid (start, length, tm) for one arm.
+    """Run OM2's chunk filters and return every valid (start, length, tm) for one arm.
 
     Args:
         nuc_arr (numpy.ndarray): 1D uint8 encoded sequence.
@@ -159,8 +155,7 @@ def _candidates(nuc_arr, config, offset):
 
 
 def _best_per_start(starts, lengths, tms, tm_target, span):
-    """
-    Reduce many candidates per start position to one, and index them by position.
+    """Reduce many candidates per start position to one, and index them by position.
 
     Args:
         starts (numpy.ndarray): candidate starts.
@@ -221,8 +216,7 @@ def mine_padlock_sequence(
     pct_formamide=0,
     formamide_factor=0.65,
 ):
-    """
-    Mine padlock probes -- two homology arms, optionally separated by a fillable gap.
+    """Mine padlock probes -- two homology arms, optionally separated by a fillable gap.
 
     Each arm is mined with its own length, Tm and GC constraints, then arms are paired
     by adjacency on the target. The emitted ``probe_seq`` is the full homology as one
@@ -360,7 +354,7 @@ def mine_padlock_sequence(
                 gap_seq,
                 round(float(tm2_sel[i]), 2),
                 round(float(tm1[i]), 2),
-                int(len(arm_5p)),  # junction offset within probe_seq
+                len(arm_5p),  # junction offset within probe_seq
             )
         )
         last_stop = t_stop
@@ -370,8 +364,7 @@ def mine_padlock_sequence(
 
 
 def padlocks_to_df(rows):
-    """
-    Convert padlock tuples to a DataFrame.
+    """Convert padlock tuples to a DataFrame.
 
     Args:
         rows (list): tuples in PADLOCK_COLUMNS order.
@@ -386,8 +379,7 @@ def padlocks_to_df(rows):
 
 
 def check_identity(row, target_seq):
-    """
-    Assert the invariant that makes downstream padlock-blindness safe.
+    """Assert the invariant that makes downstream padlock-blindness safe.
 
     Verifies ``arm_5p + arm_3p == revcomp(T1 + T2)`` for a gapless padlock, and that
     the junction offset splits probe_seq back into the two arms.

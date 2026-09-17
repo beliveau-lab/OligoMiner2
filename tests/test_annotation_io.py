@@ -6,13 +6,13 @@ import pandas as pd
 import pytest
 
 from oligominer.bioinformatics.file_io.bed_io import bed_to_df
+from oligominer.bioinformatics.file_io.exceptions import EmptyExportError
 from oligominer.bioinformatics.file_io.gtf_io import (
     merge_annotation_beds,
     split_gtf,
     write_bed,
     write_gtf,
 )
-from oligominer.bioinformatics.file_io.exceptions import EmptyExportError
 
 
 @pytest.fixture

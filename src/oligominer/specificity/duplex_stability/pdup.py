@@ -1,5 +1,4 @@
-"""
-# Two-stage pDup prediction
+"""# Two-stage pDup prediction
 
 Screens every alignment with a fast model, then computes exact NUPACK pDup for
 only the ones that could matter.
@@ -60,8 +59,7 @@ def predict_pdup(
     nupack_model=None,
     max_verify=None,
 ):
-    """
-    Score duplexes with a model and verify the credible ones with NUPACK.
+    """Score duplexes with a model and verify the credible ones with NUPACK.
 
     Args:
         frame (pandas.DataFrame): a duplex frame carrying the aligned columns,
@@ -113,7 +111,7 @@ def predict_pdup(
     out.attrs[ATTRS_KEY] = {
         "model": model,
         "verify_above": verify_above,
-        "n_rows": int(len(out)),
+        "n_rows": len(out),
         "n_selected": int(selected.sum()),
         "n_verified": int(verified.sum()),
         "n_unverifiable": int((~verifiable).sum()),
@@ -125,8 +123,7 @@ def predict_pdup(
 
 
 def _verifiable(frame):
-    """
-    Report which rows the physics can accept.
+    """Report which rows the physics can accept.
 
     A target read from a genome can contain N where the assembly has a gap, and
     NUPACK rejects any character outside its alphabet. Such a row keeps its model
@@ -148,8 +145,7 @@ def _verifiable(frame):
 
 
 def _select_for_verification(scores, verify_above, max_verify):
-    """
-    Choose which rows go to the physics.
+    """Choose which rows go to the physics.
 
     Args:
         scores (pandas.Series): the model's pDup estimates.
@@ -172,8 +168,7 @@ def _select_for_verification(scores, verify_above, max_verify):
 
 
 def _exact_pdup(frame, nupack_model=None):
-    """
-    Compute exact pDup for a frame, grouped by probe.
+    """Compute exact pDup for a frame, grouped by probe.
 
     derived_seq is stored on the same strand as the probe, so it is reverse
     complemented here to give NUPACK the strand that actually hybridizes.
@@ -201,8 +196,7 @@ def _exact_pdup(frame, nupack_model=None):
 
 
 def pdup_summary(out):
-    """
-    Return how much physics the two-stage prediction avoided.
+    """Return how much physics the two-stage prediction avoided.
 
     Args:
         out (pandas.DataFrame): a frame returned by predict_pdup().

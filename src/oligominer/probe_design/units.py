@@ -1,5 +1,4 @@
-"""
-# Targeting units
+"""# Targeting units
 
 A targeting unit is the set of oligos that must all be present for one target
 site to produce signal.
@@ -26,8 +25,7 @@ ROLE_COLUMN = "unit_role"
 
 
 def assign_units(df, by, roles=None, unit_column=UNIT_COLUMN, role_column=ROLE_COLUMN):
-    """
-    Label each row with the unit it belongs to.
+    """Label each row with the unit it belongs to.
 
     Args:
         df (pandas.DataFrame): the oligo table.
@@ -55,8 +53,7 @@ def assign_units(df, by, roles=None, unit_column=UNIT_COLUMN, role_column=ROLE_C
 
 
 def unit_sizes(df, unit_column=UNIT_COLUMN):
-    """
-    Return how many oligos each unit currently has.
+    """Return how many oligos each unit currently has.
 
     Args:
         df (pandas.DataFrame): the oligo table carrying unit_column.
@@ -70,8 +67,7 @@ def unit_sizes(df, unit_column=UNIT_COLUMN):
 
 
 def filter_units(df, keep, unit_column=UNIT_COLUMN):
-    """
-    Keep only the units whose every member passes.
+    """Keep only the units whose every member passes.
 
     A row-wise mask is promoted to a unit-wise decision: a unit survives when all
     of its members are marked keep, and is removed entirely otherwise.
@@ -100,8 +96,7 @@ def filter_units(df, keep, unit_column=UNIT_COLUMN):
 
 
 def drop_incomplete_units(df, expected_size=None, unit_column=UNIT_COLUMN):
-    """
-    Remove units that do not have all of their members.
+    """Remove units that do not have all of their members.
 
     Use after a stage that filtered rows without unit awareness, to remove the
     orphaned members it left behind.
@@ -134,8 +129,7 @@ def drop_incomplete_units(df, expected_size=None, unit_column=UNIT_COLUMN):
 def units_to_orders(
     df, sequence_column="sequence", unit_column=UNIT_COLUMN, role_column=ROLE_COLUMN
 ):
-    """
-    Return one row per unit with each member's sequence in its own column.
+    """Return one row per unit with each member's sequence in its own column.
 
     This is the shape an oligo order takes, where a unit's members are ordered
     together and must be tracked together.

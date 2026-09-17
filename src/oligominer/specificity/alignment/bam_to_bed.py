@@ -1,5 +1,4 @@
-"""
-# BAM to BED Conversion
+"""# BAM to BED Conversion
 
 Converts SAM/BAM alignment data to BED format using an AWK script that
 reconstructs full probe-length genomic coordinates from alignment positions
@@ -31,8 +30,8 @@ The AWK script below recovers the full probe footprint on the genome:
 Output columns: chrom, start, end, read_name, align_score, strand, cigar.
 """
 
+from oligominer.utils import check_output_exists, ensure_executable, require_one_of
 from oligominer.utils.shell_pipeline import run_cmd
-from oligominer.utils import require_one_of, check_output_exists, ensure_executable
 
 # AWK script that parses SAM records into BED with full probe coordinates
 AWK_SCRIPT = """
@@ -80,8 +79,7 @@ $3 != "*" {
 
 
 def bam_to_bed(input_file=None, bam_data=None, output_file=None, verbose=False):
-    """
-    Convert BAM alignments to BED format.
+    """Convert BAM alignments to BED format.
 
     Args:
         input_file (str, optional): path to the input BAM file.
@@ -113,8 +111,7 @@ def bam_to_bed(input_file=None, bam_data=None, output_file=None, verbose=False):
 
 
 def sam_to_bed(sam_data):
-    """
-    Convert SAM alignments to BED format.
+    """Convert SAM alignments to BED format.
 
     Args:
         sam_data (str): SAM data as a string.

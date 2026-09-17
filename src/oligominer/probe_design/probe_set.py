@@ -1,5 +1,4 @@
-"""
-# ProbeSet
+"""# ProbeSet
 
 A convenience class that wraps a probe DataFrame and provides methods for
 the common probe design workflow: alignment, kmer filtering, merging with
@@ -11,41 +10,40 @@ disk, constructed directly from a DataFrame, or mined from a FASTA file.
 
 import pandas as pd
 
-from oligominer.thermodynamics.mining import mine_fasta, probes_to_df, write_probes, PROBE_COLUMNS
-from oligominer.utils.exceptions import InvalidInputError
-from oligominer.utils.exceptions import PipelineStateError
+from oligominer.thermodynamics.mining import PROBE_COLUMNS, mine_fasta, probes_to_df, write_probes
+from oligominer.utils.exceptions import InvalidInputError, PipelineStateError
 
-from .pipeline import (
-    _make_seqid,
-    align_probes,
-    add_max_kmer,
-    merge_probes_alignments,
-    add_pdup,
-    add_duplex_pred,
-)
-from .probe_io import (
-    read_probe_csv,
-    write_probe_csv,
-    read_align_csv,
-    write_align_csv,
+from . import schema
+from .appending import (
+    append_barcodes as _append_barcodes,
 )
 from .appending import (
-    append_sequences,
     append_saber,
-    append_barcodes as _append_barcodes,
+    append_sequences,
     build_appending_table,
 )
+from .pipeline import (
+    _make_seqid,
+    add_duplex_pred,
+    add_max_kmer,
+    add_pdup,
+    align_probes,
+    merge_probes_alignments,
+)
+from .probe_io import (
+    read_align_csv,
+    read_probe_csv,
+    write_align_csv,
+    write_probe_csv,
+)
 from .scoring import label_on_target, score_probes
-from . import schema
-
 
 # the columns a probe table has to carry for any stage to mean anything
 REQUIRED_COLUMNS = ("seq_id", "start", "stop", "probe_seq", "tm")
 
 
 class ProbeSet:
-    """
-    A set of candidate probes backed by a pandas DataFrame.
+    """A set of candidate probes backed by a pandas DataFrame.
 
     Provides a fluent interface for the probe design pipeline steps:
     mining, alignment, kmer counting, merging, and pDup computation.
@@ -69,8 +67,7 @@ class ProbeSet:
     """
 
     def __init__(self, probes):
-        """
-        Create a ProbeSet from probe tuples or a probe DataFrame.
+        """Create a ProbeSet from probe tuples or a probe DataFrame.
 
         When given a list of tuples (as returned by mine_sequence or
         mine_fasta), converts them to a DataFrame via probes_to_df().
@@ -114,8 +111,7 @@ class ProbeSet:
 
     @classmethod
     def from_fasta(cls, input_fasta, cores=None, **mining_params):
-        """
-        Mine probes from a FASTA file and return a ProbeSet.
+        """Mine probes from a FASTA file and return a ProbeSet.
 
         Args:
             input_fasta (str): path to the input FASTA file.
@@ -136,8 +132,7 @@ class ProbeSet:
 
     @classmethod
     def from_csv(cls, path):
-        """
-        Load a ProbeSet from a probe CSV file.
+        """Load a ProbeSet from a probe CSV file.
 
         Args:
             path (str): path to the probe CSV file.
@@ -155,8 +150,7 @@ class ProbeSet:
     # ------------------------------------------------------------------
 
     def to_csv(self, path):
-        """
-        Write the probe DataFrame to a CSV file.
+        """Write the probe DataFrame to a CSV file.
 
         Args:
             path (str): output file path.
@@ -164,8 +158,7 @@ class ProbeSet:
         write_probe_csv(self.df, path)
 
     def to_bed(self, path):
-        """
-        Write probes to a BED file.
+        """Write probes to a BED file.
 
         Args:
             path (str): output file path.
@@ -174,8 +167,7 @@ class ProbeSet:
         write_probes(tuples, path, fmt="bed")
 
     def to_fastq(self, path):
-        """
-        Write probes to a FASTQ file.
+        """Write probes to a FASTQ file.
 
         Args:
             path (str): output file path.
@@ -184,8 +176,7 @@ class ProbeSet:
         write_probes(tuples, path, fmt="fastq")
 
     def to_fasta(self, path):
-        """
-        Write probe sequences to a FASTA file.
+        """Write probe sequences to a FASTA file.
 
         Each probe is written as a separate record with the seqid as the
         header and the probe sequence as the body.
@@ -195,7 +186,7 @@ class ProbeSet:
         """
         from oligominer.bioinformatics.file_io import write_fasta
 
-        seqs = dict(zip(self.df["seqid"], self.df["probe_seq"]))
+        seqs = dict(zip(self.df["seqid"], self.df["probe_seq"], strict=False))
         write_fasta(seqs, path)
 
     def _to_tuples(self):
@@ -211,8 +202,7 @@ class ProbeSet:
         return tuples
 
     def save_align_csv(self, path):
-        """
-        Write the alignment DataFrame to a CSV file.
+        """Write the alignment DataFrame to a CSV file.
 
         Args:
             path (str): output file path.
@@ -225,8 +215,7 @@ class ProbeSet:
         write_align_csv(self.align_df, path)
 
     def load_align_csv(self, path):
-        """
-        Load alignment results from a CSV file.
+        """Load alignment results from a CSV file.
 
         Args:
             path (str): path to the alignment CSV file.
@@ -240,8 +229,7 @@ class ProbeSet:
         return self
 
     def save_merged_csv(self, path):
-        """
-        Write the merged duplex DataFrame to a CSV file.
+        """Write the merged duplex DataFrame to a CSV file.
 
         Args:
             path (str): output file path.
@@ -260,8 +248,7 @@ class ProbeSet:
     def align(
         self, bt2_index, ref_fasta, preset=None, k=100, threads=None, verbose=False, **bt2_params
     ):
-        """
-        Align probes to a reference genome.
+        """Align probes to a reference genome.
 
         Populates self.align_df with alignment results.
 
@@ -295,8 +282,7 @@ class ProbeSet:
         return self
 
     def compute_max_kmer(self, jf_index, k=18, backend="auto", verbose=False):
-        """
-        Compute max kmer counts for each probe.
+        """Compute max kmer counts for each probe.
 
         Adds a max_kmer column to self.df.
 
@@ -329,8 +315,7 @@ class ProbeSet:
         return self
 
     def merge(self):
-        """
-        Merge probe and alignment tables into a duplex table.
+        """Merge probe and alignment tables into a duplex table.
 
         Requires that align() (or load_align_csv()) has been called.
         Populates self.merged_df.
@@ -351,8 +336,7 @@ class ProbeSet:
         return self
 
     def compute_pdup(self, model=None, conc_a=1e-6, conc_b=1e-12):
-        """
-        Compute pDup for each duplex in the merged table.
+        """Compute pDup for each duplex in the merged table.
 
         Requires that merge() has been called. Adds a pdup column to
         self.merged_df.
@@ -380,8 +364,7 @@ class ProbeSet:
         return self
 
     def compute_duplex_pred(self, temperature=37, normalize=True):
-        """
-        Predict duplex stability for each duplex using the PaintSHOP XGBoost
+        """Predict duplex stability for each duplex using the PaintSHOP XGBoost
         model.
 
         Requires that merge() has been called. Adds a duplex_pred column to
@@ -436,8 +419,7 @@ class ProbeSet:
         left=True,
         rc=False,
     ):
-        """
-        Append sequences to probes using the specified scheme.
+        """Append sequences to probes using the specified scheme.
 
         Modifies the ``sequence`` column in df (creating it from
         ``probe_seq`` if it does not exist). Tracks appended sequences
@@ -481,8 +463,7 @@ class ProbeSet:
     def append_saber_seqs(
         self, sequences, scheme, label="saber", target_column=None, n_per_target=None, ranges=None
     ):
-        """
-        Append SABER concatemer sequences to the 3' end.
+        """Append SABER concatemer sequences to the 3' end.
 
         Args:
             sequences (pandas.DataFrame): SABER sequences with ``id``
@@ -514,8 +495,7 @@ class ProbeSet:
         return self
 
     def append_merfish_barcodes(self, bridges, barcodes, target_column="refseq"):
-        """
-        Append MERFISH barcode-encoded bridges.
+        """Append MERFISH barcode-encoded bridges.
 
         Args:
             bridges (pandas.DataFrame): the 16 MERFISH bridges with
@@ -539,7 +519,7 @@ class ProbeSet:
         # the master table exists so a finished oligo can be traced back to
         # what was added to it; a step that changes every sequence and records
         # nothing leaves the table saying no appending happened
-        codes = dict(zip(self.df[target_column].unique(), barcodes["barcode"]))
+        codes = dict(zip(self.df[target_column].unique(), barcodes["barcode"], strict=False))
         self._master_entries["merfish"] = self.df[target_column].map(
             lambda target: f"merfish:{codes.get(target, '?')}"
         )
@@ -549,8 +529,7 @@ class ProbeSet:
 
     @property
     def master_table(self):
-        """
-        Return the master table tracking all appending steps.
+        """Return the master table tracking all appending steps.
 
         Returns:
             master (pandas.DataFrame or None): one row per probe, one
@@ -566,8 +545,7 @@ class ProbeSet:
     # ------------------------------------------------------------------
 
     def score(self, pred_column="duplex_pred"):
-        """
-        Compute on-target and off-target scores from duplex predictions.
+        """Compute on-target and off-target scores from duplex predictions.
 
         Requires that merge() and either compute_pdup() or
         compute_duplex_pred() have been called. Populates self.score_df.
@@ -597,8 +575,7 @@ class ProbeSet:
     # ------------------------------------------------------------------
 
     def _record(self, name, params=None, n_in=None, n_out=None, **details):
-        """
-        Record a pipeline stage in this probe set's manifest.
+        """Record a pipeline stage in this probe set's manifest.
 
         Args:
             name (str): the stage name.
@@ -619,8 +596,7 @@ class ProbeSet:
 
     @property
     def attrition(self):
-        """
-        Return where probes were lost across the recorded stages.
+        """Return where probes were lost across the recorded stages.
 
         Returns:
             summary (dict): n_in, n_out and the number dropped per stage.
@@ -629,8 +605,7 @@ class ProbeSet:
         return schema.attrition_summary(self.manifest)
 
     def describe(self):
-        """
-        Return a human-readable account of how this probe set was produced.
+        """Return a human-readable account of how this probe set was produced.
 
         Returns:
             lines (str): one line per stage, with counts and parameters.
@@ -654,8 +629,7 @@ class ProbeSet:
         return "\n".join(lines)
 
     def to_json(self, path, orient="records"):
-        """
-        Write the probe set and its manifest to a single JSON document.
+        """Write the probe set and its manifest to a single JSON document.
 
         Args:
             path (str): output file path.
@@ -679,8 +653,7 @@ class ProbeSet:
 
     @classmethod
     def from_json(cls, path):
-        """
-        Load a probe set written by to_json, upgrading an older schema version.
+        """Load a probe set written by to_json, upgrading an older schema version.
 
         Args:
             path (str): path to the JSON document.
