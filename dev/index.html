@@ -369,9 +369,13 @@
                   
   <section id="oligominer2">
 <h1>OligoMiner2<a class="headerlink" href="#oligominer2" title="Link to this heading">#</a></h1>
-<p><strong>Genome-scale oligonucleotide probe design for DNA and RNA FISH.</strong></p>
-<p>OligoMiner2 takes a target genome or transcriptome and returns candidate probe sequences that are
-thermodynamically optimized and filtered for specificity.</p>
+<p><strong>A Python toolkit for oligonucleotide probe design.</strong></p>
+<p>OligoMiner2 is a library of composable parts for designing oligo probes: thermodynamic mining,
+specificity analysis, duplex-stability models, and probe assembly. Each part is usable on its own,
+so a probe design is written as a program against the toolkit rather than configured through one
+fixed program.</p>
+<p>The <a class="reference internal" href="pipeline.html"><span class="std std-doc">end-to-end pipeline</span></a> is one such program — the conventional FISH probe design
+flow, assembled from these parts, and the place to start if it is the flow you want.</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p>This package is under active development. Until the first stable release (<code class="docutils literal notranslate"><span class="pre">v1.0.0</span></code>) the API may
@@ -388,6 +392,34 @@ tree models do not need it:</p>
 </pre></div>
 </div>
 </section>
+<section id="what-is-in-the-toolkit">
+<h2>What is in the toolkit<a class="headerlink" href="#what-is-in-the-toolkit" title="Link to this heading">#</a></h2>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Subsystem</p></th>
+<th class="head"><p>What it does</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">thermodynamics</span></code></p></td>
+<td><p>Melting temperature and formamide correction, candidate mining from sequence, exact NUPACK pDup</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">specificity</span></code></p></td>
+<td><p>Alignment handling, duplex reconstruction from a reference, duplex stability, k-mer frequency</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">models</span></code></p></td>
+<td><p>Four registered duplex-stability models selected by name, and retraining for two of them</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">probe_design</span></code></p></td>
+<td><p>Probe sets, padlock and split architectures, domain layouts, exclusions, scoring, splitting, I/O</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">bioinformatics</span></code></p></td>
+<td><p>Sequence and annotation I/O, transcriptome construction</p></td>
+</tr>
+</tbody>
+</table>
+</div>
+</section>
 <section id="quick-start">
 <h2>Quick start<a class="headerlink" href="#quick-start" title="Link to this heading">#</a></h2>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span><span class="w"> </span><span class="nn">oligominer</span><span class="w"> </span><span class="kn">import</span> <span class="n">mine_fasta</span>
@@ -396,14 +428,17 @@ tree models do not need it:</p>
 <span class="n">df</span> <span class="o">=</span> <span class="n">mine_fasta</span><span class="p">(</span><span class="s1">'genome.fa'</span><span class="p">)</span>
 </pre></div>
 </div>
+<p>Mining is the entry point most designs begin from, but nothing requires the rest of the pipeline
+to follow it — the resulting frame is ordinary tabular data.</p>
 <div class="toctree-wrapper compound">
 </div>
 </section>
 <section id="where-to-go-next">
 <h2>Where to go next<a class="headerlink" href="#where-to-go-next" title="Link to this heading">#</a></h2>
 <ul class="simple">
-<li><p><a class="reference internal" href="pipeline.html"><span class="std std-doc">The pipeline</span></a> — mining, alignment and prediction, and what each stage decides.</p></li>
-<li><p><a class="reference internal" href="api.html"><span class="std std-doc">API reference</span></a> — every public module, generated from the source.</p></li>
+<li><p><a class="reference internal" href="pipeline.html"><span class="std std-doc">The pipeline</span></a> — the end-to-end flow: mining, alignment, prediction, and what each
+stage decides.</p></li>
+<li><p><a class="reference internal" href="api.html"><span class="std std-doc">API reference</span></a> — the toolkit, subsystem by subsystem, generated from the source.</p></li>
 <li><p><a class="reference internal" href="changelog.html"><span class="std std-doc">Changelog</span></a> — what changed, newest first.</p></li>
 </ul>
 </section>
@@ -448,6 +483,7 @@ tree models do not need it:</p>
   <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="visible nav section-nav flex-column">
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#install">Install</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-is-in-the-toolkit">What is in the toolkit</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#quick-start">Quick start</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#where-to-go-next">Where to go next</a></li>
 </ul>
