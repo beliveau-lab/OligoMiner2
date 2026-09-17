@@ -20,9 +20,9 @@ thermodynamically optimized and filtered for specificity.
    soft-masked repeats, and prohibited subsequences.
 2. **Align** candidates against a reference genome with Bowtie2 and
    reconstruct each alignment's duplex from the reference.
-3. **Score** specificity with k-mer frequency analysis and duplex stability
-   predictions, optionally verifying the alignments that matter with exact
-   NUPACK pDup.
+3. **Predict** a binding probability for every reconstructed duplex, screening
+   with a model and verifying the ones that could change a decision with exact
+   NUPACK pDup. K-mer frequency analysis runs as a parallel track.
 
 ### Targets
 
@@ -40,7 +40,7 @@ unit, so filtering cannot leave a half-probe in an order.
 
 Synthetic domains -- barcodes, primer sites, amplifier initiators -- are
 appended through a domain layout, which places a sequence at a named slot
-rather than at an end, and screened for mutual orthogonality.
+rather than at an end.
 
 ### Models
 
