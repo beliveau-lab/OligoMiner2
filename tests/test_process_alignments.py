@@ -10,6 +10,11 @@ from oligominer.specificity.alignment.process_alignments import (
 )
 from oligominer.utils.exceptions import InvalidInputError
 
+# Every test here shells out to bedtools, so the whole module is the integration tier. It passed
+# locally only because a developer machine has bedtools on PATH; CI does not, until the job that
+# installs it.
+pytestmark = pytest.mark.integration
+
 SAM_HEADER = "@HD\tVN:1.0\tSO:unsorted\n@SQ\tSN:chr1\tLN:60\n"
 
 # one forward and one reverse alignment of two probes

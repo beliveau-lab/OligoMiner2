@@ -65,7 +65,7 @@ jobs:
         # tests that need it carry needs_nupack and are deselected below rather than skipped.
         run: |
           sudo apt-get update
-          sudo apt-get install -y bowtie2 jellyfish
+          sudo apt-get install -y bowtie2 jellyfish bedtools
       - run: uv sync --locked
       - run: uv run pytest -m "integration and not needs_nupack" --no-header -ra
 
