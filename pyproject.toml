@@ -13,21 +13,29 @@
 # project metadata
 #
 
-[project.urls]
-homepage = "https://oligominer.org"
-source = "https://github.com/beliveau-lab/OligoMiner2"
-
 [project]
 name = "oligominer"
 dynamic = ["version"]
 description = "Python package for genome-scale design of oligo probes for DNA/RNA FISH."
-requires-python = ">=3.8,<3.12"
+requires-python = ">=3.10"
 readme = "README.md"
-# license = { file = "LICENSE" }
-# keywords = ["keyword1", "keyword2", ...]
-# documentation = "https://oligominer.org"
+license = "MIT"
+license-files = ["LICENSE"]
 authors = [{ name = "Conor Camplisson", email = "conor@oligominer.org" }]
-# classifiers = []
+keywords = ["FISH", "oligo", "probe design", "DNA-FISH", "RNA-FISH", "genomics", "bioinformatics"]
+
+classifiers = [
+    "Development Status :: 3 - Alpha",
+    "Intended Audience :: Science/Research",
+    "License :: OSI Approved :: MIT License",
+    "Operating System :: OS Independent",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
+    "Topic :: Scientific/Engineering :: Bio-Informatics",
+]
 
 #
 # required python dependencies
@@ -43,14 +51,19 @@ dependencies = [
     "pyranges",
     "xgboost==2.1.1",
     "scikit-learn",
-    "biopython",
-    
 ]
 
 
 #
 #  development python dependencies (for docs e.g.)
 #
+
+[project.urls]
+Homepage = "https://oligominer.org"
+Repository = "https://github.com/beliveau-lab/OligoMiner2"
+Issues = "https://github.com/beliveau-lab/OligoMiner2/issues"
+Changelog = "https://github.com/beliveau-lab/OligoMiner2/blob/main/CHANGELOG.md"
+
 
 [project.optional-dependencies]
 
@@ -60,21 +73,19 @@ bilstm = [
     "torch",
 ]
 
+
+# Dev tools are a DEPENDENCY GROUP, not an optional-dependencies extra: an extra is published
+# with the package and installable by users, which these are not. `uv sync` installs groups by
+# default, so the project venv gets its own pytest rather than falling through to whatever pytest
+# happens to be on PATH — which silently imported a different oligominer.
+[dependency-groups]
 dev = [
-    "mkdocs",
-    "mkdocs-material",
-    "mkdocs-gen-files",
-    "mkdocs-literate-nav",
-    "mkdocs-section-index",
-    "mkdocstrings[python]",
-    "mike",
-    "pymdown-extensions",
-    "black",
-
-    "notebook",
-    "mkdocs-jupyter",
-    "pytest",
-
+    "pytest==8.4.2",
+    "ruff==0.14.0",
+    "pre-commit==4.3.0",
+    "sphinx==8.2.3; python_version >= '3.11'",
+    "pydata-sphinx-theme==0.16.1; python_version >= '3.11'",
+    "myst-parser==4.0.1; python_version >= '3.11'",
 ]
 
 
@@ -110,7 +121,10 @@ allow-direct-references = true
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
-pythonpath = ["src"]
+# NOTE: no pythonpath = ["src"]. With a src layout the tests import the INSTALLED package, so a
+# module missing from the wheel fails here instead of passing against the source tree.
+markers = ["integration: needs an external program; not run on every push"]
+addopts = "--strict-markers -m 'not integration'"
 
 [[tool.uv.index]]
 name = "testpypi"
