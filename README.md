@@ -1,19 +1,43 @@
 # OligoMiner2
 
+<!-- Badges and links are ABSOLUTE URLs: PyPI renders this file standalone, where a relative
+     path resolves against pypi.org and breaks. -->
+[![PyPI](https://img.shields.io/pypi/v/oligominer.svg)](https://pypi.org/project/oligominer/)
+[![Python versions](https://img.shields.io/pypi/pyversions/oligominer.svg)](https://pypi.org/project/oligominer/)
+[![License](https://img.shields.io/pypi/l/oligominer.svg)](https://github.com/beliveau-lab/OligoMiner2/blob/main/LICENSE)
+[![CI](https://github.com/beliveau-lab/OligoMiner2/actions/workflows/ci.yml/badge.svg?branch=dev)](https://github.com/beliveau-lab/OligoMiner2/actions/workflows/ci.yml)
+[![Docs](https://img.shields.io/badge/docs-oligominer.org-blue.svg)](https://oligominer.org/)
 
 > [!WARNING]
 > This package is under active development.
 > Until the first stable release (`v1.0.0`), the API may change without notice.
 > Expect breaking changes in minor releases, and pin your dependency to a specific version if you use it in production.
 
-**Genome-scale oligonucleotide probe design for DNA and RNA FISH.**
+**A Python toolkit for oligonucleotide probe design.**
 
-OligoMiner2 is a Python package for designing oligonucleotide probes used in
-fluorescence *in situ* hybridization (FISH) experiments. It takes a target
-genome or transcriptome as input and returns candidate probe sequences that are
-thermodynamically optimized and filtered for specificity.
+OligoMiner2 is a library of composable parts for designing oligo probes:
+thermodynamic mining, specificity analysis, duplex-stability models, and probe
+assembly. Each part is usable on its own, so a probe design is written as a
+program against the toolkit rather than configured through one fixed program.
+
+The end-to-end pipeline below is one such program: the conventional FISH probe
+design flow, assembled from these parts, and the place to start if it is the
+flow you want.
+
+## What is in the toolkit
+
+| Subsystem | What it does |
+|---|---|
+| `thermodynamics` | Melting temperature and formamide correction, candidate mining from sequence, exact NUPACK pDup |
+| `specificity` | Alignment handling, duplex reconstruction from a reference, duplex stability, k-mer frequency |
+| `models` | Four registered duplex-stability models selected by name, and retraining for two of them |
+| `probe_design` | Probe sets, padlock and split architectures, domain layouts, exclusions, scoring, splitting, I/O |
+| `bioinformatics` | Sequence and annotation I/O, transcriptome construction |
 
 ## The pipeline
+
+OligoMiner2 takes a target genome or transcriptome and returns candidate probe
+sequences that are thermodynamically optimized and filtered for specificity.
 
 1. **Mine** candidate probes from FASTA sequences, filtering by melting
    temperature, GC content, length, homopolymer runs, sequence entropy,
