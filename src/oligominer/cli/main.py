@@ -13,6 +13,14 @@ import argparse
 
 from .. import __version__
 
+# The docs site publishes one folder per RELEASE plus a rolling `dev`. A development version
+# has no folder of its own, so point those at dev rather than at a URL that 404s.
+_DOCS_URL = (
+    "https://oligominer.org/dev/"
+    if "dev" in __version__
+    else f"https://oligominer.org/{__version__}/"
+)
+
 # configure main CLI help text
 HELP_TEXT = rf"""
   ____  _ _             __  __ _               _____ _____ 
@@ -25,7 +33,7 @@ HELP_TEXT = rf"""
             |___/                                          
 
 Version:   {__version__}
-Docs:      https://oligominer.org/docs/{__version__}/
+Docs:      {_DOCS_URL}
 Code:      https://github.com/beliveau-lab/OligoMiner2
 """
 
@@ -50,7 +58,9 @@ def build_parser():
         help="show version and exit",
     )
 
-    parser.add_subparsers(dest="command")
+    # metavar keeps argparse from printing an empty "{}" choice list while no command module
+    # has registered a subparser yet
+    parser.add_subparsers(dest="command", metavar="<command>")
 
     return parser
 

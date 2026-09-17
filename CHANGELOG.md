@@ -5,7 +5,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+<!-- docs-include-start -->
+
 ## [Unreleased]
+
+## [0.0.2] - 2026-09-17
+
+First release under the packaging standard. `0.0.1.dev1` was a development release and could only
+be installed with `--pre`; `0.0.2` can be pinned normally.
 
 ### Added
 
@@ -27,4 +34,5 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Probe mining raised `OverflowError` on numpy 2. The dinucleotide sentinel `-1` was written into
   an unsigned array; earlier numpy silently wrapped it to 255.
 
-[Unreleased]: https://github.com/beliveau-lab/OligoMiner2/compare/main...HEAD
+[Unreleased]: https://github.com/beliveau-lab/OligoMiner2/compare/v0.0.2...HEAD
+[0.0.2]: https://github.com/beliveau-lab/OligoMiner2/releases/tag/v0.0.2
