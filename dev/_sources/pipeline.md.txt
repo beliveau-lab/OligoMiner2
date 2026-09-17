@@ -31,7 +31,7 @@ condition-aware physics-feature gradient-boosted model, a duplex BiLSTM, the Pai
 the OligoMiner v1 classifier. The first two can be retrained on new data through the package.
 
 ```{note}
-The BiLSTM needs torch, which is not installed by default. Install `oligominer[bilstm]` to use it;
+The BiLSTM needs torch, which is not installed by default. Install `oligominer[torch]` to use it;
 every other model works without it.
 ```
 

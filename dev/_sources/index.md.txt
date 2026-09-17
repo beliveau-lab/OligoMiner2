@@ -21,12 +21,29 @@ change without notice, so pin to a specific version if you depend on it.
 pip install oligominer
 ```
 
-The sequence model is optional, because torch is large and mining, screening and scoring with the
-tree models do not need it:
+That is everything except PyTorch. Mining, specificity, probe assembly and three of the four
+duplex-stability models work with it. Only the duplex-BiLSTM needs torch, so it is an extra:
 
 ```bash
-pip install "oligominer[bilstm]"
+pip install "oligominer[torch]"
 ```
+
+### CPU or GPU
+
+There is no separate GPU extra, because there is nothing for it to install. On Linux the default
+PyTorch wheel on PyPI already depends on the full CUDA stack, so `oligominer[torch]` is a
+GPU-capable install and the BiLSTM uses a GPU when one is present. The GPU is the default, not an
+upgrade.
+
+What that costs is size: the CUDA stack runs to several GB. If you have no GPU, or want a small
+install, take torch from PyTorch's CPU index first and then the extra is already satisfied:
+
+```bash
+pip install torch --index-url https://download.pytorch.org/whl/cpu
+pip install "oligominer[torch]"
+```
+
+This cannot be an extra — an extra names packages, and cannot say which index to take one from.
 
 ## What is in the toolkit
 
