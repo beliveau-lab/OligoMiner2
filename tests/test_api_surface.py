@@ -56,14 +56,24 @@ PUBLIC_SURFACE = {
 }
 
 
-@pytest.mark.parametrize('module_name', sorted(PUBLIC_SURFACE))
+# NUPACK is licence-gated and cannot be installed in CI, so its surface is checked only where
+# it is actually present. The marker is applied per parameter rather than to the whole test, so
+# every other module's surface is still checked on every push.
+def _mark(module_name):
+    return [pytest.mark.needs_nupack] if '.nupack' in module_name else []
+
+
+@pytest.mark.parametrize(
+    'module_name',
+    [pytest.param(m, marks=_mark(m)) for m in sorted(PUBLIC_SURFACE)])
 def test_module_imports(module_name):
     importlib.import_module(module_name)
 
 
 @pytest.mark.parametrize(
     'module_name,attribute',
-    [(m, a) for m, names in sorted(PUBLIC_SURFACE.items()) for a in names])
+    [pytest.param(m, a, marks=_mark(m))
+     for m, names in sorted(PUBLIC_SURFACE.items()) for a in names])
 def test_attribute_is_exported(module_name, attribute):
     module = importlib.import_module(module_name)
     assert hasattr(module, attribute), (

@@ -174,14 +174,18 @@ class TestEncoderParity:
 
 class TestLoadingAndScoring:
 
-    @pytest.mark.parametrize('name', ['physics-xgb', 'ps-xgb', 'om1-lda', 'duplex-BiLSTM'])
+    @pytest.mark.parametrize('name', ['physics-xgb', 'ps-xgb', 'om1-lda',
+                                     pytest.param('duplex-BiLSTM',
+                                                  marks=pytest.mark.needs_torch)])
     def test_every_model_loads_and_scores(self, name, duplex_df):
         frame = build_duplex_frame(duplex_df)
         values = models.load(name).predict(frame)
         assert len(values) == len(frame)
         assert np.isfinite(values).all()
 
-    @pytest.mark.parametrize('name', ['physics-xgb', 'ps-xgb', 'duplex-BiLSTM'])
+    @pytest.mark.parametrize('name', ['physics-xgb', 'ps-xgb',
+                                     pytest.param('duplex-BiLSTM',
+                                                  marks=pytest.mark.needs_torch)])
     def test_pdup_models_return_probabilities(self, name, duplex_df):
         frame = build_duplex_frame(duplex_df)
         values = models.load(name).predict(frame)
@@ -210,14 +214,17 @@ class TestLoadingAndScoring:
         names = models.load('physics-xgb').feature_names(frame)
         assert len(names) == 103
 
+    @pytest.mark.needs_torch
     def test_bilstm_reports_no_feature_names(self, duplex_df):
         frame = build_duplex_frame(duplex_df)
         assert models.load('duplex-BiLSTM').feature_names(frame) == []
 
+    @pytest.mark.needs_torch
     def test_load_all_returns_every_model(self, duplex_df):
         loaded = models.load_all()
         assert set(loaded) == set(models.available())
 
+    @pytest.mark.needs_torch
     def test_load_all_can_exclude_baselines(self):
         loaded = models.load_all(include_baselines=False)
         assert set(loaded) == {'physics-xgb', 'duplex-BiLSTM'}
@@ -261,10 +268,12 @@ class TestConditionResponse:
         values = self._mean_by_temperature('ps-xgb', duplex_df, [17, 47, 87])
         assert len(set(np.round(values, 10))) == 1
 
+    @pytest.mark.needs_torch
     def test_bilstm_is_condition_blind(self, duplex_df):
         values = self._mean_by_temperature('duplex-BiLSTM', duplex_df, [17, 47, 87])
         assert len(set(np.round(values, 10))) == 1
 
+    @pytest.mark.needs_torch
     def test_the_declared_condition_awareness_matches_behaviour(self, duplex_df):
         for name in models.available():
             declared = models.spec(name)['condition_aware']

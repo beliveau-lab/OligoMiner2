@@ -49,6 +49,9 @@ dependencies = [
     "primer3-py",
     "pyfaidx",
     "pyranges",
+    # pandas needs an engine for the parquet IO in models/retrain.py and the l4t seqprops
+    # loader; without one those call sites raise ImportError at runtime, not at install
+    "pyarrow",
     "xgboost==2.1.1",
     "scikit-learn",
 ]
@@ -123,8 +126,15 @@ allow-direct-references = true
 testpaths = ["tests"]
 # NOTE: no pythonpath = ["src"]. With a src layout the tests import the INSTALLED package, so a
 # module missing from the wheel fails here instead of passing against the source tree.
-markers = ["integration: needs an external program; not run on every push"]
-addopts = "--strict-markers -m 'not integration'"
+markers = [
+    "integration: needs an external program that CI can install; not run on every push",
+    "needs_nupack: needs NUPACK, which is licence-gated and installable only locally",
+    "needs_torch: needs torch; run in its own CI job against the CPU-only wheel",
+]
+# The default run is the unit tier. CI DESELECTS the other markers explicitly and reports the
+# count, rather than skipping them silently: a suite that goes green having run nothing is worse
+# than one that says what it did not run.
+addopts = "--strict-markers -m 'not integration and not needs_nupack and not needs_torch'"
 
 [[tool.uv.index]]
 name = "testpypi"
