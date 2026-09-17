@@ -109,21 +109,30 @@ jobs:
           # ("No system Python installation found for Python 3.13").
           uv venv --python "${UV_PYTHON}" .venv-install-test
           # TestPyPI does not mirror real dependencies, so resolve those from PyPI.
-          # RETRY: a brand-new project takes a moment to appear in the simple index after its
-          # first upload, so the first release of any package raced the index and failed here.
-          for attempt in 1 2 3 4 5; do
+          # RETRY: a newly uploaded version takes a while to appear in the simple index, and the
+          # wait scales with the artifact — a 13 MB package needed over two and a half minutes,
+          # well past the ~100s budget this loop first had. Eight attempts with linear backoff is
+          # about twelve minutes, which costs nothing when the index is quick.
+          for attempt in 1 2 3 4 5 6 7 8; do
+            # --index-strategy unsafe-best-match is REQUIRED, not an optimisation. By default uv
+            # stops at the first index that contains a package at all, as protection against
+            # dependency confusion. Once a package exists on real PyPI, that index wins and uv
+            # never looks at TestPyPI for the new version — so every release AFTER the first one
+            # fails here with "there is no version of <pkg>==<version>". Both indexes are official
+            # and the version is pinned exactly, so considering both is safe.
             if uv pip install --python .venv-install-test/bin/python \
                  --index-url https://test.pypi.org/simple/ \
                  --extra-index-url https://pypi.org/simple/ \
+                 --index-strategy unsafe-best-match \
                  "${PKG}==${TAG}"; then
               break
             fi
-            if [ "$attempt" = 5 ]; then
+            if [ "$attempt" = 8 ]; then
               echo "::error::${PKG}==${TAG} never appeared in the TestPyPI index"
               exit 1
             fi
-            echo "not in the index yet; retrying in $((attempt * 10))s"
-            sleep $((attempt * 10))
+            echo "not in the index yet; retrying in $((attempt * 20))s"
+            sleep $((attempt * 20))
           done
           .venv-install-test/bin/python -c "import ${PKG}; assert ${PKG}.__version__ == '${TAG}', ${PKG}.__version__; print(${PKG}.__version__)"
 
