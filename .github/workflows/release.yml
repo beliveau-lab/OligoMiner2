@@ -99,6 +99,13 @@ jobs:
       - uses: astral-sh/setup-uv@v10.1.0
         with:
           python-version: ${{ matrix.python-version }}
+          # This job exists to prove a FIRST-TIME install works, so it must not start from a
+          # warm cache. setup-uv restores uv's cache by default, and uv caches simple-index
+          # responses — so a restored entry for this package serves a pre-upload index page
+          # that no amount of retrying will refresh. Observed on oligominer 0.0.3: five matrix
+          # jobs started within three seconds of each other, two installed immediately and
+          # three never saw the version across ten minutes of retries.
+          enable-cache: false
       - name: Install from TestPyPI and smoke-test
         run: |
           set -euo pipefail
@@ -113,26 +120,29 @@ jobs:
           # wait scales with the artifact — a 13 MB package needed over two and a half minutes,
           # well past the ~100s budget this loop first had. Eight attempts with linear backoff is
           # about twelve minutes, which costs nothing when the index is quick.
-          for attempt in 1 2 3 4 5 6 7 8; do
+          for attempt in $(seq 1 40); do
             # --index-strategy unsafe-best-match is REQUIRED, not an optimisation. By default uv
             # stops at the first index that contains a package at all, as protection against
             # dependency confusion. Once a package exists on real PyPI, that index wins and uv
             # never looks at TestPyPI for the new version — so every release AFTER the first one
             # fails here with "there is no version of <pkg>==<version>". Both indexes are official
             # and the version is pinned exactly, so considering both is safe.
+            # --refresh-package, belt to enable-cache's braces: re-fetch this package's index
+            # page instead of answering the retry from whatever the last attempt cached.
             if uv pip install --python .venv-install-test/bin/python \
+                 --refresh-package "${PKG}" \
                  --index-url https://test.pypi.org/simple/ \
                  --extra-index-url https://pypi.org/simple/ \
                  --index-strategy unsafe-best-match \
                  "${PKG}==${TAG}"; then
               break
             fi
-            if [ "$attempt" = 8 ]; then
+            if [ "$attempt" = 40 ]; then
               echo "::error::${PKG}==${TAG} never appeared in the TestPyPI index"
               exit 1
             fi
-            echo "not in the index yet; retrying in $((attempt * 20))s"
-            sleep $((attempt * 20))
+            echo "not in the index yet (attempt ${attempt}/40); retrying in 15s"
+            sleep 15
           done
           .venv-install-test/bin/python -c "import ${PKG}; assert ${PKG}.__version__ == '${TAG}', ${PKG}.__version__; print(${PKG}.__version__)"
 
