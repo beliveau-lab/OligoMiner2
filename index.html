@@ -1,0 +1,20 @@
+<!doctype html>
+<!-- Root redirect for the versioned docs site. CI writes a folder per version next to this file;
+     `stable/` is the newest release and `dev/` is the tip of the dev branch. Written once and
+     never rebuilt, so it must work whether or not a release exists yet. -->
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <title>OligoMiner2 documentation</title>
+    <script>
+      fetch("stable/", {method: "HEAD"})
+        .then(r => location.replace(r.ok ? "stable/" : "dev/"))
+        .catch(() => location.replace("dev/"));
+    </script>
+    <meta http-equiv="refresh" content="3; url=dev/">
+  </head>
+  <body>
+    <p>Redirecting to the <a href="stable/">latest release</a>
+       (or the <a href="dev/">development</a> docs).</p>
+  </body>
+</html>
