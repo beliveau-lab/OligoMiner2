@@ -443,7 +443,15 @@ def process_chunk(_seq_id, chunk_nuc_arr, chunk_start, _chunk_stop, config):
         # dinucleotide code at each position, 0-15 for ACGT pairs and -1 where a
         # non-ACGT base makes the pair meaningless
         left, right = chunk_nuc_arr[:-1], chunk_nuc_arr[1:]
-        pair_code = np.where((left < 4) & (right < 4), left * 4 + right, -1)
+        # int16, not the uint8 the bases arrive as: the -1 sentinel is not representable in an
+        # unsigned dtype, and numpy 2 raises OverflowError where earlier versions silently
+        # wrapped it to 255. Only equality against 0..15 is ever asked of this array, so the
+        # wider dtype changes nothing else.
+        pair_code = np.where(
+            (left < 4) & (right < 4),
+            left.astype(np.int16) * 4 + right.astype(np.int16),
+            -1,
+        )
 
         # one running count per dinucleotide, so any window's composition is a
         # difference of two lookups
