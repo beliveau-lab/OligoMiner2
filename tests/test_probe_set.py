@@ -21,38 +21,38 @@ from oligominer.utils.exceptions import PipelineStateError
 # construction
 # ---------------------------------------------------------------------------
 
-class TestProbeSetConstruction:
 
+class TestProbeSetConstruction:
     def test_from_tuples(self, example_probes):
         ps = ProbeSet(example_probes)
         assert isinstance(ps.df, pd.DataFrame)
         assert len(ps) == len(example_probes)
-        assert 'seqid' in ps.df.columns
+        assert "seqid" in ps.df.columns
 
     def test_from_dataframe(self, example_probes):
         df = probes_to_df(example_probes)
         ps = ProbeSet(df)
         assert len(ps) == len(df)
-        assert 'seqid' in ps.df.columns
+        assert "seqid" in ps.df.columns
 
     def test_from_dataframe_with_seqid(self, example_probes):
         """If seqid column already exists, it should not be overwritten."""
         df = probes_to_df(example_probes)
-        df['seqid'] = 'custom_id'
+        df["seqid"] = "custom_id"
         ps = ProbeSet(df)
-        assert ps.df['seqid'].iloc[0] == 'custom_id'
+        assert ps.df["seqid"].iloc[0] == "custom_id"
 
     def test_df_is_a_copy(self, example_probes):
         """Modifying the original data should not affect the ProbeSet."""
         df = probes_to_df(example_probes)
         ps = ProbeSet(df)
-        df['probe_seq'] = 'AAAA'
-        assert ps.df['probe_seq'].iloc[0] != 'AAAA'
+        df["probe_seq"] = "AAAA"
+        assert ps.df["probe_seq"].iloc[0] != "AAAA"
 
     def test_from_fasta(self, example_fasta_path):
         ps = ProbeSet.from_fasta(example_fasta_path)
         assert len(ps) > 0
-        assert 'seqid' in ps.df.columns
+        assert "seqid" in ps.df.columns
 
     def test_empty_tuples(self):
         ps = ProbeSet([])
@@ -61,16 +61,16 @@ class TestProbeSetConstruction:
 
     def test_repr(self, example_probe_set):
         r = repr(example_probe_set)
-        assert 'ProbeSet' in r
-        assert 'probes=' in r
+        assert "ProbeSet" in r
+        assert "probes=" in r
 
 
 # ---------------------------------------------------------------------------
 # export
 # ---------------------------------------------------------------------------
 
-class TestProbeSetExport:
 
+class TestProbeSetExport:
     def test_to_csv(self, example_probe_set, tmp_path):
         path = str(tmp_path / "probes.csv")
         example_probe_set.to_csv(path)
@@ -92,15 +92,15 @@ class TestProbeSetExport:
         assert os.path.exists(path)
         with open(path) as f:
             content = f.read()
-        assert content.startswith('@')
+        assert content.startswith("@")
 
 
 # ---------------------------------------------------------------------------
 # CSV round-trip
 # ---------------------------------------------------------------------------
 
-class TestProbeSetRoundTrip:
 
+class TestProbeSetRoundTrip:
     def test_csv_round_trip(self, example_probe_set, tmp_path):
         path = str(tmp_path / "rt.csv")
         example_probe_set.to_csv(path)
@@ -113,15 +113,15 @@ class TestProbeSetRoundTrip:
         example_probe_set.to_csv(path)
         ps2 = ProbeSet.from_csv(path)
         # probe sequences should be identical
-        assert list(ps2.df['probe_seq']) == list(example_probe_set.df['probe_seq'])
+        assert list(ps2.df["probe_seq"]) == list(example_probe_set.df["probe_seq"])
 
 
 # ---------------------------------------------------------------------------
 # initial state
 # ---------------------------------------------------------------------------
 
-class TestProbeSetInitialState:
 
+class TestProbeSetInitialState:
     def test_align_df_is_none(self, example_probe_set):
         assert example_probe_set.align_df is None
 
@@ -146,81 +146,83 @@ class TestKmerProvenance:
 
     @pytest.fixture
     def reference(self, tmp_path):
-        path = tmp_path / 'ref.fa'
-        path.write_text('>chr1\n' + 'ACGTACGTACGTACGTACGT' * 6 + '\n')
+        path = tmp_path / "ref.fa"
+        path.write_text(">chr1\n" + "ACGTACGTACGTACGTACGT" * 6 + "\n")
         return str(path)
 
     def _probe_set(self):
-        return ProbeSet(pd.DataFrame({
-            'seq_id': ['chr1', 'chr1'],
-            'start': [0, 20],
-            'stop': [20, 40],
-            'probe_seq': ['ACGTACGTACGTACGTACGT'] * 2,
-            'tm': [45.0, 45.0],
-        }))
+        return ProbeSet(
+            pd.DataFrame(
+                {
+                    "seq_id": ["chr1", "chr1"],
+                    "start": [0, 20],
+                    "stop": [20, 40],
+                    "probe_seq": ["ACGTACGTACGTACGTACGT"] * 2,
+                    "tm": [45.0, 45.0],
+                }
+            )
+        )
 
-    def test_a_forward_only_index_is_recorded_as_such(self, reference,
-                                                       tmp_path):
+    def test_a_forward_only_index_is_recorded_as_such(self, reference, tmp_path):
         from oligominer.specificity.kmers import build_index
 
-        index = tmp_path / 'forward.npz'
-        build_index(reference, str(index), k=18, backend='numpy',
-                    min_count=1, canonical=False)
+        index = tmp_path / "forward.npz"
+        build_index(reference, str(index), k=18, backend="numpy", min_count=1, canonical=False)
 
         probes = self._probe_set()
         probes.compute_max_kmer(str(index), k=18)
 
-        stage = [s for s in probes.manifest['stages']
-                 if s['stage'] == 'max_kmer'][-1]
-        assert stage['params']['is_canonical'] is False
+        stage = [s for s in probes.manifest["stages"] if s["stage"] == "max_kmer"][-1]
+        assert stage["params"]["is_canonical"] is False
 
-    @pytest.mark.skipif(shutil.which('jellyfish') is None,
-                        reason='jellyfish is required for a canonical index')
+    @pytest.mark.skipif(
+        shutil.which("jellyfish") is None, reason="jellyfish is required for a canonical index"
+    )
     def test_a_canonical_index_is_recorded_as_such(self, reference, tmp_path):
         # the numpy backend counts one strand and refuses canonical outright,
         # so a canonical index has to come from jellyfish
         from oligominer.specificity.kmers import build_index
 
-        index = tmp_path / 'canonical.jf'
-        build_index(reference, str(index), k=18, backend='jellyfish',
-                    min_count=1, canonical=True)
+        index = tmp_path / "canonical.jf"
+        build_index(reference, str(index), k=18, backend="jellyfish", min_count=1, canonical=True)
 
         probes = self._probe_set()
         probes.compute_max_kmer(str(index), k=18)
 
-        stage = [s for s in probes.manifest['stages']
-                 if s['stage'] == 'max_kmer'][-1]
-        assert stage['params']['is_canonical'] is True
+        stage = [s for s in probes.manifest["stages"] if s["stage"] == "max_kmer"][-1]
+        assert stage["params"]["is_canonical"] is True
 
-    def test_the_numpy_backend_refuses_to_pretend_it_is_canonical(self,
-                                                                  reference,
-                                                                  tmp_path):
+    def test_the_numpy_backend_refuses_to_pretend_it_is_canonical(self, reference, tmp_path):
         # forward-only counts labelled canonical would be a wrong number with a
         # correct-looking label
         from oligominer.specificity.kmers import build_index
         from oligominer.specificity.kmers.exceptions import KmerIndexError
 
-        with pytest.raises(KmerIndexError, match='forward strand'):
-            build_index(reference, str(tmp_path / 'x.npz'), k=18,
-                        backend='numpy', min_count=1, canonical=True)
+        with pytest.raises(KmerIndexError, match="forward strand"):
+            build_index(
+                reference,
+                str(tmp_path / "x.npz"),
+                k=18,
+                backend="numpy",
+                min_count=1,
+                canonical=True,
+            )
 
-    def test_an_index_without_metadata_records_it_as_unknown(self, reference,
-                                                             tmp_path):
+    def test_an_index_without_metadata_records_it_as_unknown(self, reference, tmp_path):
         # a jellyfish index built outside the package has no sidecar, and
         # guessing its canonicality would be worse than recording that we do
         # not know
         from oligominer.specificity.kmers import build_index, sidecar_path
 
-        index = tmp_path / 'bare.npz'
-        build_index(reference, str(index), k=18, backend='numpy', min_count=1)
+        index = tmp_path / "bare.npz"
+        build_index(reference, str(index), k=18, backend="numpy", min_count=1)
         sidecar_path(str(index)).unlink()
 
         probes = self._probe_set()
         probes.compute_max_kmer(str(index), k=18)
 
-        stage = [s for s in probes.manifest['stages']
-                 if s['stage'] == 'max_kmer'][-1]
-        assert stage['params']['is_canonical'] is None
+        stage = [s for s in probes.manifest["stages"] if s["stage"] == "max_kmer"][-1]
+        assert stage["params"]["is_canonical"] is None
 
 
 class TestProbeTableValidation:
@@ -233,27 +235,34 @@ class TestProbeTableValidation:
     def test_a_frame_with_none_of_the_columns_is_rejected(self):
         from oligominer.utils.exceptions import InvalidInputError
 
-        with pytest.raises(InvalidInputError, match='missing'):
-            ProbeSet(pd.DataFrame({'foo': [1]}))
+        with pytest.raises(InvalidInputError, match="missing"):
+            ProbeSet(pd.DataFrame({"foo": [1]}))
 
     def test_the_error_names_the_missing_column(self):
         from oligominer.utils.exceptions import InvalidInputError
 
-        frame = pd.DataFrame({'seq_id': ['a'], 'start': [0],
-                              'probe_seq': ['ACGT'], 'tm': [45.0]})
-        with pytest.raises(InvalidInputError, match='stop'):
+        frame = pd.DataFrame({"seq_id": ["a"], "start": [0], "probe_seq": ["ACGT"], "tm": [45.0]})
+        with pytest.raises(InvalidInputError, match="stop"):
             ProbeSet(frame)
 
     def test_a_complete_frame_is_accepted(self):
-        frame = pd.DataFrame({'seq_id': ['a'], 'start': [0], 'stop': [4],
-                              'probe_seq': ['ACGT'], 'tm': [45.0]})
+        frame = pd.DataFrame(
+            {"seq_id": ["a"], "start": [0], "stop": [4], "probe_seq": ["ACGT"], "tm": [45.0]}
+        )
         assert len(ProbeSet(frame)) == 1
 
     def test_extra_columns_are_kept(self):
-        frame = pd.DataFrame({'seq_id': ['a'], 'start': [0], 'stop': [4],
-                              'probe_seq': ['ACGT'], 'tm': [45.0],
-                              'note': ['keep me']})
-        assert 'note' in ProbeSet(frame).df.columns
+        frame = pd.DataFrame(
+            {
+                "seq_id": ["a"],
+                "start": [0],
+                "stop": [4],
+                "probe_seq": ["ACGT"],
+                "tm": [45.0],
+                "note": ["keep me"],
+            }
+        )
+        assert "note" in ProbeSet(frame).df.columns
 
 
 class TestMerfishProvenance:
@@ -265,41 +274,43 @@ class TestMerfishProvenance:
 
     @pytest.fixture
     def probes(self):
-        return ProbeSet(pd.DataFrame({
-            'seq_id': ['a', 'b'], 'start': [0, 10], 'stop': [20, 30],
-            'probe_seq': ['ACGT' * 5, 'TTTT' * 5], 'tm': [45.0, 46.0],
-            'refseq': ['g1', 'g2'],
-        }))
+        return ProbeSet(
+            pd.DataFrame(
+                {
+                    "seq_id": ["a", "b"],
+                    "start": [0, 10],
+                    "stop": [20, 30],
+                    "probe_seq": ["ACGT" * 5, "TTTT" * 5],
+                    "tm": [45.0, 46.0],
+                    "refseq": ["g1", "g2"],
+                }
+            )
+        )
 
     @pytest.fixture
     def bridges(self):
-        return pd.DataFrame({'id': [f'b{i}' for i in range(16)],
-                             'seq': ['ACGT'] * 16})
+        return pd.DataFrame({"id": [f"b{i}" for i in range(16)], "seq": ["ACGT"] * 16})
 
     @pytest.fixture
     def barcodes(self):
-        return pd.DataFrame({'barcode': ['1111000000000000',
-                                         '0000111100000000']})
+        return pd.DataFrame({"barcode": ["1111000000000000", "0000111100000000"]})
 
     def test_no_master_table_before_any_appending(self, probes):
         assert probes.master_table is None
 
-    def test_appending_barcodes_records_a_step(self, probes, bridges,
-                                               barcodes):
+    def test_appending_barcodes_records_a_step(self, probes, bridges, barcodes):
         probes.append_merfish_barcodes(bridges, barcodes)
         assert probes.master_table is not None
 
-    def test_each_probe_records_the_barcode_it_was_given(self, probes, bridges,
-                                                         barcodes):
+    def test_each_probe_records_the_barcode_it_was_given(self, probes, bridges, barcodes):
         probes.append_merfish_barcodes(bridges, barcodes)
-        entries = probes.master_table['merfish'].tolist()
+        entries = probes.master_table["merfish"].tolist()
 
-        assert 'merfish:1111000000000000' in entries
-        assert 'merfish:0000111100000000' in entries
+        assert "merfish:1111000000000000" in entries
+        assert "merfish:0000111100000000" in entries
 
     def test_the_sequences_actually_changed(self, probes, bridges, barcodes):
-        before = probes.df['sequence'].tolist() if 'sequence' in probes.df \
-            else None
+        before = probes.df["sequence"].tolist() if "sequence" in probes.df else None
         probes.append_merfish_barcodes(bridges, barcodes)
 
-        assert before != probes.df['sequence'].tolist()
+        assert before != probes.df["sequence"].tolist()

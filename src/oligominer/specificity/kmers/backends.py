@@ -31,10 +31,10 @@ from oligominer.utils.cores import resolve_cores
 from .exceptions import KmerIndexError
 from .numpy_index import KmerIndex, build_numpy_index
 
-JELLYFISH_SUFFIXES = {'.jf'}
-NUMPY_SUFFIXES = {'.npz'}
+JELLYFISH_SUFFIXES = {".jf"}
+NUMPY_SUFFIXES = {".npz"}
 
-SIDECAR_SUFFIX = '.om2meta.json'
+SIDECAR_SUFFIX = ".om2meta.json"
 
 
 def have_jellyfish():
@@ -45,10 +45,10 @@ def have_jellyfish():
         path (str or None): the executable path, or None.
     """
     # success
-    return shutil.which('jellyfish')
+    return shutil.which("jellyfish")
 
 
-def resolve_backend(index_path, backend='auto'):
+def resolve_backend(index_path, backend="auto"):
     """
     Decide which backend answers for an index.
 
@@ -65,24 +65,26 @@ def resolve_backend(index_path, backend='auto'):
     """
     suffix = Path(index_path).suffix.lower()
 
-    if backend == 'jellyfish':
+    if backend == "jellyfish":
         if have_jellyfish() is None:
             raise KmerIndexError(
                 "backend='jellyfish' was requested but the jellyfish binary is not "
-                "on PATH; install it or use backend='numpy'")
-        name = 'jellyfish'
-    elif backend == 'numpy':
-        name = 'numpy'
-    elif backend == 'auto':
+                "on PATH; install it or use backend='numpy'"
+            )
+        name = "jellyfish"
+    elif backend == "numpy":
+        name = "numpy"
+    elif backend == "auto":
         if suffix in JELLYFISH_SUFFIXES:
-            name = 'jellyfish' if have_jellyfish() else 'numpy'
+            name = "jellyfish" if have_jellyfish() else "numpy"
         elif suffix in NUMPY_SUFFIXES:
-            name = 'numpy'
+            name = "numpy"
         else:
-            name = 'jellyfish' if have_jellyfish() else 'numpy'
+            name = "jellyfish" if have_jellyfish() else "numpy"
     else:
         raise KmerIndexError(
-            f"unknown backend {backend!r}; expected 'auto', 'jellyfish' or 'numpy'")
+            f"unknown backend {backend!r}; expected 'auto', 'jellyfish' or 'numpy'"
+        )
 
     # success
     return name
@@ -137,8 +139,17 @@ def read_metadata(index_path):
     return info
 
 
-def build_index(fasta_path, output_file, k=18, backend='auto', cores=None,
-                min_count=2, size=None, canonical=False, verbose=False):
+def build_index(
+    fasta_path,
+    output_file,
+    k=18,
+    backend="auto",
+    cores=None,
+    min_count=2,
+    size=None,
+    canonical=False,
+    verbose=False,
+):
     """
     Build a k-mer index with whichever backend is selected.
 
@@ -168,27 +179,34 @@ def build_index(fasta_path, output_file, k=18, backend='auto', cores=None,
     name = resolve_backend(output_file, backend)
     cores = resolve_cores(cores)
 
-    if name == 'jellyfish':
+    if name == "jellyfish":
         from .jellyfish_build import jellyfish_build
 
         if size is None:
             size = _size_hash_from_fasta(fasta_path)
-        jellyfish_build(str(fasta_path), str(output_file), k=k, size=size,
-                        cores=cores, canonical=canonical, verbose=verbose)
+        jellyfish_build(
+            str(fasta_path),
+            str(output_file),
+            k=k,
+            size=size,
+            cores=cores,
+            canonical=canonical,
+            verbose=verbose,
+        )
     else:
         if canonical:
             raise KmerIndexError(
-                'the numpy backend counts the forward strand only; '
-                'canonical=True requires backend="jellyfish"')
-        build_numpy_index(str(fasta_path), str(output_file), k=k,
-                          min_count=min_count, cores=cores)
+                "the numpy backend counts the forward strand only; "
+                'canonical=True requires backend="jellyfish"'
+            )
+        build_numpy_index(str(fasta_path), str(output_file), k=k, min_count=min_count, cores=cores)
 
     info = {
-        'backend': name,
-        'path': str(output_file),
-        'k': int(k),
-        'is_canonical': bool(canonical),
-        'min_count': int(min_count) if name == 'numpy' else None,
+        "backend": name,
+        "path": str(output_file),
+        "k": int(k),
+        "is_canonical": bool(canonical),
+        "min_count": int(min_count) if name == "numpy" else None,
     }
     write_metadata(output_file, info)
 
@@ -212,8 +230,7 @@ def _size_hash_from_fasta(fasta_path):
     return f"{max(16, int(n_bases / 1e6) * 2)}M"
 
 
-def max_kmer(index_path, seqs, k=18, backend='auto', expect_canonical=None,
-             verbose=False):
+def max_kmer(index_path, seqs, k=18, backend="auto", expect_canonical=None, verbose=False):
     """
     Return the maximum k-mer count within each sequence.
 
@@ -238,15 +255,15 @@ def max_kmer(index_path, seqs, k=18, backend='auto', expect_canonical=None,
     """
     index_path = Path(index_path)
     if not index_path.exists():
-        raise KmerIndexError(f'no such k-mer index: {index_path}')
+        raise KmerIndexError(f"no such k-mer index: {index_path}")
 
     _check_metadata(index_path, k, expect_canonical)
 
     name = resolve_backend(index_path, backend)
     if verbose:
-        print(f'  max_kmer via {name} on {index_path.name} ({len(seqs)} seqs)')
+        print(f"  max_kmer via {name} on {index_path.name} ({len(seqs)} seqs)")
 
-    if name == 'jellyfish':
+    if name == "jellyfish":
         counts = _max_kmer_jellyfish(index_path, seqs, k)
     else:
         counts = _max_kmer_numpy(index_path, seqs, k)
@@ -276,17 +293,18 @@ def _check_metadata(index_path, k, expect_canonical):
     if meta is None:
         return False
 
-    if int(meta.get('k', k)) != int(k):
+    if int(meta.get("k", k)) != int(k):
         raise KmerIndexError(
             f"index {index_path.name} was built at k={meta['k']} but queried at "
-            f"k={k}; the counts would not correspond to the requested k-mers")
+            f"k={k}; the counts would not correspond to the requested k-mers"
+        )
 
-    if (expect_canonical is not None
-            and bool(meta.get('is_canonical')) != bool(expect_canonical)):
+    if expect_canonical is not None and bool(meta.get("is_canonical")) != bool(expect_canonical):
         raise KmerIndexError(
             f"index {index_path.name} has is_canonical={meta.get('is_canonical')} "
             f"but the caller expects {expect_canonical}; the two conventions "
-            f"disagree on which probes pass a given cutoff")
+            f"disagree on which probes pass a given cutoff"
+        )
 
     # success
     return True
@@ -309,8 +327,7 @@ def _max_kmer_numpy(index_path, seqs, k):
     """
     index = KmerIndex.load(str(index_path))
     if index.k != int(k):
-        raise KmerIndexError(
-            f'numpy index was built at k={index.k} but queried at k={k}')
+        raise KmerIndexError(f"numpy index was built at k={index.k} but queried at k={k}")
 
     # success
     return index.query_probes(list(seqs))
@@ -343,16 +360,22 @@ def _max_kmer_jellyfish(index_path, seqs, k):
 
     # -i is required: without it jellyfish query ignores stdin, expects the k-mers
     # as trailing arguments, and exits having printed nothing
-    cmd = [have_jellyfish(), 'query', '-i', str(index_path)]
-    proc = subprocess.Popen(cmd, stdin=subprocess.PIPE, stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE, text=True, bufsize=1 << 20)
+    cmd = [have_jellyfish(), "query", "-i", str(index_path)]
+    proc = subprocess.Popen(
+        cmd,
+        stdin=subprocess.PIPE,
+        stdout=subprocess.PIPE,
+        stderr=subprocess.PIPE,
+        text=True,
+        bufsize=1 << 20,
+    )
 
     def _feed():
         try:
             for seq in seqs:
                 upper = seq.upper()
                 for i in range(len(upper) - k + 1):
-                    proc.stdin.write(upper[i:i + k] + '\n')
+                    proc.stdin.write(upper[i : i + k] + "\n")
             proc.stdin.close()
         except (BrokenPipeError, ValueError):
             pass

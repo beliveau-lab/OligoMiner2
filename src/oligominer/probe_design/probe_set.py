@@ -40,7 +40,7 @@ from . import schema
 
 
 # the columns a probe table has to carry for any stage to mean anything
-REQUIRED_COLUMNS = ('seq_id', 'start', 'stop', 'probe_seq', 'tm')
+REQUIRED_COLUMNS = ("seq_id", "start", "stop", "probe_seq", "tm")
 
 
 class ProbeSet:
@@ -91,22 +91,22 @@ class ProbeSet:
             missing = [c for c in REQUIRED_COLUMNS if c not in probes.columns]
             if missing:
                 raise InvalidInputError(
-                    f'probe table is missing {missing}; a probe set needs '
-                    f'{list(REQUIRED_COLUMNS)}')
+                    f"probe table is missing {missing}; a probe set needs {list(REQUIRED_COLUMNS)}"
+                )
             self.df = probes.copy()
         else:
             self.df = probes_to_df(probes)
 
         # ensure seqid column exists
-        if 'seqid' not in self.df.columns:
-            self.df['seqid'] = self.df.apply(_make_seqid, axis=1)
+        if "seqid" not in self.df.columns:
+            self.df["seqid"] = self.df.apply(_make_seqid, axis=1)
 
         self.align_df = None
         self.merged_df = None
         self.score_df = None
         self._master_entries = {}
         self.manifest = schema.new_manifest()
-        self._record('create', n_out=len(self.df))
+        self._record("create", n_out=len(self.df))
 
     # ------------------------------------------------------------------
     # constructors
@@ -128,9 +128,8 @@ class ProbeSet:
         """
         probes = mine_fasta(input_fasta, cores=cores, **mining_params)
         probe_set = cls(probes)
-        probe_set.manifest['target'] = {'source_fasta': str(input_fasta)}
-        probe_set._record('mine', params=dict(mining_params),
-                          n_out=len(probe_set.df))
+        probe_set.manifest["target"] = {"source_fasta": str(input_fasta)}
+        probe_set._record("mine", params=dict(mining_params), n_out=len(probe_set.df))
 
         # success
         return probe_set
@@ -172,7 +171,7 @@ class ProbeSet:
             path (str): output file path.
         """
         tuples = self._to_tuples()
-        write_probes(tuples, path, fmt='bed')
+        write_probes(tuples, path, fmt="bed")
 
     def to_fastq(self, path):
         """
@@ -182,7 +181,7 @@ class ProbeSet:
             path (str): output file path.
         """
         tuples = self._to_tuples()
-        write_probes(tuples, path, fmt='fastq')
+        write_probes(tuples, path, fmt="fastq")
 
     def to_fasta(self, path):
         """
@@ -196,7 +195,7 @@ class ProbeSet:
         """
         from oligominer.bioinformatics.file_io import write_fasta
 
-        seqs = dict(zip(self.df['seqid'], self.df['probe_seq']))
+        seqs = dict(zip(self.df["seqid"], self.df["probe_seq"]))
         write_fasta(seqs, path)
 
     def _to_tuples(self):
@@ -258,8 +257,9 @@ class ProbeSet:
     # pipeline steps
     # ------------------------------------------------------------------
 
-    def align(self, bt2_index, ref_fasta, preset=None, k=100,
-              threads=None, verbose=False, **bt2_params):
+    def align(
+        self, bt2_index, ref_fasta, preset=None, k=100, threads=None, verbose=False, **bt2_params
+    ):
         """
         Align probes to a reference genome.
 
@@ -278,17 +278,23 @@ class ProbeSet:
             self (ProbeSet): for method chaining.
         """
         self.align_df = align_probes(
-            self.df, bt2_index, ref_fasta,
-            preset=preset, k=k, threads=threads, verbose=verbose,
-            **bt2_params
+            self.df,
+            bt2_index,
+            ref_fasta,
+            preset=preset,
+            k=k,
+            threads=threads,
+            verbose=verbose,
+            **bt2_params,
         )
-        self._record('align', params={'bt2_index': str(bt2_index), 'k': k},
-                     n_alignments=len(self.align_df))
+        self._record(
+            "align", params={"bt2_index": str(bt2_index), "k": k}, n_alignments=len(self.align_df)
+        )
 
         # success
         return self
 
-    def compute_max_kmer(self, jf_index, k=18, backend='auto', verbose=False):
+    def compute_max_kmer(self, jf_index, k=18, backend="auto", verbose=False):
         """
         Compute max kmer counts for each probe.
 
@@ -306,18 +312,18 @@ class ProbeSet:
         from oligominer.specificity.kmers import read_metadata
 
         n_before = len(self.df)
-        self.df = add_max_kmer(
-            self.df, jf_index, k=k, backend=backend, verbose=verbose
-        )
+        self.df = add_max_kmer(self.df, jf_index, k=k, backend=backend, verbose=verbose)
 
         # a forward-only index counts a probe's k-mers on one strand, a
         # canonical one counts both; the two give different answers for the
         # same probe, so a probe set records which it was built against
         info = read_metadata(jf_index) or {}
-        self._record('max_kmer',
-                     params={'index': str(jf_index), 'k': k,
-                             'is_canonical': info.get('is_canonical')},
-                     n_in=n_before, n_out=len(self.df))
+        self._record(
+            "max_kmer",
+            params={"index": str(jf_index), "k": k, "is_canonical": info.get("is_canonical")},
+            n_in=n_before,
+            n_out=len(self.df),
+        )
 
         # success
         return self
@@ -339,7 +345,7 @@ class ProbeSet:
             raise PipelineStateError("No alignment data. Call align() first.")
 
         self.merged_df = merge_probes_alignments(self.df, self.align_df)
-        self._record('merge', n_duplexes=len(self.merged_df))
+        self._record("merge", n_duplexes=len(self.merged_df))
 
         # success
         return self
@@ -365,11 +371,10 @@ class ProbeSet:
         if self.merged_df is None:
             raise PipelineStateError("No merged data. Call merge() first.")
 
-        self.merged_df = add_pdup(
-            self.merged_df, model=model, conc_a=conc_a, conc_b=conc_b
+        self.merged_df = add_pdup(self.merged_df, model=model, conc_a=conc_a, conc_b=conc_b)
+        self._record(
+            "pdup", params={"conc_a": conc_a, "conc_b": conc_b}, n_duplexes=len(self.merged_df)
         )
-        self._record('pdup', params={'conc_a': conc_a, 'conc_b': conc_b},
-                     n_duplexes=len(self.merged_df))
 
         # success
         return self
@@ -402,9 +407,11 @@ class ProbeSet:
         self.merged_df = add_duplex_pred(
             self.merged_df, temperature=temperature, normalize=normalize
         )
-        self._record('duplex_pred',
-                     params={'temperature': temperature, 'normalize': normalize},
-                     n_duplexes=len(self.merged_df))
+        self._record(
+            "duplex_pred",
+            params={"temperature": temperature, "normalize": normalize},
+            n_duplexes=len(self.merged_df),
+        )
 
         # success
         return self
@@ -415,11 +422,20 @@ class ProbeSet:
 
     def _ensure_sequence_column(self):
         """Initialize the sequence column from probe_seq if not present."""
-        if 'sequence' not in self.df.columns:
-            self.df['sequence'] = self.df['probe_seq']
+        if "sequence" not in self.df.columns:
+            self.df["sequence"] = self.df["probe_seq"]
 
-    def append(self, sequences, scheme, label, target_column=None,
-               n_per_target=None, ranges=None, left=True, rc=False):
+    def append(
+        self,
+        sequences,
+        scheme,
+        label,
+        target_column=None,
+        n_per_target=None,
+        ranges=None,
+        left=True,
+        rc=False,
+    ):
         """
         Append sequences to probes using the specified scheme.
 
@@ -448,20 +464,23 @@ class ProbeSet:
         self._ensure_sequence_column()
 
         self.df, entries = append_sequences(
-            self.df, sequences, scheme,
+            self.df,
+            sequences,
+            scheme,
             target_column=target_column,
             n_per_target=n_per_target,
             ranges=ranges,
-            left=left, rc=rc,
+            left=left,
+            rc=rc,
         )
         self._master_entries[label] = entries
 
         # success
         return self
 
-    def append_saber_seqs(self, sequences, scheme, label="saber",
-                          target_column=None, n_per_target=None,
-                          ranges=None):
+    def append_saber_seqs(
+        self, sequences, scheme, label="saber", target_column=None, n_per_target=None, ranges=None
+    ):
         """
         Append SABER concatemer sequences to the 3' end.
 
@@ -482,7 +501,9 @@ class ProbeSet:
         self._ensure_sequence_column()
 
         self.df, entries = append_saber(
-            self.df, sequences, scheme,
+            self.df,
+            sequences,
+            scheme,
             target_column=target_column,
             n_per_target=n_per_target,
             ranges=ranges,
@@ -492,8 +513,7 @@ class ProbeSet:
         # success
         return self
 
-    def append_merfish_barcodes(self, bridges, barcodes,
-                                target_column="refseq"):
+    def append_merfish_barcodes(self, bridges, barcodes, target_column="refseq"):
         """
         Append MERFISH barcode-encoded bridges.
 
@@ -510,17 +530,19 @@ class ProbeSet:
         self._ensure_sequence_column()
 
         self.df = _append_barcodes(
-            self.df, bridges, barcodes,
+            self.df,
+            bridges,
+            barcodes,
             target_column=target_column,
         )
 
         # the master table exists so a finished oligo can be traced back to
         # what was added to it; a step that changes every sequence and records
         # nothing leaves the table saying no appending happened
-        codes = dict(zip(self.df[target_column].unique(),
-                         barcodes['barcode']))
-        self._master_entries['merfish'] = self.df[target_column].map(
-            lambda target: f'merfish:{codes.get(target, "?")}')
+        codes = dict(zip(self.df[target_column].unique(), barcodes["barcode"]))
+        self._master_entries["merfish"] = self.df[target_column].map(
+            lambda target: f"merfish:{codes.get(target, '?')}"
+        )
 
         # success
         return self
@@ -565,8 +587,7 @@ class ProbeSet:
 
         labeled = label_on_target(self.merged_df)
         self.score_df = score_probes(labeled, pred_column=pred_column)
-        self._record('score', params={'pred_column': pred_column},
-                     n_scored=len(self.score_df))
+        self._record("score", params={"pred_column": pred_column}, n_scored=len(self.score_df))
 
         # success
         return self
@@ -589,10 +610,9 @@ class ProbeSet:
         Returns:
             self (ProbeSet): for chaining.
         """
-        schema.record_stage(self.manifest, name, params=params,
-                            n_in=n_in, n_out=n_out, **details)
-        self.manifest['n_probes'] = len(self.df)
-        self.manifest['columns'] = list(self.df.columns)
+        schema.record_stage(self.manifest, name, params=params, n_in=n_in, n_out=n_out, **details)
+        self.manifest["n_probes"] = len(self.df)
+        self.manifest["columns"] = list(self.df.columns)
 
         # success
         return self
@@ -615,23 +635,25 @@ class ProbeSet:
         Returns:
             lines (str): one line per stage, with counts and parameters.
         """
-        lines = [f"ProbeSet {self.manifest.get('name') or ''}".rstrip(),
-                 f"  {len(self.df):,} probes, {len(self.df.columns)} columns"]
-        for stage in self.manifest['stages']:
-            counts = ''
-            if 'n_in' in stage and 'n_out' in stage:
-                counts = (f" {stage['n_in']:,} -> {stage['n_out']:,} "
-                          f"({stage['n_dropped']:,} dropped)")
-            elif 'n_out' in stage:
+        lines = [
+            f"ProbeSet {self.manifest.get('name') or ''}".rstrip(),
+            f"  {len(self.df):,} probes, {len(self.df.columns)} columns",
+        ]
+        for stage in self.manifest["stages"]:
+            counts = ""
+            if "n_in" in stage and "n_out" in stage:
+                counts = (
+                    f" {stage['n_in']:,} -> {stage['n_out']:,} ({stage['n_dropped']:,} dropped)"
+                )
+            elif "n_out" in stage:
                 counts = f" -> {stage['n_out']:,}"
-            params = ', '.join(f'{k}={v}' for k, v in stage['params'].items())
-            lines.append(f"  {stage['stage']}{counts}"
-                         + (f"  [{params}]" if params else ''))
+            params = ", ".join(f"{k}={v}" for k, v in stage["params"].items())
+            lines.append(f"  {stage['stage']}{counts}" + (f"  [{params}]" if params else ""))
 
         # success
-        return '\n'.join(lines)
+        return "\n".join(lines)
 
-    def to_json(self, path, orient='records'):
+    def to_json(self, path, orient="records"):
         """
         Write the probe set and its manifest to a single JSON document.
 
@@ -645,11 +667,11 @@ class ProbeSet:
         import json
 
         document = dict(self.manifest)
-        document['n_probes'] = len(self.df)
-        document['columns'] = list(self.df.columns)
-        document['probes'] = json.loads(self.df.to_json(orient=orient))
+        document["n_probes"] = len(self.df)
+        document["columns"] = list(self.df.columns)
+        document["probes"] = json.loads(self.df.to_json(orient=orient))
 
-        with open(path, 'w') as handle:
+        with open(path, "w") as handle:
             handle.write(json.dumps(document, indent=1, default=str))
 
         # success
@@ -674,7 +696,7 @@ class ProbeSet:
         with open(path) as handle:
             document = json.load(handle)
 
-        probes = document.pop('probes', [])
+        probes = document.pop("probes", [])
         manifest = schema.upgrade_manifest(schema.validate_manifest(document))
 
         probe_set = cls(pd.DataFrame(probes))
@@ -694,8 +716,4 @@ class ProbeSet:
         n_probes = len(self.df)
         n_align = len(self.align_df) if self.align_df is not None else 0
         n_merged = len(self.merged_df) if self.merged_df is not None else 0
-        return (
-            f"ProbeSet(probes={n_probes}, "
-            f"alignments={n_align}, "
-            f"duplexes={n_merged})"
-        )
+        return f"ProbeSet(probes={n_probes}, alignments={n_align}, duplexes={n_merged})"

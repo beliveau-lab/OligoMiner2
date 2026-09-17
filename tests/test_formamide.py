@@ -50,9 +50,8 @@ class TestEffectiveHybTemperature:
 
 
 class TestDefaultNupackModel:
-
     def test_model_runs_at_the_effective_temperature(self):
-        pytest.importorskip('nupack')
+        pytest.importorskip("nupack")
         from oligominer.thermodynamics.nupack.config import DEFAULT_NUPACK_MODEL
 
         celsius = DEFAULT_NUPACK_MODEL.temperature - 273.15
@@ -60,18 +59,18 @@ class TestDefaultNupackModel:
 
     def test_pdup_discriminates_at_the_default_condition(self):
         """At a depressed rather than effective temperature every duplex saturates."""
-        pytest.importorskip('nupack')
+        pytest.importorskip("nupack")
         from oligominer.thermodynamics.nupack import calc_pdup
         from oligominer.utils.seq_utils import rev_comp
 
-        probe = 'GGATCACAGTCTACACTGCTCACTCCAACC'
+        probe = "GGATCACAGTCTACACTGCTCACTCCAACC"
         perfect = rev_comp(probe)
         mismatched = list(perfect)
         for j in range(0, len(mismatched), 5):
-            mismatched[j] = 'A' if mismatched[j] != 'A' else 'C'
+            mismatched[j] = "A" if mismatched[j] != "A" else "C"
 
         strong = calc_pdup(probe, perfect)
-        weak = calc_pdup(probe, ''.join(mismatched))
+        weak = calc_pdup(probe, "".join(mismatched))
 
         assert strong > 0.9
         assert weak < 0.01

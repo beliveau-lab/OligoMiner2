@@ -14,6 +14,7 @@ from oligominer.bioinformatics.file_io.sam_bam_io import load_bam_file
 from oligominer.utils import require_one_of
 from oligominer.utils.exceptions import InvalidInputError
 
+
 def process_alignments(sam_data=None, bam_path=None, ref_fasta=None, to_upper=True):
     """
     Process alignment data into a structured DataFrame.
@@ -39,7 +40,7 @@ def process_alignments(sam_data=None, bam_path=None, ref_fasta=None, to_upper=Tr
             provided.
     """
     # load bam file as needed
-    require_one_of(sam_data, bam_path, 'sam_data', 'bam_path')
+    require_one_of(sam_data, bam_path, "sam_data", "bam_path")
     if bam_path is not None:
         sam_data = load_bam_file(bam_path)
 
@@ -49,24 +50,23 @@ def process_alignments(sam_data=None, bam_path=None, ref_fasta=None, to_upper=Tr
     # convert BED to a pandas dataframe
     align_df = bed_to_df(bed_data=bed_data)
     align_df.columns = [
-        'align_seqid',
-        'align_start',
-        'align_stop',
-        'seqid',
-        'align_score',
-        'align_strand',
-        'align_cigar',
+        "align_seqid",
+        "align_start",
+        "align_stop",
+        "seqid",
+        "align_score",
+        "align_strand",
+        "align_cigar",
     ]
 
     # optionally lookup derived sequences from reference genome
     if ref_fasta is not None:
-
         # trim bed coordinates to fit reference genome features
         trimmed_bed_data = trim_bed_coords(bed_data=bed_data, fasta_path=ref_fasta)
 
         # lookup sequences at probe alignment sites in reference genome
         fasta_result = get_fasta(bed_data=trimmed_bed_data, fasta_path=ref_fasta)
-        derived_seqs = fasta_result.strip().split('\n')
+        derived_seqs = fasta_result.strip().split("\n")
 
         # the sequences are assigned by position, with nothing tying a sequence
         # to the interval it came from. A dropped interval -- a contig absent
@@ -75,15 +75,16 @@ def process_alignments(sam_data=None, bam_path=None, ref_fasta=None, to_upper=Tr
         # rather than an error
         if len(derived_seqs) != len(align_df):
             raise InvalidInputError(
-                f'{len(derived_seqs)} sequences returned for '
-                f'{len(align_df)} alignments; the reference is missing '
-                f'intervals the alignments refer to, and assigning by '
-                f'position would attribute sequences to the wrong rows')
+                f"{len(derived_seqs)} sequences returned for "
+                f"{len(align_df)} alignments; the reference is missing "
+                f"intervals the alignments refer to, and assigning by "
+                f"position would attribute sequences to the wrong rows"
+            )
 
-        align_df['derived_seq'] = derived_seqs
+        align_df["derived_seq"] = derived_seqs
 
         if to_upper:
-            align_df['derived_seq'] = align_df['derived_seq'].str.upper()
+            align_df["derived_seq"] = align_df["derived_seq"].str.upper()
 
     # success
     return align_df

@@ -27,10 +27,10 @@ from .exceptions import KmerIndexError
 
 # A=0, C=1, G=2, T=3 in either case; everything else 255
 BASE_ENCODE = np.full(256, 255, dtype=np.uint8)
-BASE_ENCODE[[ord(b) for b in 'ACGTacgt']] = [0, 1, 2, 3, 0, 1, 2, 3]
+BASE_ENCODE[[ord(b) for b in "ACGTacgt"]] = [0, 1, 2, 3, 0, 1, 2, 3]
 
 # hash assigned to any k-mer window containing a non-ACGT base
-SENTINEL = np.uint64(2 ** 63)
+SENTINEL = np.uint64(2**63)
 
 # counts are stored in this dtype and saturate at its maximum
 COUNT_DTYPE = np.uint32
@@ -52,7 +52,7 @@ def encode_sequence(seq):
     Returns:
         encoded (numpy.ndarray): uint8, A=0, C=1, G=2, T=3, any other base 255.
     """
-    encoded = BASE_ENCODE[np.frombuffer(seq.encode('ascii'), dtype=np.uint8)]
+    encoded = BASE_ENCODE[np.frombuffer(seq.encode("ascii"), dtype=np.uint8)]
 
     # success
     return encoded
@@ -83,8 +83,8 @@ def kmers_to_uint64(encoded, k):
 
     for j in range(k):
         power = np.uint64(4 ** (k - 1 - j))
-        col = encoded[j:j + n_kmers]
-        has_invalid |= (col == 255)
+        col = encoded[j : j + n_kmers]
+        has_invalid |= col == 255
         hashes += col.astype(np.uint64) * power
 
     hashes[has_invalid] = SENTINEL
@@ -109,15 +109,14 @@ def _encode_concat(seqs, k):
         starts (numpy.ndarray): int64, each sequence's offset into encoded.
         lengths (numpy.ndarray): int64, each sequence's length.
     """
-    sep = 'N' * (k - 1)
+    sep = "N" * (k - 1)
     lengths = np.fromiter((len(s) for s in seqs), dtype=np.int64, count=len(seqs))
     blob = sep.join(s.upper() for s in seqs)
-    encoded = BASE_ENCODE[np.frombuffer(blob.encode('ascii'), dtype=np.uint8)]
+    encoded = BASE_ENCODE[np.frombuffer(blob.encode("ascii"), dtype=np.uint8)]
 
     starts = np.zeros(len(lengths), dtype=np.int64)
     if len(lengths) > 1:
-        starts[1:] = (np.cumsum(lengths[:-1])
-                      + np.arange(1, len(lengths), dtype=np.int64) * (k - 1))
+        starts[1:] = np.cumsum(lengths[:-1]) + np.arange(1, len(lengths), dtype=np.int64) * (k - 1)
 
     # success
     return encoded, starts, lengths
@@ -151,8 +150,7 @@ class KmerIndex:
         return len(self.kmers)
 
     def __repr__(self):
-        return (f"KmerIndex(k={self.k}, entries={len(self.kmers):,}, "
-                f"min_count={self.min_count})")
+        return f"KmerIndex(k={self.k}, entries={len(self.kmers):,}, min_count={self.min_count})"
 
     @staticmethod
     def build(fasta_path, k=18, min_count=2, n_bins=256, tmp_dir=None):
@@ -179,15 +177,16 @@ class KmerIndex:
         # so two builds sharing a directory would append into each other's bins
         if tmp_dir is not None:
             os.makedirs(tmp_dir, exist_ok=True)
-        tmp_dir = tempfile.mkdtemp(prefix='om2_kmer_build_', dir=tmp_dir)
+        tmp_dir = tempfile.mkdtemp(prefix="om2_kmer_build_", dir=tmp_dir)
 
         # k-mers are binned on the top bits of the 2k-bit hash space, so the bins
         # partition that space in ascending order and concatenate already sorted
         bin_shift = 2 * k - int(np.log2(n_bins))
 
         try:
-            bin_files = [open(os.path.join(tmp_dir, f'bin_{i:04d}.u64'), 'ab')
-                         for i in range(n_bins)]
+            bin_files = [
+                open(os.path.join(tmp_dir, f"bin_{i:04d}.u64"), "ab") for i in range(n_bins)
+            ]
             try:
                 for seq_id in fasta.keys():
                     seq_len = len(fasta[seq_id])
@@ -209,7 +208,7 @@ class KmerIndex:
             result_kmers = []
             result_counts = []
             for b in range(n_bins):
-                bin_path = os.path.join(tmp_dir, f'bin_{b:04d}.u64')
+                bin_path = os.path.join(tmp_dir, f"bin_{b:04d}.u64")
                 if not os.path.exists(bin_path) or os.path.getsize(bin_path) == 0:
                     continue
                 bin_hashes = np.fromfile(bin_path, dtype=np.uint64)
@@ -219,8 +218,8 @@ class KmerIndex:
                 if keep.any():
                     result_kmers.append(unique[keep])
                     result_counts.append(
-                        np.minimum(raw_counts[keep], np.iinfo(COUNT_DTYPE).max
-                                   ).astype(COUNT_DTYPE))
+                        np.minimum(raw_counts[keep], np.iinfo(COUNT_DTYPE).max).astype(COUNT_DTYPE)
+                    )
                 del bin_hashes, unique, raw_counts
         finally:
             shutil.rmtree(tmp_dir, ignore_errors=True)
@@ -245,9 +244,13 @@ class KmerIndex:
         Returns:
             path (str): the path written.
         """
-        np.savez_compressed(path, kmers=self.kmers, counts=self.counts,
-                            k=np.array([self.k]),
-                            min_count=np.array([self.min_count]))
+        np.savez_compressed(
+            path,
+            kmers=self.kmers,
+            counts=self.counts,
+            k=np.array([self.k]),
+            min_count=np.array([self.min_count]),
+        )
 
         # success
         return path
@@ -264,11 +267,10 @@ class KmerIndex:
             index (KmerIndex): the loaded index.
         """
         data = np.load(path)
-        min_count = int(data['min_count'][0]) if 'min_count' in data else 2
+        min_count = int(data["min_count"][0]) if "min_count" in data else 2
 
         # success
-        return KmerIndex(data['kmers'], data['counts'], int(data['k'][0]),
-                         min_count=min_count)
+        return KmerIndex(data["kmers"], data["counts"], int(data["k"][0]), min_count=min_count)
 
     def query_probes(self, probe_seqs, batch=QUERY_BATCH):
         """
@@ -290,7 +292,7 @@ class KmerIndex:
         out = np.zeros(len(probe_seqs), dtype=np.int64)
 
         for start in range(0, len(probe_seqs), batch):
-            chunk = probe_seqs[start:start + batch]
+            chunk = probe_seqs[start : start + batch]
             encoded, offsets, _ = _encode_concat(chunk, k)
             hashes = kmers_to_uint64(encoded, k)
             if hashes.size == 0:
@@ -304,7 +306,7 @@ class KmerIndex:
             # a k-mer window starting inside a probe cannot reach past it without
             # crossing a separator and being sentinelled, so its start position
             # alone identifies the probe it belongs to
-            probe_of = np.searchsorted(offsets, positions, side='right') - 1
+            probe_of = np.searchsorted(offsets, positions, side="right") - 1
 
             counts = self.lookup(valid_hashes)
             np.maximum.at(out, start + probe_of, counts)
@@ -352,7 +354,7 @@ def _write_bins(hashes, bin_shift, bin_files):
         n (int): the number of hashes written.
     """
     bin_ids = (hashes >> np.uint64(bin_shift)).astype(np.int32)
-    order = np.argsort(bin_ids, kind='stable')
+    order = np.argsort(bin_ids, kind="stable")
     hashes_sorted = hashes[order]
     bins_sorted = bin_ids[order]
 
@@ -361,14 +363,15 @@ def _write_bins(hashes, bin_shift, bin_files):
     ends = np.concatenate([changes, [len(bins_sorted)]])
 
     for i in range(len(starts)):
-        hashes_sorted[starts[i]:ends[i]].tofile(bin_files[bins_sorted[starts[i]]])
+        hashes_sorted[starts[i] : ends[i]].tofile(bin_files[bins_sorted[starts[i]]])
 
     # success
     return len(hashes)
 
 
-def build_numpy_index(fasta_path, output_file, k=18, min_count=2, n_bins=256,
-                      tmp_dir=None, cores=None):
+def build_numpy_index(
+    fasta_path, output_file, k=18, min_count=2, n_bins=256, tmp_dir=None, cores=None
+):
     """
     Build a numpy k-mer index from a FASTA file and save it.
 
@@ -386,13 +389,12 @@ def build_numpy_index(fasta_path, output_file, k=18, min_count=2, n_bins=256,
         index_path (str): the path written.
     """
     resolve_cores(cores)
-    if k < 1 or 4 ** k >= 2 ** 63:
+    if k < 1 or 4**k >= 2**63:
         raise KmerIndexError(
-            f"k={k} is outside the range this index can hash; "
-            f"k must satisfy 4**k < 2**63")
+            f"k={k} is outside the range this index can hash; k must satisfy 4**k < 2**63"
+        )
 
-    index = KmerIndex.build(fasta_path, k=k, min_count=min_count,
-                            n_bins=n_bins, tmp_dir=tmp_dir)
+    index = KmerIndex.build(fasta_path, k=k, min_count=min_count, n_bins=n_bins, tmp_dir=tmp_dir)
     index.save(output_file)
 
     # success

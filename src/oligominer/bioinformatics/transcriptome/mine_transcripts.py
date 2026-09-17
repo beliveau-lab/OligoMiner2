@@ -39,8 +39,8 @@ from .transcript_seq import (
 # Per-interval mining
 # ---------------------------------------------------------------------------
 
-def mine_exons(gtf_df, fasta_path, transcript_id=None, gene_id=None,
-               cores=None, **mining_params):
+
+def mine_exons(gtf_df, fasta_path, transcript_id=None, gene_id=None, cores=None, **mining_params):
     """
     Mine probes from exon sequences of a transcript or gene.
 
@@ -66,8 +66,10 @@ def mine_exons(gtf_df, fasta_path, transcript_id=None, gene_id=None,
         probe_set (ProbeSet): mined probes from all exons.
     """
     seqs = get_exon_seqs(
-        gtf_df, fasta_path,
-        transcript_id=transcript_id, gene_id=gene_id,
+        gtf_df,
+        fasta_path,
+        transcript_id=transcript_id,
+        gene_id=gene_id,
     )
     probe_set = _mine_seq_dict(seqs, cores=cores, **mining_params)
 
@@ -75,8 +77,7 @@ def mine_exons(gtf_df, fasta_path, transcript_id=None, gene_id=None,
     return probe_set
 
 
-def mine_introns(gtf_df, fasta_path, transcript_id, cores=None,
-                 **mining_params):
+def mine_introns(gtf_df, fasta_path, transcript_id, cores=None, **mining_params):
     """
     Mine probes from intron sequences of a transcript.
 
@@ -103,8 +104,7 @@ def mine_introns(gtf_df, fasta_path, transcript_id, cores=None,
     return probe_set
 
 
-def mine_flattened_gene(flat_df, fasta_path, gene_id, cores=None,
-                        **mining_params):
+def mine_flattened_gene(flat_df, fasta_path, gene_id, cores=None, **mining_params):
     """
     Mine probes from the flattened (pan-isoform) exonic segments of a gene.
 
@@ -134,8 +134,8 @@ def mine_flattened_gene(flat_df, fasta_path, gene_id, cores=None,
 # Spliced transcript mining
 # ---------------------------------------------------------------------------
 
-def mine_spliced_transcript(gtf_df, fasta_path, transcript_id, cores=None,
-                            **mining_params):
+
+def mine_spliced_transcript(gtf_df, fasta_path, transcript_id, cores=None, **mining_params):
     """
     Mine probes from a spliced (in silico) transcript sequence.
 
@@ -176,6 +176,7 @@ def mine_spliced_transcript(gtf_df, fasta_path, transcript_id, cores=None,
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _mine_seq_dict(seqs, cores=None, **mining_params):
     """

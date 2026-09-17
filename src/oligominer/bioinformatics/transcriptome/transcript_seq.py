@@ -22,6 +22,7 @@ from oligominer.utils.seq_utils import rev_comp
 # Exon sequences
 # ---------------------------------------------------------------------------
 
+
 def get_exon_seqs(gtf_df, fasta, transcript_id=None, gene_id=None):
     """
     Extract individual exon sequences from the genome.
@@ -51,8 +52,8 @@ def get_exon_seqs(gtf_df, fasta, transcript_id=None, gene_id=None):
 
     exon_seqs = {}
     for _, row in exons.iterrows():
-        label = _interval_label(row['seqid'], row['start'], row['end'], row['strand'])
-        seq = _extract_seq(fasta, row['seqid'], row['start'], row['end'], row['strand'])
+        label = _interval_label(row["seqid"], row["start"], row["end"], row["strand"])
+        seq = _extract_seq(fasta, row["seqid"], row["start"], row["end"], row["strand"])
         exon_seqs[label] = seq
 
     # success
@@ -62,6 +63,7 @@ def get_exon_seqs(gtf_df, fasta, transcript_id=None, gene_id=None):
 # ---------------------------------------------------------------------------
 # Intron sequences
 # ---------------------------------------------------------------------------
+
 
 def get_intron_seqs(gtf_df, fasta, transcript_id):
     """
@@ -90,13 +92,13 @@ def get_intron_seqs(gtf_df, fasta, transcript_id):
         return {}
 
     fasta = _resolve_fasta(fasta)
-    chrom = exons.iloc[0]['seqid']
-    strand = exons.iloc[0]['strand']
+    chrom = exons.iloc[0]["seqid"]
+    strand = exons.iloc[0]["strand"]
 
     # sort exons by genomic position to find gaps
-    exons_sorted = exons.sort_values('start')
-    ends = exons_sorted['end'].values
-    starts = exons_sorted['start'].values
+    exons_sorted = exons.sort_values("start")
+    ends = exons_sorted["end"].values
+    starts = exons_sorted["start"].values
 
     intron_seqs = {}
     for i in range(len(exons_sorted) - 1):
@@ -117,6 +119,7 @@ def get_intron_seqs(gtf_df, fasta, transcript_id):
 # ---------------------------------------------------------------------------
 # Spliced transcript sequence
 # ---------------------------------------------------------------------------
+
 
 def get_spliced_seq(gtf_df, fasta, transcript_id):
     """
@@ -140,19 +143,19 @@ def get_spliced_seq(gtf_df, fasta, transcript_id):
     """
     exons = _select_features(gtf_df, transcript_id=transcript_id)
     fasta = _resolve_fasta(fasta)
-    strand = exons.iloc[0]['strand']
+    strand = exons.iloc[0]["strand"]
 
     # sort exons in transcript order
-    ascending = (strand == '+')
-    exons_sorted = exons.sort_values('start', ascending=ascending)
+    ascending = strand == "+"
+    exons_sorted = exons.sort_values("start", ascending=ascending)
 
     # concatenate exon sequences
     parts = []
     for _, row in exons_sorted.iterrows():
-        seq = _extract_seq(fasta, row['seqid'], row['start'], row['end'], row['strand'])
+        seq = _extract_seq(fasta, row["seqid"], row["start"], row["end"], row["strand"])
         parts.append(seq)
 
-    spliced_seq = ''.join(parts)
+    spliced_seq = "".join(parts)
 
     # success
     return spliced_seq
@@ -161,6 +164,7 @@ def get_spliced_seq(gtf_df, fasta, transcript_id):
 # ---------------------------------------------------------------------------
 # Flattened gene-model sequences
 # ---------------------------------------------------------------------------
+
 
 def get_flattened_seqs(flat_df, fasta, gene_id):
     """
@@ -182,13 +186,13 @@ def get_flattened_seqs(flat_df, fasta, gene_id):
         segment_seqs (dict): {segment_label: sequence} where segment_label
             is formatted as 'seqid:start-end(strand)'.
     """
-    segments = flat_df[flat_df['gene_id'] == gene_id]
+    segments = flat_df[flat_df["gene_id"] == gene_id]
     fasta = _resolve_fasta(fasta)
 
     segment_seqs = {}
     for _, row in segments.iterrows():
-        label = _interval_label(row['seqid'], row['start'], row['end'], row['strand'])
-        seq = _extract_seq(fasta, row['seqid'], row['start'], row['end'], row['strand'])
+        label = _interval_label(row["seqid"], row["start"], row["end"], row["strand"])
+        seq = _extract_seq(fasta, row["seqid"], row["start"], row["end"], row["strand"])
         segment_seqs[label] = seq
 
     # success
@@ -198,6 +202,7 @@ def get_flattened_seqs(flat_df, fasta, gene_id):
 # ---------------------------------------------------------------------------
 # Coordinate parsing
 # ---------------------------------------------------------------------------
+
 
 def parse_interval_label(label):
     """
@@ -216,9 +221,9 @@ def parse_interval_label(label):
         strand (str): '+' or '-'.
     """
     # split 'chrI:100-200(+)' into components
-    coord_part, strand = label.rstrip(')').rsplit('(', 1)
-    seqid, span = coord_part.rsplit(':', 1)
-    start, end = span.split('-')
+    coord_part, strand = label.rstrip(")").rsplit("(", 1)
+    seqid, span = coord_part.rsplit(":", 1)
+    start, end = span.split("-")
 
     # success
     return seqid, int(start), int(end), strand
@@ -257,7 +262,7 @@ def local_to_genomic(seq_id, local_start, local_stop):
     origin = interval_start - 1
     interval_len = interval_end - interval_start + 1
 
-    if strand == '+':
+    if strand == "+":
         genomic_start = origin + local_start
         genomic_stop = origin + local_stop
     else:
@@ -271,6 +276,7 @@ def local_to_genomic(seq_id, local_start, local_stop):
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _resolve_fasta(fasta):
     """
@@ -316,18 +322,19 @@ def _select_features(gtf_df, transcript_id=None, gene_id=None):
     """
     if transcript_id is not None and gene_id is not None:
         raise ValueError(
-            f'both transcript_id {transcript_id!r} and gene_id {gene_id!r} '
-            f'were given; the two select different record sets, and silently '
-            f'honouring one returns features the caller did not ask for')
+            f"both transcript_id {transcript_id!r} and gene_id {gene_id!r} "
+            f"were given; the two select different record sets, and silently "
+            f"honouring one returns features the caller did not ask for"
+        )
 
     # filter to exons if the type column is present
-    if 'type' in gtf_df.columns:
-        gtf_df = gtf_df[gtf_df['type'] == 'exon']
+    if "type" in gtf_df.columns:
+        gtf_df = gtf_df[gtf_df["type"] == "exon"]
 
     if transcript_id is not None:
-        features = gtf_df[gtf_df['transcript_id'] == transcript_id]
+        features = gtf_df[gtf_df["transcript_id"] == transcript_id]
     elif gene_id is not None:
-        features = gtf_df[gtf_df['gene_id'] == gene_id]
+        features = gtf_df[gtf_df["gene_id"] == gene_id]
     else:
         raise ValueError("provide either transcript_id or gene_id")
 
@@ -356,8 +363,8 @@ def _extract_seq(fasta, seqid, start, end, strand):
     Returns:
         seq (str): the extracted sequence on the transcript strand.
     """
-    seq = str(fasta[seqid][int(start) - 1:int(end)])
-    if strand == '-':
+    seq = str(fasta[seqid][int(start) - 1 : int(end)])
+    if strand == "-":
         seq = rev_comp(seq)
 
     # success
@@ -377,7 +384,7 @@ def _interval_label(seqid, start, end, strand):
     Returns:
         label (str): formatted as 'seqid:start-end(strand)'.
     """
-    label = f'{seqid}:{int(start)}-{int(end)}({strand})'
+    label = f"{seqid}:{int(start)}-{int(end)}({strand})"
 
     # success
     return label

@@ -15,7 +15,7 @@ than a scan per probe.
 import numpy as np
 import pandas as pd
 
-BED_COLUMNS = ['chrom', 'start', 'stop']
+BED_COLUMNS = ["chrom", "start", "stop"]
 
 
 def read_bed(path):
@@ -34,9 +34,9 @@ def read_bed(path):
     with open(path) as handle:
         for line in handle:
             line = line.strip()
-            if not line or line.startswith(('#', 'track', 'browser')):
+            if not line or line.startswith(("#", "track", "browser")):
                 continue
-            fields = line.split('\t')
+            fields = line.split("\t")
             if len(fields) < 3:
                 fields = line.split()
             if len(fields) < 3:
@@ -59,7 +59,7 @@ def _merge_intervals(starts, stops):
         merged_starts (numpy.ndarray): the merged starts, sorted ascending.
         merged_stops (numpy.ndarray): the merged stops.
     """
-    order = np.argsort(starts, kind='stable')
+    order = np.argsort(starts, kind="stable")
     starts, stops = starts[order], stops[order]
 
     merged_starts, merged_stops = [], []
@@ -74,8 +74,7 @@ def _merge_intervals(starts, stops):
     return np.array(merged_starts, dtype=np.int64), np.array(merged_stops, dtype=np.int64)
 
 
-def overlaps_intervals(probe_df, intervals, chrom_col='seq_id',
-                       start_col='start', stop_col='stop'):
+def overlaps_intervals(probe_df, intervals, chrom_col="seq_id", start_col="start", stop_col="stop"):
     """
     Return which probes overlap any of the given intervals.
 
@@ -96,19 +95,19 @@ def overlaps_intervals(probe_df, intervals, chrom_col='seq_id',
     probe_starts = probe_df[start_col].to_numpy(dtype=np.int64)
     probe_stops = probe_df[stop_col].to_numpy(dtype=np.int64)
 
-    for chrom, block in intervals.groupby('chrom', sort=False):
-        on_chrom = (probe_df[chrom_col].to_numpy() == chrom)
+    for chrom, block in intervals.groupby("chrom", sort=False):
+        on_chrom = probe_df[chrom_col].to_numpy() == chrom
         if not on_chrom.any():
             continue
 
         starts, stops = _merge_intervals(
-            block['start'].to_numpy(dtype=np.int64),
-            block['stop'].to_numpy(dtype=np.int64))
+            block["start"].to_numpy(dtype=np.int64), block["stop"].to_numpy(dtype=np.int64)
+        )
 
         positions = np.flatnonzero(on_chrom)
         # the interval that could contain a probe's start is the last one
         # beginning at or before it, so one binary search decides each probe
-        candidate = np.searchsorted(starts, probe_starts[positions], side='right') - 1
+        candidate = np.searchsorted(starts, probe_starts[positions], side="right") - 1
 
         hit = np.zeros(len(positions), dtype=bool)
         valid = candidate >= 0
@@ -125,8 +124,7 @@ def overlaps_intervals(probe_df, intervals, chrom_col='seq_id',
     return overlapping
 
 
-def exclude_intervals(probe_df, bed_path, chrom_col='seq_id',
-                      start_col='start', stop_col='stop'):
+def exclude_intervals(probe_df, bed_path, chrom_col="seq_id", start_col="start", stop_col="stop"):
     """
     Drop probes overlapping any interval in a BED file.
 
@@ -143,8 +141,8 @@ def exclude_intervals(probe_df, bed_path, chrom_col='seq_id',
     """
     intervals = read_bed(bed_path)
     overlapping = overlaps_intervals(
-        probe_df, intervals,
-        chrom_col=chrom_col, start_col=start_col, stop_col=stop_col)
+        probe_df, intervals, chrom_col=chrom_col, start_col=start_col, stop_col=stop_col
+    )
 
     kept = probe_df[~overlapping].copy()
 

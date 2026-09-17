@@ -20,8 +20,8 @@ AS. Validation (`validate.py`) aligns real probes to hg38 with the real args and
 bowtie2's reported AS on the alignments bowtie2 itself chose.
 """
 
-MATCH_BONUS = 2     # bowtie2 --ma 2
-MISMATCH_PEN = 6    # bowtie2 --mp 6,2 -> 6 at max (FASTA) quality
+MATCH_BONUS = 2  # bowtie2 --ma 2
+MISMATCH_PEN = 6  # bowtie2 --mp 6,2 -> 6 at max (FASTA) quality
 
 
 def local_score(ops: str, match_bonus: int = MATCH_BONUS, mismatch_pen: int = MISMATCH_PEN) -> int:
@@ -45,12 +45,20 @@ def local_score(ops: str, match_bonus: int = MATCH_BONUS, mismatch_pen: int = MI
 
 if __name__ == "__main__":
     # tiny self-checks (only values computed by hand)
-    assert local_score("=" * 30) == 60                      # perfect 30mer: 2*30
-    assert local_score("X" * 30) == 0                       # all mismatch: fully clipped
-    assert local_score("X" + "=" * 29) == 58                # leading mismatch clipped away: 2*29
-    assert local_score("=" * 15 + "X" + "=" * 14) == 52     # 29 matches (58) minus one mismatch (6), no clip
-    print("self-checks pass |",
-          "perfect", local_score("=" * 30),
-          "| 1 mid mm", local_score("=" * 15 + "X" + "=" * 14),
-          "| end mm", local_score("X" + "=" * 29),
-          "| 5 spread", local_score("=====X" * 5))
+    assert local_score("=" * 30) == 60  # perfect 30mer: 2*30
+    assert local_score("X" * 30) == 0  # all mismatch: fully clipped
+    assert local_score("X" + "=" * 29) == 58  # leading mismatch clipped away: 2*29
+    assert (
+        local_score("=" * 15 + "X" + "=" * 14) == 52
+    )  # 29 matches (58) minus one mismatch (6), no clip
+    print(
+        "self-checks pass |",
+        "perfect",
+        local_score("=" * 30),
+        "| 1 mid mm",
+        local_score("=" * 15 + "X" + "=" * 14),
+        "| end mm",
+        local_score("X" + "=" * 29),
+        "| 5 spread",
+        local_score("=====X" * 5),
+    )

@@ -22,7 +22,7 @@ def print_chrom_sizes(fasta_path):
     """
     chrom_sizes = get_chrom_sizes(fasta_path)
     for chrom in chrom_sizes:
-        print(f'{chrom}\t{chrom_sizes[chrom]}')
+        print(f"{chrom}\t{chrom_sizes[chrom]}")
 
 
 def get_chrom_sizes(fasta_path):
@@ -43,9 +43,9 @@ def get_chrom_sizes(fasta_path):
 
     # parse .fai (tab-separated: name, length, offset, linebases, linewidth)
     chrom_sizes = {}
-    with open(fai_path, 'r') as infile:
+    with open(fai_path, "r") as infile:
         for line in infile:
-            fields = line.strip().split('\t')
+            fields = line.strip().split("\t")
             chrom_sizes[fields[0]] = int(fields[1])
 
     # sort by size descending
@@ -53,6 +53,7 @@ def get_chrom_sizes(fasta_path):
 
     # success
     return chrom_sizes
+
 
 def get_or_create_fai(fasta_path):
     """
@@ -70,11 +71,11 @@ def get_or_create_fai(fasta_path):
     check_input_exists(fasta_path)
 
     # get or create .fai file
-    fai_path = fasta_path + '.fai'
+    fai_path = fasta_path + ".fai"
     if not os.path.exists(fai_path):
         fai_path = create_fai(fasta_path)
-        
-    # success    
+
+    # success
     return fai_path
 
 
@@ -103,7 +104,7 @@ def create_fai(fasta_path):
     Fasta(fasta_path)
 
     # ensure target output file is present
-    fai_path = fasta_path + '.fai'
+    fai_path = fasta_path + ".fai"
     check_output_exists(fai_path)
 
     # success

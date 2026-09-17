@@ -19,14 +19,13 @@ that lost members to an earlier row-wise stage.
 import pandas as pd
 
 # column naming the unit a row belongs to
-UNIT_COLUMN = 'unit_id'
+UNIT_COLUMN = "unit_id"
 
 # column naming a row's role within its unit
-ROLE_COLUMN = 'unit_role'
+ROLE_COLUMN = "unit_role"
 
 
-def assign_units(df, by, roles=None, unit_column=UNIT_COLUMN,
-                 role_column=ROLE_COLUMN):
+def assign_units(df, by, roles=None, unit_column=UNIT_COLUMN, role_column=ROLE_COLUMN):
     """
     Label each row with the unit it belongs to.
 
@@ -87,11 +86,14 @@ def filter_units(df, keep, unit_column=UNIT_COLUMN):
         n_units_dropped (int): how many units were removed.
     """
     keep = pd.Series(list(keep), index=df.index)
-    all_pass = keep.groupby(df[unit_column]).transform('all')
+    all_pass = keep.groupby(df[unit_column]).transform("all")
 
     kept = df[all_pass].copy()
-    n_units_dropped = (df[unit_column].nunique() - kept[unit_column].nunique()
-                       if len(kept) else df[unit_column].nunique())
+    n_units_dropped = (
+        df[unit_column].nunique() - kept[unit_column].nunique()
+        if len(kept)
+        else df[unit_column].nunique()
+    )
 
     # success
     return kept, int(n_units_dropped)
@@ -129,8 +131,9 @@ def drop_incomplete_units(df, expected_size=None, unit_column=UNIT_COLUMN):
     return kept, int(sizes.size - len(complete))
 
 
-def units_to_orders(df, sequence_column='sequence', unit_column=UNIT_COLUMN,
-                    role_column=ROLE_COLUMN):
+def units_to_orders(
+    df, sequence_column="sequence", unit_column=UNIT_COLUMN, role_column=ROLE_COLUMN
+):
     """
     Return one row per unit with each member's sequence in its own column.
 
@@ -146,8 +149,7 @@ def units_to_orders(df, sequence_column='sequence', unit_column=UNIT_COLUMN,
     Returns:
         orders (pandas.DataFrame): one row per unit, one column per role.
     """
-    orders = df.pivot(index=unit_column, columns=role_column,
-                      values=sequence_column)
+    orders = df.pivot(index=unit_column, columns=role_column, values=sequence_column)
     orders.columns.name = None
 
     # success

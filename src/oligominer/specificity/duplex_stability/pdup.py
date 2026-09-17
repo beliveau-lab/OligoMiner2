@@ -43,17 +43,23 @@ from oligominer.models.registry import DEFAULT_MODEL
 DEFAULT_VERIFY_ABOVE = 0.05
 
 # column names this stage writes
-MODEL_COLUMN = 'pdup_model'
-EXACT_COLUMN = 'pdup_exact'
-SOURCE_COLUMN = 'pdup_source'
-FINAL_COLUMN = 'pdup'
+MODEL_COLUMN = "pdup_model"
+EXACT_COLUMN = "pdup_exact"
+SOURCE_COLUMN = "pdup_source"
+FINAL_COLUMN = "pdup"
 
 # where the per-run record is stashed on the returned frame
-ATTRS_KEY = 'pdup_prediction'
+ATTRS_KEY = "pdup_prediction"
 
 
-def predict_pdup(frame, model=DEFAULT_MODEL, verify_above=DEFAULT_VERIFY_ABOVE,
-                 verify=True, nupack_model=None, max_verify=None):
+def predict_pdup(
+    frame,
+    model=DEFAULT_MODEL,
+    verify_above=DEFAULT_VERIFY_ABOVE,
+    verify=True,
+    nupack_model=None,
+    max_verify=None,
+):
     """
     Score duplexes with a model and verify the credible ones with NUPACK.
 
@@ -84,9 +90,10 @@ def predict_pdup(frame, model=DEFAULT_MODEL, verify_above=DEFAULT_VERIFY_ABOVE,
     loaded = load(model)
     if not loaded.outputs_pdup:
         raise ValueError(
-            f'{model} emits a decision score rather than pDup, so it cannot be '
-            f'compared against verify_above={verify_above} in pDup units. Use a '
-            f'model whose outputs_pdup is True.')
+            f"{model} emits a decision score rather than pDup, so it cannot be "
+            f"compared against verify_above={verify_above} in pDup units. Use a "
+            f"model whose outputs_pdup is True."
+        )
 
     out = frame.copy()
     out[MODEL_COLUMN] = loaded.predict(frame)
@@ -97,21 +104,20 @@ def predict_pdup(frame, model=DEFAULT_MODEL, verify_above=DEFAULT_VERIFY_ABOVE,
     selected = selected & verifiable
 
     if verify and selected.any():
-        out.loc[selected, EXACT_COLUMN] = _exact_pdup(
-            out.loc[selected], nupack_model=nupack_model)
+        out.loc[selected, EXACT_COLUMN] = _exact_pdup(out.loc[selected], nupack_model=nupack_model)
 
     verified = out[EXACT_COLUMN].notna()
-    out[SOURCE_COLUMN] = np.where(verified, 'nupack', model)
+    out[SOURCE_COLUMN] = np.where(verified, "nupack", model)
     out[FINAL_COLUMN] = np.where(verified, out[EXACT_COLUMN], out[MODEL_COLUMN])
 
     out.attrs[ATTRS_KEY] = {
-        'model': model,
-        'verify_above': verify_above,
-        'n_rows': int(len(out)),
-        'n_selected': int(selected.sum()),
-        'n_verified': int(verified.sum()),
-        'n_unverifiable': int((~verifiable).sum()),
-        'fraction_verified': float(verified.mean()) if len(out) else 0.0,
+        "model": model,
+        "verify_above": verify_above,
+        "n_rows": int(len(out)),
+        "n_selected": int(selected.sum()),
+        "n_verified": int(verified.sum()),
+        "n_unverifiable": int((~verifiable).sum()),
+        "fraction_verified": float(verified.mean()) if len(out) else 0.0,
     }
 
     # success
@@ -132,9 +138,10 @@ def _verifiable(frame):
     Returns:
         verifiable (pandas.Series): boolean, True where both sequences are ACGT.
     """
-    pure = r'^[ACGTacgt]+$'
-    verifiable = (frame['probe_seq'].astype(str).str.match(pure)
-                  & frame['derived_seq'].astype(str).str.match(pure))
+    pure = r"^[ACGTacgt]+$"
+    verifiable = frame["probe_seq"].astype(str).str.match(pure) & frame["derived_seq"].astype(
+        str
+    ).str.match(pure)
 
     # success
     return verifiable.fillna(False)
@@ -184,11 +191,10 @@ def _exact_pdup(frame, nupack_model=None):
     values = np.zeros(len(frame), dtype=np.float64)
     positions = pd.Series(np.arange(len(frame)), index=frame.index)
 
-    for probe, block in frame.groupby('probe_seq', sort=False):
+    for probe, block in frame.groupby("probe_seq", sort=False):
         rows = positions.loc[block.index].to_numpy()
-        targets = [rev_comp(str(t).upper()) for t in block['derived_seq']]
-        values[rows] = calc_pdup_one_to_many(str(probe), targets,
-                                             model=nupack_model)
+        targets = [rev_comp(str(t).upper()) for t in block["derived_seq"]]
+        values[rows] = calc_pdup_one_to_many(str(probe), targets, model=nupack_model)
 
     # success
     return values
@@ -206,10 +212,10 @@ def pdup_summary(out):
             fraction of rows that reached the physics.
     """
     summary = dict(out.attrs.get(ATTRS_KEY, {}))
-    fraction = summary.get('fraction_verified')
+    fraction = summary.get("fraction_verified")
     if fraction:
-        summary['physics_calls_avoided'] = summary['n_rows'] - summary['n_verified']
-        summary['implied_speedup'] = 1.0 / fraction
+        summary["physics_calls_avoided"] = summary["n_rows"] - summary["n_verified"]
+        summary["implied_speedup"] = 1.0 / fraction
 
     # success
     return summary

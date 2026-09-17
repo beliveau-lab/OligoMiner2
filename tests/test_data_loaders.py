@@ -32,12 +32,12 @@ from oligominer.data.appending import (
 # test data loaders
 # ---------------------------------------------------------------------------
 
-class TestExampleFasta:
 
+class TestExampleFasta:
     def test_path_exists(self):
         path = get_example_fasta_path()
         assert os.path.exists(path)
-        assert path.endswith('.fa')
+        assert path.endswith(".fa")
 
     def test_load_example_fasta(self):
         fasta = load_example_fasta()
@@ -45,7 +45,6 @@ class TestExampleFasta:
 
 
 class TestLoadTestProbes:
-
     def test_returns_probe_set(self):
         ps = load_test_probes()
         assert isinstance(ps, ProbeSet)
@@ -53,9 +52,9 @@ class TestLoadTestProbes:
 
     def test_has_expected_columns(self):
         ps = load_test_probes()
-        assert 'probe_seq' in ps.df.columns
-        assert 'tm' in ps.df.columns
-        assert 'seqid' in ps.df.columns
+        assert "probe_seq" in ps.df.columns
+        assert "tm" in ps.df.columns
+        assert "seqid" in ps.df.columns
 
 
 # ---------------------------------------------------------------------------
@@ -84,7 +83,7 @@ def test_appending_loader(name, loader):
     df = loader()
     assert isinstance(df, pd.DataFrame)
     assert len(df) > 0
-    assert 'id' in df.columns
-    assert 'seq' in df.columns
+    assert "id" in df.columns
+    assert "seq" in df.columns
     # sequences should be non-empty strings
-    assert df['seq'].str.len().min() > 0
+    assert df["seq"].str.len().min() > 0

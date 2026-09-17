@@ -12,7 +12,8 @@ import pandas as pd
 from .config import DEFAULT_CLASSIFICATION_RULES
 from oligominer.utils import get_dir_name, check_dir_exists
 
-def classify_seq_ids(seq_source, rules=None, default_category='canonical'):
+
+def classify_seq_ids(seq_source, rules=None, default_category="canonical"):
     """
     Classify sequence IDs from any dict-like source by regex rules.
 
@@ -46,14 +47,13 @@ def classify_seq_ids(seq_source, rules=None, default_category='canonical'):
                 break
         rows.append((seq_id, category))
 
-    classifications = pd.DataFrame(rows, columns=['seq_id', 'category'])
+    classifications = pd.DataFrame(rows, columns=["seq_id", "category"])
 
     # success
     return classifications
 
 
-def classify_and_write(seq_source, output_path, rules=None,
-                       default_category='canonical'):
+def classify_and_write(seq_source, output_path, rules=None, default_category="canonical"):
     """
     Classify sequence IDs and write the results to a TSV file.
 
@@ -69,15 +69,13 @@ def classify_and_write(seq_source, output_path, rules=None,
     Returns:
         classifications (pandas.DataFrame): columns ['seq_id', 'category'].
     """
-    classifications = classify_seq_ids(
-        seq_source, rules=rules, default_category=default_category
-    )
+    classifications = classify_seq_ids(seq_source, rules=rules, default_category=default_category)
 
     # ensure output directory exists
     check_dir_exists(get_dir_name(output_path), create=True)
 
     # write TSV
-    classifications.to_csv(output_path, sep='\t', index=False)
+    classifications.to_csv(output_path, sep="\t", index=False)
 
     # success
     return classifications

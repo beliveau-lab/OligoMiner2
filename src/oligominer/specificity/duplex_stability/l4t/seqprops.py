@@ -17,6 +17,7 @@ PARAMETERS COME FROM THE SAME dna04.2 TABLES AS THE LABELS (`thermo.py`, vendore
 directory). That is deliberate: a Tm computed from a hand-typed SantaLucia table and a pDup label
 computed by NUPACK 4.0.2.0 would differ for reasons that have nothing to do with the biology.
 """
+
 import math
 import sys
 from pathlib import Path
@@ -25,9 +26,9 @@ import numpy as np
 
 from .thermo import _STACK_HS, TERM_PEN_dG, TERM_PEN_dH, JOIN_dG, JOIN_dH, _dS, _revcomp, T37
 
-R = 1.9872                     # cal / (mol K)
-CT = 1e-6                      # total strand concentration, M -- the standard 1 uM working concentration
-NA = 0.390                     # M sodium, 2x SSC
+R = 1.9872  # cal / (mol K)
+CT = 1e-6  # total strand concentration, M -- the standard 1 uM working concentration
+NA = 0.390  # M sodium, 2x SSC
 
 
 def gc_pct(s):
@@ -51,18 +52,19 @@ def tm(seq, ct=CT, sodium=NA):
     dH = JOIN_dH
     dG = JOIN_dG
     for i in range(len(s) - 1):
-        step = s[i:i + 2]
-        key = step + _revcomp(step)              # thermo.py's 4-char stack key layout
+        step = s[i : i + 2]
+        key = step + _revcomp(step)  # thermo.py's 4-char stack key layout
         h, _ = _STACK_HS[key]
         dH += h
         from thermo import STACK_dG
+
         dG += STACK_dG[key]
-    for end in (s[0], s[-1]):                    # terminal penalty at BOTH helix ends
+    for end in (s[0], s[-1]):  # terminal penalty at BOTH helix ends
         k = end + _revcomp(end)
         dH += TERM_PEN_dH.get(k, 0.0)
         dG += TERM_PEN_dG.get(k, 0.0)
 
-    dS = _dS(dH, dG)                             # kcal/(mol K), derived exactly as thermo.py does
+    dS = _dS(dH, dG)  # kcal/(mol K), derived exactly as thermo.py does
     denom = dS * 1000.0 + R * math.log(ct / 4.0)
     if denom >= 0:
         return float("nan")
@@ -71,16 +73,18 @@ def tm(seq, ct=CT, sodium=NA):
     # Owczarzy 2004 salt correction, applied from the 1 M reference the tables are quoted at.
     f_gc = gc_pct(s) / 100.0
     ln_na = math.log(max(sodium, 1e-9))
-    inv = 1.0 / tm_k + (4.29 * f_gc - 3.95) * 1e-5 * ln_na + 9.40e-6 * ln_na ** 2
+    inv = 1.0 / tm_k + (4.29 * f_gc - 3.95) * 1e-5 * ln_na + 9.40e-6 * ln_na**2
     return float(1.0 / inv - 273.15)
 
 
 def describe(seqs):
     """(length, gc, tm) arrays for a list of probe sequences."""
     seqs = [str(s).upper() for s in seqs]
-    return (np.array([len(s) for s in seqs], dtype=float),
-            np.array([gc_pct(s) for s in seqs], dtype=float),
-            np.array([tm(s) for s in seqs], dtype=float))
+    return (
+        np.array([len(s) for s in seqs], dtype=float),
+        np.array([gc_pct(s) for s in seqs], dtype=float),
+        np.array([tm(s) for s in seqs], dtype=float),
+    )
 
 
 if __name__ == "__main__":
@@ -90,6 +94,7 @@ if __name__ == "__main__":
     # degree or two means this implementation is right; a large gap means it is not, and the
     # figures built on it would be wrong in a way no plot would reveal.
     import pandas as pd
+
     P = "/net/beliveau/vol1/project/conor/om2_ssot/datasets/probes"
     targets = {"chrx_30spot_probes.parquet": 79.6, "grid_probes.parquet": 78.87}
     ok = True
@@ -105,7 +110,9 @@ if __name__ == "__main__":
         got = float(np.nanmedian(t))
         d = abs(got - want)
         ok &= d < 2.5
-        print(f"  {f:34s} median Tm {got:6.2f} C  (independent: {want})  "
-              f"delta {d:.2f}  {'OK' if d < 2.5 else 'MISMATCH'}")
+        print(
+            f"  {f:34s} median Tm {got:6.2f} C  (independent: {want})  "
+            f"delta {d:.2f}  {'OK' if d < 2.5 else 'MISMATCH'}"
+        )
     print("\nSELF-CHECK PASS" if ok else "\nSELF-CHECK FAILED — do not build figures on this")
     sys.exit(0 if ok else 1)

@@ -19,39 +19,43 @@ from oligominer.thermodynamics.mining.int_encoding import (
 )
 
 # 60 nt with the middle 20 soft-masked
-UPPER = 'ACGTACGTACGTACGTACGT'
-LOWER = 'acgtacgtacgtacgtacgt'
+UPPER = "ACGTACGTACGTACGTACGT"
+LOWER = "acgtacgtacgtacgtacgt"
 MIXED = UPPER + LOWER + UPPER
 
-MINING = dict(seq_id='t', min_length=20, max_length=20, min_tm=0, max_tm=200,
-              min_gc=0, max_gc=100, max_homopolymer=None)
+MINING = dict(
+    seq_id="t",
+    min_length=20,
+    max_length=20,
+    min_tm=0,
+    max_tm=200,
+    min_gc=0,
+    max_gc=100,
+    max_homopolymer=None,
+)
 
 
 class TestEncoding:
-
     def test_default_lut_folds_case(self):
-        assert np.array_equal(seq_to_8bit('acgt'), seq_to_8bit('ACGT'))
+        assert np.array_equal(seq_to_8bit("acgt"), seq_to_8bit("ACGT"))
 
     def test_softmask_lut_sends_lowercase_to_the_ambiguous_code(self):
-        encoded = seq_to_8bit('acgt', mask_soft=True)
+        encoded = seq_to_8bit("acgt", mask_soft=True)
         assert np.array_equal(encoded, np.full(4, 4, dtype=np.uint8))
 
     def test_softmask_lut_leaves_uppercase_alone(self):
-        assert np.array_equal(
-            seq_to_8bit('ACGT', mask_soft=True), seq_to_8bit('ACGT')
-        )
+        assert np.array_equal(seq_to_8bit("ACGT", mask_soft=True), seq_to_8bit("ACGT"))
 
     def test_n_still_encodes_as_ambiguous_under_both_tables(self):
-        assert seq_to_8bit('N')[0] == 4
-        assert seq_to_8bit('N', mask_soft=True)[0] == 4
+        assert seq_to_8bit("N")[0] == 4
+        assert seq_to_8bit("N", mask_soft=True)[0] == 4
 
     def test_the_two_tables_differ_only_in_lowercase_bases(self):
         differing = np.nonzero(DNA_ASCII_LUT != SOFTMASK_ASCII_LUT)[0]
-        assert sorted(chr(i) for i in differing) == ['a', 'c', 'g', 't']
+        assert sorted(chr(i) for i in differing) == ["a", "c", "g", "t"]
 
 
 class TestMiningHonorsTheMask:
-
     def test_masked_region_is_mined_when_the_flag_is_off(self):
         probes = mine_sequence(MIXED, mask_soft=False, **MINING)
         starts = {start for _, start, _, _, _ in probes}
@@ -96,7 +100,7 @@ class TestUnmaskedReferenceWarning:
 
     def test_the_warning_names_the_sequence(self):
         params = dict(MINING)
-        params['seq_id'] = 'chr19'
+        params["seq_id"] = "chr19"
         with pytest.warns(RuntimeWarning, match="chr19"):
             mine_sequence(UPPER * 3, mask_soft=True, **params)
 

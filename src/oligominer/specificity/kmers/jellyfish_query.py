@@ -38,35 +38,36 @@ def validate_index(index_path, k=None, verbose=False):
         MissingJellyfishIndexError: if the index file does not exist.
         JellyfishIndexError: if k is provided and does not match the index.
     """
-    ensure_executable('jellyfish')
+    ensure_executable("jellyfish")
     index_path = get_abs_path(index_path)
     check_input_exists(index_path)
 
     # get metadata from jellyfish index file
-    jellyfish_info = run_cmd(['jellyfish', 'info', index_path], verbose=verbose)
+    jellyfish_info = run_cmd(["jellyfish", "info", index_path], verbose=verbose)
 
     # extract k value from the jellyfish count command string
-    command_str = re.findall('command: (.+)', jellyfish_info).pop()
-    idx_k = int(re.findall(r'\s+-m\s+(\d+)', command_str).pop())
+    command_str = re.findall("command: (.+)", jellyfish_info).pop()
+    idx_k = int(re.findall(r"\s+-m\s+(\d+)", command_str).pop())
 
     # if a k value was provided, ensure it matches the index
     if (k is not None) and (k != idx_k):
         raise JellyfishIndexError(index_path, idx_k, k)
 
-    is_canonical = 'yes' in re.findall('canonical: (.+)', jellyfish_info)
+    is_canonical = "yes" in re.findall("canonical: (.+)", jellyfish_info)
 
     info = {
-        'index_path': index_path,
-        'k': idx_k,
-        'is_canonical': is_canonical,
+        "index_path": index_path,
+        "k": idx_k,
+        "is_canonical": is_canonical,
     }
 
     # success
     return info
 
 
-def jellyfish_query(index_path, mers=None, fasta_path=None, output=None,
-                    load=False, no_load=False, verbose=False):
+def jellyfish_query(
+    index_path, mers=None, fasta_path=None, output=None, load=False, no_load=False, verbose=False
+):
     """
     Query a Jellyfish database (wrapper for 'jellyfish query').
 
@@ -84,18 +85,18 @@ def jellyfish_query(index_path, mers=None, fasta_path=None, output=None,
         result (str): query results as a tab-delimited string of kmer/count
             pairs, one per line.
     """
-    ensure_executable('jellyfish')
+    ensure_executable("jellyfish")
     check_input_exists(index_path)
 
-    cmd = ['jellyfish', 'query']
+    cmd = ["jellyfish", "query"]
     if fasta_path:
-        cmd.extend(['-s', fasta_path])
+        cmd.extend(["-s", fasta_path])
     if output:
-        cmd.extend(['-o', output])
+        cmd.extend(["-o", output])
     if load:
-        cmd.append('-l')
+        cmd.append("-l")
     if no_load:
-        cmd.append('-L')
+        cmd.append("-L")
     cmd.append(index_path)
     if mers:
         cmd.extend(mers)
@@ -117,7 +118,7 @@ def _get_kmers(seq, k):
     Returns:
         kmers (list): list of k-mer strings.
     """
-    kmers = [seq[i:i + k] for i in range(len(seq) - k + 1)]
+    kmers = [seq[i : i + k] for i in range(len(seq) - k + 1)]
 
     # success
     return kmers
@@ -150,7 +151,7 @@ def calc_max_kmer(index_path, seq, k, load=False, no_load=False, verbose=False):
     counts = jellyfish_query(index_path, mers=kmers, load=load, no_load=no_load, verbose=verbose)
 
     # extract counts from the query result
-    count_lines = counts.strip().split('\n')
+    count_lines = counts.strip().split("\n")
     count_values = [int(line.split()[1]) for line in count_lines]
 
     max_count = max(count_values)
@@ -179,7 +180,7 @@ def calc_max_kmer_multi(index_path, seqs, k, verbose=False):
     """
     # write all sequences to a temp fasta file for batch query
     fasta_str = seqs_to_fasta(seqs)
-    with tempfile.NamedTemporaryFile(mode='w', suffix='.fa') as f:
+    with tempfile.NamedTemporaryFile(mode="w", suffix=".fa") as f:
         f.write(fasta_str)
         f.flush()
 
@@ -187,7 +188,7 @@ def calc_max_kmer_multi(index_path, seqs, k, verbose=False):
         result = jellyfish_query(index_path, fasta_path=f.name, verbose=verbose)
 
     # extract counts from the query result
-    count_values = [int(m.group(1)) for m in re.finditer(r'\s(\d+)$', result, re.MULTILINE)]
+    count_values = [int(m.group(1)) for m in re.finditer(r"\s(\d+)$", result, re.MULTILINE)]
 
     # calculate the number of kmers per sequence
     kmer_counts_per_seq = [len(seq) - k + 1 for seq in seqs]
@@ -196,7 +197,7 @@ def calc_max_kmer_multi(index_path, seqs, k, verbose=False):
     max_kmer_values = []
     count_index = 0
     for count in kmer_counts_per_seq:
-        current_counts = count_values[count_index:count_index + count]
+        current_counts = count_values[count_index : count_index + count]
         count_index += count
         max_kmer_values.append(max(current_counts))
 

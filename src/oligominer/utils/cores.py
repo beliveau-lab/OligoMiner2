@@ -23,11 +23,13 @@ inflates any timing measured alongside it.
 import os
 
 # environment variables by which each scheduler reports its core grant, in preference order
-_GRANT_VARS = ("NSLOTS",                 # SGE / Altair Grid Engine
-               "SLURM_CPUS_PER_TASK",    # Slurm
-               "SLURM_CPUS_ON_NODE",
-               "PBS_NP",                 # PBS / Torque
-               "LSB_DJOB_NUMPROC")       # LSF
+_GRANT_VARS = (
+    "NSLOTS",  # SGE / Altair Grid Engine
+    "SLURM_CPUS_PER_TASK",  # Slurm
+    "SLURM_CPUS_ON_NODE",
+    "PBS_NP",  # PBS / Torque
+    "LSB_DJOB_NUMPROC",
+)  # LSF
 
 # environment variable a job script can set to fix the width without touching code
 ENV_VAR = "OLIGOMINER_THREADS"
@@ -62,7 +64,7 @@ def _affinity():
     """
     try:
         n = len(os.sched_getaffinity(0))
-    except AttributeError:              # not Linux
+    except AttributeError:  # not Linux
         n = os.cpu_count() or 1
 
     # success

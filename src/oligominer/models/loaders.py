@@ -66,14 +66,14 @@ def _encode(encoding, df, width):
     from oligominer.specificity.duplex_stability import features_fast
     from oligominer.specificity.duplex_stability.l4t import features as l4t_features
 
-    if encoding == 'L4t':
+    if encoding == "L4t":
         X = features_fast.enc_om2_fast(df)
-    elif encoding == 'paintshop-37feat':
+    elif encoding == "paintshop-37feat":
         X = l4t_features.enc_paintshop37(df)
-    elif encoding == 'alignment-3feat':
+    elif encoding == "alignment-3feat":
         X = _enc_alignment_3feat(df)
     else:
-        raise KeyError(f'unknown encoding {encoding!r}')
+        raise KeyError(f"unknown encoding {encoding!r}")
 
     # success
     return X
@@ -94,14 +94,16 @@ def _enc_alignment_3feat(df):
 
     from oligominer.utils.seq_utils import calc_gc
 
-    probe = df['probe_seq'].astype(str)
+    probe = df["probe_seq"].astype(str)
 
     # success
-    return pd.DataFrame({
-        'probe_len': probe.str.len().to_numpy(dtype=np.float64),
-        'probe_gc': np.array([calc_gc(s) for s in probe], dtype=np.float64),
-        'align_score': df['align_score'].to_numpy(dtype=np.float64),
-    })
+    return pd.DataFrame(
+        {
+            "probe_len": probe.str.len().to_numpy(dtype=np.float64),
+            "probe_gc": np.array([calc_gc(s) for s in probe], dtype=np.float64),
+            "align_score": df["align_score"].to_numpy(dtype=np.float64),
+        }
+    )
 
 
 class LoadedModel:
@@ -132,18 +134,20 @@ class LoadedModel:
         self.entry = entry
         self.model = model
         self.card = card or {}
-        self.family = entry['family']
-        self.kind = entry['kind']
-        self.outputs_pdup = entry['outputs_pdup']
+        self.family = entry["family"]
+        self.kind = entry["kind"]
+        self.outputs_pdup = entry["outputs_pdup"]
 
         # the card is authoritative where it exists, the registry is the fallback
-        self.encoding = self.card.get('encoding') or entry['encoding']
-        self.width = int(self.card.get('aln_width', DEFAULT_ALN_WIDTH))
-        self.link = self.card.get('link', entry.get('link'))
+        self.encoding = self.card.get("encoding") or entry["encoding"]
+        self.width = int(self.card.get("aln_width", DEFAULT_ALN_WIDTH))
+        self.link = self.card.get("link", entry.get("link"))
 
     def __repr__(self):
-        return (f'<LoadedModel {self.name} family={self.family} '
-                f'encoding={self.encoding} outputs_pdup={self.outputs_pdup}>')
+        return (
+            f"<LoadedModel {self.name} family={self.family} "
+            f"encoding={self.encoding} outputs_pdup={self.outputs_pdup}>"
+        )
 
     def predict(self, df):
         """
@@ -163,7 +167,7 @@ class LoadedModel:
         if len(df) == 0:
             return np.empty(0, dtype=np.float64)
 
-        if self.kind == 'bilstm':
+        if self.kind == "bilstm":
             values = self._predict_bilstm(df)
         else:
             values = self._predict_tabular(df)
@@ -184,16 +188,15 @@ class LoadedModel:
         X = _encode(self.encoding, df, self.width)
         features = X.values.astype(np.float32)
 
-        if self.kind == 'lda':
+        if self.kind == "lda":
             # decision_function is the ordering this model provides; predict would
             # collapse every row to a hard class label and destroy the ranking
-            values = np.asarray(self.model.decision_function(features),
-                                dtype=np.float64)
+            values = np.asarray(self.model.decision_function(features), dtype=np.float64)
             return values
 
         values = self.model.predict(features).astype(np.float64)
 
-        if self.link == 'logit':
+        if self.link == "logit":
             values = 1.0 / (1.0 + np.exp(-np.clip(values, -50, 50)))
 
         # success
@@ -214,7 +217,7 @@ class LoadedModel:
             tokenize,
         )
 
-        ncond = int(getattr(self.model, 'ncond', 0))
+        ncond = int(getattr(self.model, "ncond", 0))
         tokens = tokenize(df, width=self.width)
         conditions = encode_conditions(df, ncond=ncond)
         values = np.asarray(self.model.predict(tokens, conditions), dtype=np.float64)
@@ -233,7 +236,7 @@ class LoadedModel:
             names (list): the feature names, empty for the BiLSTM which consumes
                 tokens rather than a feature matrix.
         """
-        if self.kind == 'bilstm':
+        if self.kind == "bilstm":
             return []
 
         # success
@@ -259,13 +262,14 @@ def load(name, device=None):
     card = _read_card(name)
     path = artifact_path(name)
 
-    if entry['kind'] == 'bilstm':
+    if entry["kind"] == "bilstm":
         model = _load_bilstm(path, device=device)
-        if int(getattr(model, 'ncond', 0)) != 0:
+        if int(getattr(model, "ncond", 0)) != 0:
             raise ValueError(
-                f'{name} artifact reports ncond={model.ncond}; the registered model '
-                f'has no condition channel and an artifact with one is a different '
-                f'model')
+                f"{name} artifact reports ncond={model.ncond}; the registered model "
+                f"has no condition channel and an artifact with one is a different "
+                f"model"
+            )
     else:
         model = _load_pickle(path)
 
@@ -283,11 +287,11 @@ def _load_pickle(path):
     Returns:
         model: the estimator, unwrapped when the pickle is a dict keyed 'model'.
     """
-    with path.open('rb') as handle:
+    with path.open("rb") as handle:
         obj = pickle.load(handle)
 
-    if isinstance(obj, dict) and 'model' in obj:
-        obj = obj['model']
+    if isinstance(obj, dict) and "model" in obj:
+        obj = obj["model"]
 
     # success
     return obj
@@ -310,11 +314,12 @@ def _load_bilstm(path, device=None):
     from oligominer.specificity.duplex_stability.bilstm_arch import OM2BiLSTM
 
     try:
-        import torch                                                   # noqa: F401
+        import torch  # noqa: F401
     except ImportError:
         raise MissingDependency(
             'torch (required by duplex-BiLSTM; install with pip install "oligominer[bilstm]", '
-            'or use physics-xgb, which needs no extra dependency)')
+            "or use physics-xgb, which needs no extra dependency)"
+        )
 
     # success
     return OM2BiLSTM.load(str(path), device=device)

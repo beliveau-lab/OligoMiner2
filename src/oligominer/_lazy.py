@@ -52,8 +52,8 @@ class _LazyPackage(ModuleType):
     """
 
     def __getattribute__(self, name):
-        namespace = object.__getattribute__(self, '__dict__')
-        shadowed = namespace.get('_SHADOWED_EXPORTS')
+        namespace = object.__getattribute__(self, "__dict__")
+        shadowed = namespace.get("_SHADOWED_EXPORTS")
 
         if shadowed and name in shadowed:
             value = namespace.get(name)
@@ -88,8 +88,9 @@ def lazy_exports(package, exports, submodules=()):
     names = sorted({*exports, *submodules})
 
     # names a same-named submodule would otherwise shadow
-    shadowed = {name: module for name, module in exports.items()
-                if module.rsplit('.', 1)[-1] == name}
+    shadowed = {
+        name: module for name, module in exports.items() if module.rsplit(".", 1)[-1] == name
+    }
     if shadowed:
         module = sys.modules[package]
         module._SHADOWED_EXPORTS = shadowed
@@ -97,13 +98,12 @@ def lazy_exports(package, exports, submodules=()):
 
     def __getattr__(name):
         if name in submodules:
-            value = importlib.import_module(f'{package}.{name}')
+            value = importlib.import_module(f"{package}.{name}")
         elif name in exports:
             module = importlib.import_module(exports[name], package)
             value = getattr(module, name)
         else:
-            raise AttributeError(
-                f'module {package!r} has no attribute {name!r}')
+            raise AttributeError(f"module {package!r} has no attribute {name!r}")
 
         # cache on the package so the hook runs once per name
         importlib.import_module(package).__dict__[name] = value

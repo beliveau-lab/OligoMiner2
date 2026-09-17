@@ -22,8 +22,8 @@ from oligominer.thermodynamics.mining import probes_to_df, PROBE_COLUMNS
 # mine_sequence
 # ---------------------------------------------------------------------------
 
-class TestMineSequence:
 
+class TestMineSequence:
     def test_returns_list_of_tuples(self, short_seq):
         probes = mine_sequence(short_seq, seq_id="test")
         assert isinstance(probes, list)
@@ -32,8 +32,9 @@ class TestMineSequence:
             assert len(probes[0]) == 5
 
     def test_tuple_structure(self, short_seq):
-        probes = mine_sequence(short_seq, seq_id="myseq", min_length=18,
-                               max_length=20, pct_formamide=0)
+        probes = mine_sequence(
+            short_seq, seq_id="myseq", min_length=18, max_length=20, pct_formamide=0
+        )
         if len(probes) > 0:
             seq_id, start, stop, probe_seq, tm = probes[0]
             assert seq_id == "myseq"
@@ -45,6 +46,7 @@ class TestMineSequence:
 
     def test_respects_length_constraints(self, example_fasta_path):
         from oligominer.bioinformatics.file_io import load_fasta
+
         fasta = load_fasta(example_fasta_path)
         seq_str = str(fasta[list(fasta.keys())[0]])
 
@@ -56,6 +58,7 @@ class TestMineSequence:
 
     def test_respects_tm_constraints(self, example_fasta_path):
         from oligominer.bioinformatics.file_io import load_fasta
+
         fasta = load_fasta(example_fasta_path)
         seq_str = str(fasta[list(fasta.keys())[0]])
 
@@ -65,6 +68,7 @@ class TestMineSequence:
 
     def test_no_overlap_mode(self, example_fasta_path):
         from oligominer.bioinformatics.file_io import load_fasta
+
         fasta = load_fasta(example_fasta_path)
         seq_str = str(fasta[list(fasta.keys())[0]])
 
@@ -76,6 +80,7 @@ class TestMineSequence:
 
     def test_spacing_mode(self, example_fasta_path):
         from oligominer.bioinformatics.file_io import load_fasta
+
         fasta = load_fasta(example_fasta_path)
         seq_str = str(fasta[list(fasta.keys())[0]])
 
@@ -88,6 +93,7 @@ class TestMineSequence:
 
     def test_exhaustive_mode(self, example_fasta_path):
         from oligominer.bioinformatics.file_io import load_fasta
+
         fasta = load_fasta(example_fasta_path)
         seq_str = str(fasta[list(fasta.keys())[0]])
 
@@ -102,6 +108,7 @@ class TestMineSequence:
 
     def test_prohibited_seqs(self, example_fasta_path):
         from oligominer.bioinformatics.file_io import load_fasta
+
         fasta = load_fasta(example_fasta_path)
         seq_str = str(fasta[list(fasta.keys())[0]])
 
@@ -121,13 +128,12 @@ class TestMineSequence:
     def test_salt_params_affect_tm(self, example_fasta_path):
         """Different salt concentrations should produce different Tm values."""
         from oligominer.bioinformatics.file_io import load_fasta
+
         fasta = load_fasta(example_fasta_path)
         seq_str = str(fasta[list(fasta.keys())[0]])
 
-        probes_low_na = mine_sequence(seq_str, Na=50, pct_formamide=0,
-                                      min_tm=30, max_tm=100)
-        probes_high_na = mine_sequence(seq_str, Na=500, pct_formamide=0,
-                                       min_tm=30, max_tm=100)
+        probes_low_na = mine_sequence(seq_str, Na=50, pct_formamide=0, min_tm=30, max_tm=100)
+        probes_high_na = mine_sequence(seq_str, Na=500, pct_formamide=0, min_tm=30, max_tm=100)
         # different salt → different Tm values for same positions
         if probes_low_na and probes_high_na:
             tms_low = {(p[1], p[2]): p[4] for p in probes_low_na}
@@ -140,13 +146,12 @@ class TestMineSequence:
     def test_formamide_correction(self, example_fasta_path):
         """Formamide should depress Tm."""
         from oligominer.bioinformatics.file_io import load_fasta
+
         fasta = load_fasta(example_fasta_path)
         seq_str = str(fasta[list(fasta.keys())[0]])
 
-        probes_no_fmd = mine_sequence(seq_str, pct_formamide=0,
-                                      min_tm=30, max_tm=100)
-        probes_fmd = mine_sequence(seq_str, pct_formamide=50,
-                                   min_tm=30, max_tm=100)
+        probes_no_fmd = mine_sequence(seq_str, pct_formamide=0, min_tm=30, max_tm=100)
+        probes_fmd = mine_sequence(seq_str, pct_formamide=50, min_tm=30, max_tm=100)
         if probes_no_fmd and probes_fmd:
             tms_no = {(p[1], p[2]): p[4] for p in probes_no_fmd}
             tms_fmd = {(p[1], p[2]): p[4] for p in probes_fmd}
@@ -161,8 +166,8 @@ class TestMineSequence:
 # mine_fasta
 # ---------------------------------------------------------------------------
 
-class TestMineFasta:
 
+class TestMineFasta:
     def test_returns_list_of_tuples(self, example_fasta_path):
         probes = mine_fasta(example_fasta_path)
         assert isinstance(probes, list)
@@ -186,8 +191,8 @@ class TestMineFasta:
 # probes_to_df
 # ---------------------------------------------------------------------------
 
-class TestProbesToDf:
 
+class TestProbesToDf:
     def test_converts_tuples_to_dataframe(self, example_probes):
         df = probes_to_df(example_probes)
         assert isinstance(df, pd.DataFrame)
@@ -204,31 +209,31 @@ class TestProbesToDf:
 # write_probes
 # ---------------------------------------------------------------------------
 
-class TestWriteProbes:
 
+class TestWriteProbes:
     def test_write_bed(self, example_probes, tmp_path):
         path = str(tmp_path / "probes.bed")
-        write_probes(example_probes, path, fmt='bed')
+        write_probes(example_probes, path, fmt="bed")
         assert os.path.exists(path)
         with open(path) as f:
             lines = f.readlines()
         assert len(lines) == len(example_probes)
         # BED format: tab-separated
-        assert '\t' in lines[0]
+        assert "\t" in lines[0]
 
     def test_write_fastq(self, example_probes, tmp_path):
         path = str(tmp_path / "probes.fastq")
-        write_probes(example_probes, path, fmt='fastq')
+        write_probes(example_probes, path, fmt="fastq")
         assert os.path.exists(path)
         with open(path) as f:
             content = f.read()
         # FASTQ records start with @
-        assert content.startswith('@')
+        assert content.startswith("@")
 
     def test_write_csv(self, example_probes, tmp_path):
         path = str(tmp_path / "probes.csv")
-        write_probes(example_probes, path, fmt='csv')
+        write_probes(example_probes, path, fmt="csv")
         assert os.path.exists(path)
         df = pd.read_csv(path)
         assert len(df) == len(example_probes)
-        assert 'probe_seq' in df.columns
+        assert "probe_seq" in df.columns

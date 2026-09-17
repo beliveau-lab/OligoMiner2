@@ -40,6 +40,7 @@ WIDTH-FREE. The terminal blocks are indexed from the two physical ends, and the 
 summarised rather than enumerated, so the vector is 103 wide for a 10-mer and for an 80-mer alike.
 No alignment-width contract, no truncation path, no re-fit for a longer probe.
 """
+
 import sys
 from pathlib import Path
 
@@ -47,25 +48,74 @@ import numpy as np
 import pandas as pd
 
 HERE = Path(__file__).resolve().parent
-from .thermo import (stacking_profile, duplex_features, _DuplexLite,      # noqa: E402
-                    DEFAULT_CELSIUS, DEFAULT_SODIUM)
+from .thermo import (
+    stacking_profile,
+    duplex_features,
+    _DuplexLite,  # noqa: E402
+    DEFAULT_CELSIUS,
+    DEFAULT_SODIUM,
+)
 
 THRESHOLD = 0.2
-TERMINAL_K = 16          # columns held at full resolution at EACH terminus
-GOOD_STEP = -0.5         # kcal/mol; a step at least this stabilising counts as intact helix
+TERMINAL_K = 16  # columns held at full resolution at EACH terminus
+GOOD_STEP = -0.5  # kcal/mol; a step at least this stabilising counts as intact helix
 
 # PaintSHOP's dinucleotide order. NOT alphabetical, and NOT arbitrary: a tree indexes features
 # positionally, so re-sorting produces a model that trains fine and serves wrong.
-DINUCS = ['AA', 'AT', 'AG', 'AC', 'TA', 'TT', 'TG', 'TC',
-          'GA', 'GT', 'GG', 'GC', 'CA', 'CT', 'CG', 'CC']
+DINUCS = [
+    "AA",
+    "AT",
+    "AG",
+    "AC",
+    "TA",
+    "TT",
+    "TG",
+    "TC",
+    "GA",
+    "GT",
+    "GG",
+    "GC",
+    "CA",
+    "CT",
+    "CG",
+    "CC",
+]
 
-CIGAR_COLS = ["aln_len", "n_eq", "n_mm", "n_ins", "n_del", "n_soft", "longest_eq_run",
-              "n_lesion", "core_lesions", "first_lesion_5p", "first_lesion_3p",
-              "mean_lesion_pos_norm"]
-THERMO_COLS = ["nn_dG", "nn_dG_per_base", "max_helix_dG", "n_helices", "longest_helix_bp",
-               "gc_stacks", "at_stacks", "term_mismatch_dG", "n_term_mismatches"]
-INTERIOR_COLS = ["int_n", "int_sum", "int_mean", "int_min", "int_max", "int_std",
-                 "int_worst_nt_from_end", "int_longest_good_run"]
+CIGAR_COLS = [
+    "aln_len",
+    "n_eq",
+    "n_mm",
+    "n_ins",
+    "n_del",
+    "n_soft",
+    "longest_eq_run",
+    "n_lesion",
+    "core_lesions",
+    "first_lesion_5p",
+    "first_lesion_3p",
+    "mean_lesion_pos_norm",
+]
+THERMO_COLS = [
+    "nn_dG",
+    "nn_dG_per_base",
+    "max_helix_dG",
+    "n_helices",
+    "longest_helix_bp",
+    "gc_stacks",
+    "at_stacks",
+    "term_mismatch_dG",
+    "n_term_mismatches",
+]
+INTERIOR_COLS = [
+    "int_n",
+    "int_sum",
+    "int_mean",
+    "int_min",
+    "int_max",
+    "int_std",
+    "int_worst_nt_from_end",
+    "int_longest_good_run",
+]
 
 # Measured, not assumed (see `verify()`): only the ENERGIES move with condition. The structural
 # counts are facts about the aligned duplex and must not move -- heating the tube does not change
@@ -87,6 +137,7 @@ def _align_score(df):
     if "align_score" in df.columns:
         return df["align_score"].values.astype(float)
     from bowtie_score import local_score
+
     return np.array([float(local_score(o)) for o in df["ops"].values])
 
 
@@ -101,10 +152,13 @@ def enc_paintshop37(df):
     """
     probe = df["probe_seq"].astype(str).map(strip_t3)
     derived = df["target_seq"].astype(str)
-    out = {"align_score": _align_score(df),
-           "probe_gc": probe.map(gc_pct).values, "derived_gc": derived.map(gc_pct).values,
-           "probe_len": probe.str.len().astype(float).values,
-           "derived_len": derived.str.len().astype(float).values}
+    out = {
+        "align_score": _align_score(df),
+        "probe_gc": probe.map(gc_pct).values,
+        "derived_gc": derived.map(gc_pct).values,
+        "probe_len": probe.str.len().astype(float).values,
+        "derived_len": derived.str.len().astype(float).values,
+    }
     for dn in DINUCS:
         out[f"probe_{dn}"] = probe.str.count(dn).astype(float).values
     for dn in DINUCS:
@@ -128,7 +182,8 @@ def _cigar_block(df):
         for pc, o in zip(pa, op):
             n[o] = n.get(o, 0) + 1
             if o == "=":
-                run += 1; longest = max(longest, run)
+                run += 1
+                longest = max(longest, run)
             else:
                 run = 0
                 if pc != "-":
@@ -137,9 +192,22 @@ def _cigar_block(df):
                 probe_i += 1
         plen = probe_i or 1
         core = [p for p in mm if 5 <= p < plen - 5]
-        rows.append([len(op), n["="], n["X"], n["I"], n["D"], n["S"], longest, len(mm), len(core),
-                     mm[0] if mm else -1, (plen - 1 - mm[-1]) if mm else -1,
-                     (sum(mm) / len(mm) / plen) if mm else -1.0])
+        rows.append(
+            [
+                len(op),
+                n["="],
+                n["X"],
+                n["I"],
+                n["D"],
+                n["S"],
+                longest,
+                len(mm),
+                len(core),
+                mm[0] if mm else -1,
+                (plen - 1 - mm[-1]) if mm else -1,
+                (sum(mm) / len(mm) / plen) if mm else -1.0,
+            ]
+        )
     return pd.DataFrame(rows, columns=CIGAR_COLS)
 
 
@@ -147,12 +215,24 @@ def _conditions(df, celsius, sodium):
     """Per-ROW (T, Na+). A scalar pins the whole frame to one condition -- correct for a
     single-condition corpus, silently wrong for a mixed one, and invisible because the features
     stay finite and the model still fits."""
-    cel = (np.full(len(df), float(celsius)) if celsius is not None else
-           (df["label_celsius"].values.astype(float) if "label_celsius" in df.columns
-            else np.full(len(df), DEFAULT_CELSIUS)))
-    na = (np.full(len(df), float(sodium)) if sodium is not None else
-          (df["label_sodium"].values.astype(float) if "label_sodium" in df.columns
-           else np.full(len(df), DEFAULT_SODIUM)))
+    cel = (
+        np.full(len(df), float(celsius))
+        if celsius is not None
+        else (
+            df["label_celsius"].values.astype(float)
+            if "label_celsius" in df.columns
+            else np.full(len(df), DEFAULT_CELSIUS)
+        )
+    )
+    na = (
+        np.full(len(df), float(sodium))
+        if sodium is not None
+        else (
+            df["label_sodium"].values.astype(float)
+            if "label_sodium" in df.columns
+            else np.full(len(df), DEFAULT_SODIUM)
+        )
+    )
     return cel, na
 
 
@@ -175,11 +255,12 @@ def _terminal_block(prof, K):
     """
     p = np.asarray(prof, dtype=np.float64)
     L = len(p)
-    s5 = np.zeros(K); s3 = np.zeros(K)
-    s5[:min(K, L)] = p[:K]
-    tail = p[max(0, L - K):][::-1]
-    s3[:len(tail)] = tail
-    interior = p[K:L - K] if L > 2 * K else np.array([])
+    s5 = np.zeros(K)
+    s3 = np.zeros(K)
+    s5[: min(K, L)] = p[:K]
+    tail = p[max(0, L - K) :][::-1]
+    s3[: len(tail)] = tail
+    interior = p[K : L - K] if L > 2 * K else np.array([])
     if len(interior):
         worst = K + int(np.argmin(interior))
         good = interior <= GOOD_STEP
@@ -187,9 +268,16 @@ def _terminal_block(prof, K):
         for g in good:
             run = run + 1 if g else 0
             best = max(best, run)
-        summ = [float(len(interior)), float(interior.sum()), float(interior.mean()),
-                float(interior.min()), float(interior.max()), float(interior.std()),
-                float(min(worst, L - 1 - worst)), float(best)]
+        summ = [
+            float(len(interior)),
+            float(interior.sum()),
+            float(interior.mean()),
+            float(interior.min()),
+            float(interior.max()),
+            float(interior.std()),
+            float(min(worst, L - 1 - worst)),
+            float(best),
+        ]
     else:
         summ = [0.0, 0.0, 0.0, 0.0, 0.0, 0.0, -1.0, 0.0]
     return s5, s3, summ, float(max(0, 2 * K - L))
@@ -202,31 +290,48 @@ def enc_om2(df, celsius=None, sodium=None, K=TERMINAL_K):
 
     d = df
     cel, na = _conditions(d, celsius, sodium)
-    base = pd.DataFrame({"align_score": _align_score(d),
-                         "probe_len": d["probe_seq"].astype(str).str.len().astype(float).values,
-                         "probe_gc": d["probe_seq"].astype(str).map(gc_pct).values,
-                         "target_gc": d["target_seq"].astype(str).map(gc_pct).values})
+    base = pd.DataFrame(
+        {
+            "align_score": _align_score(d),
+            "probe_len": d["probe_seq"].astype(str).str.len().astype(float).values,
+            "probe_gc": d["probe_seq"].astype(str).map(gc_pct).values,
+            "target_gc": d["target_seq"].astype(str).map(gc_pct).values,
+        }
+    )
     cig = _cigar_block(d)
-    th = pd.DataFrame([[duplex_features(_DuplexLite(pa, ta, op), celsius=float(c),
-                                        sodium=float(s))[k] for k in THERMO_COLS]
-                       for pa, ta, op, c, s in zip(d.probe_aln, d.target_aln, d.ops, cel, na)],
-                      columns=THERMO_COLS)
+    th = pd.DataFrame(
+        [
+            [
+                duplex_features(_DuplexLite(pa, ta, op), celsius=float(c), sodium=float(s))[k]
+                for k in THERMO_COLS
+            ]
+            for pa, ta, op, c, s in zip(d.probe_aln, d.target_aln, d.ops, cel, na)
+        ],
+        columns=THERMO_COLS,
+    )
     s5s, s3s, sums, ovs = [], [], [], []
     for pa, ta, op, c, s in zip(d.probe_aln, d.target_aln, d.ops, cel, na):
         prof = stacking_profile(_DuplexLite(pa, ta, op), len(pa), celsius=float(c), sodium=float(s))
         a, b, u, o = _terminal_block(prof, K)
-        s5s.append(a); s3s.append(b); sums.append(u); ovs.append(o)
+        s5s.append(a)
+        s3s.append(b)
+        sums.append(u)
+        ovs.append(o)
 
-    return pd.concat([
-        ps.reset_index(drop=True), base, cig, th,
-        pd.DataFrame(np.asarray(s5s, np.float32), columns=[f"s5_{j}" for j in range(K)]),
-        pd.DataFrame(np.asarray(s3s, np.float32), columns=[f"s3_{j}" for j in range(K)]),
-        pd.DataFrame(np.asarray(sums, np.float32), columns=INTERIOR_COLS),
-        pd.DataFrame({"overlap_nt": np.asarray(ovs, np.float32)}),
-    ], axis=1)
+    return pd.concat(
+        [
+            ps.reset_index(drop=True),
+            base,
+            cig,
+            th,
+            pd.DataFrame(np.asarray(s5s, np.float32), columns=[f"s5_{j}" for j in range(K)]),
+            pd.DataFrame(np.asarray(s3s, np.float32), columns=[f"s3_{j}" for j in range(K)]),
+            pd.DataFrame(np.asarray(sums, np.float32), columns=INTERIOR_COLS),
+            pd.DataFrame({"overlap_nt": np.asarray(ovs, np.float32)}),
+        ],
+        axis=1,
+    )
 
 
-FEATURES_PAINTSHOP = None      # filled on first call, so the contract is discoverable
+FEATURES_PAINTSHOP = None  # filled on first call, so the contract is discoverable
 FEATURES_OM2 = None
-
-

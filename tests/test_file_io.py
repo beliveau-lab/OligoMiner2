@@ -30,8 +30,8 @@ from oligominer.bioinformatics.file_io.chrom_sizes import (
 # FASTA loading
 # ---------------------------------------------------------------------------
 
-class TestLoadFasta:
 
+class TestLoadFasta:
     def test_load(self, example_fasta_path):
         fasta = load_fasta(example_fasta_path)
         assert len(fasta.keys()) > 0
@@ -48,8 +48,8 @@ class TestLoadFasta:
 # FASTA writing
 # ---------------------------------------------------------------------------
 
-class TestWriteFasta:
 
+class TestWriteFasta:
     def test_write_and_reload(self, example_fasta_path, tmp_path):
         fasta = load_fasta(example_fasta_path)
         out_path = str(tmp_path / "out.fa")
@@ -91,8 +91,8 @@ class TestWriteFasta:
 # FASTA string generation
 # ---------------------------------------------------------------------------
 
-class TestSeqsToFasta:
 
+class TestSeqsToFasta:
     def test_from_list(self):
         seqs = ["ATCG", "GCTA"]
         result = seqs_to_fasta(seqs)
@@ -111,8 +111,8 @@ class TestSeqsToFasta:
 # FASTQ string generation
 # ---------------------------------------------------------------------------
 
-class TestSeqsToFastq:
 
+class TestSeqsToFastq:
     def test_basic(self):
         seqs = ["ATCGATCG"]
         ids = ["read1"]
@@ -127,8 +127,8 @@ class TestSeqsToFastq:
 # filtering
 # ---------------------------------------------------------------------------
 
-class TestFiltering:
 
+class TestFiltering:
     def test_filter_seq_ids_include(self, example_fasta_path):
         fasta = load_fasta(example_fasta_path)
         first_id = list(fasta.keys())[0]
@@ -152,12 +152,12 @@ class TestFiltering:
 # classification
 # ---------------------------------------------------------------------------
 
-class TestClassify:
 
+class TestClassify:
     def test_classify_seq_ids(self, example_fasta_path):
         fasta = load_fasta(example_fasta_path)
         df = classify_seq_ids(fasta)
-        assert 'category' in df.columns
+        assert "category" in df.columns
         assert len(df) == len(fasta.keys())
 
 
@@ -165,8 +165,8 @@ class TestClassify:
 # chrom sizes
 # ---------------------------------------------------------------------------
 
-class TestChromSizes:
 
+class TestChromSizes:
     def test_get_chrom_sizes(self, example_fasta_path):
         sizes = get_chrom_sizes(example_fasta_path)
         assert isinstance(sizes, dict)

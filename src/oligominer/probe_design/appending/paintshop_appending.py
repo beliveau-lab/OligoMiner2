@@ -24,8 +24,8 @@ from .appending import append_sequences
 # SABER handler
 # ------------------------------------------------------------------
 
-def append_saber(probes, sequences, scheme, target_column=None,
-                 n_per_target=None, ranges=None):
+
+def append_saber(probes, sequences, scheme, target_column=None, n_per_target=None, ranges=None):
     """
     Append SABER concatemer sequences to probes.
 
@@ -50,11 +50,14 @@ def append_saber(probes, sequences, scheme, target_column=None,
         entries (pandas.Series): tracking strings.
     """
     result, entries = append_sequences(
-        probes, sequences, scheme,
+        probes,
+        sequences,
+        scheme,
         target_column=target_column,
         n_per_target=n_per_target,
         ranges=ranges,
-        left=False, rc=False,
+        left=False,
+        rc=False,
     )
 
     # success
@@ -87,8 +90,8 @@ def collect_indices(barcode):
     """
     if set(barcode) - {"0", "1"}:
         raise InvalidInputError(
-            f"barcode {barcode!r} is not binary; an MHD4 codeword is a string "
-            f"of '0' and '1'")
+            f"barcode {barcode!r} is not binary; an MHD4 codeword is a string of '0' and '1'"
+        )
 
     indices = [i + 1 for i, c in enumerate(barcode) if c == "1"]
 
@@ -96,7 +99,8 @@ def collect_indices(barcode):
         raise InvalidInputError(
             f"barcode {barcode!r} selects {len(indices)} bridges; an MHD4 "
             f"codeword carries exactly {MHD4_WEIGHT}, three of which reach "
-            f"each probe")
+            f"each probe"
+        )
 
     # success
     return indices
@@ -145,22 +149,22 @@ def add_bridges(probes, bridges, indices, seed=None):
         # if dropped bridge was index 2 or 3 (second half), 5' is heavy
         heavy_five = dropped[i] >= 2
 
-        seq = result.at[idx, 'sequence']
+        seq = result.at[idx, "sequence"]
 
         if heavy_five:
             # 5' gets 2 bridges, 3' gets 1
-            b1 = bridges['seq'].iloc[curr_indices[0] - 1]
-            b2 = bridges['seq'].iloc[curr_indices[1] - 1]
-            b3 = bridges['seq'].iloc[curr_indices[2] - 1]
+            b1 = bridges["seq"].iloc[curr_indices[0] - 1]
+            b2 = bridges["seq"].iloc[curr_indices[1] - 1]
+            b3 = bridges["seq"].iloc[curr_indices[2] - 1]
             seq = b2 + b1 + seq + b3
         else:
             # 5' gets 1 bridge, 3' gets 2
-            b1 = bridges['seq'].iloc[curr_indices[0] - 1]
-            b2 = bridges['seq'].iloc[curr_indices[1] - 1]
-            b3 = bridges['seq'].iloc[curr_indices[2] - 1]
+            b1 = bridges["seq"].iloc[curr_indices[0] - 1]
+            b2 = bridges["seq"].iloc[curr_indices[1] - 1]
+            b3 = bridges["seq"].iloc[curr_indices[2] - 1]
             seq = b1 + seq + b2 + b3
 
-        result.at[idx, 'sequence'] = seq
+        result.at[idx, "sequence"] = seq
 
     # success
     return result
@@ -196,23 +200,24 @@ def append_barcodes(probes, bridges, barcodes, target_column="refseq"):
 
     if len(barcodes) < len(unique_targets):
         raise InvalidInputError(
-            f"Not enough barcodes ({len(barcodes)}) for "
-            f"{len(unique_targets)} unique targets."
+            f"Not enough barcodes ({len(barcodes)}) for {len(unique_targets)} unique targets."
         )
 
     n_bridges = len(bridges)
-    wrong_width = [b for b in barcodes['barcode'].iloc[:len(unique_targets)]
-                   if len(b) != n_bridges]
+    wrong_width = [
+        b for b in barcodes["barcode"].iloc[: len(unique_targets)] if len(b) != n_bridges
+    ]
     if wrong_width:
         raise InvalidInputError(
             f"barcode {wrong_width[0]!r} is {len(wrong_width[0])} characters "
             f"for {n_bridges} bridges; each position selects one bridge, so "
-            f"the two have to match")
+            f"the two have to match"
+        )
 
     result_parts = []
     for i, target in enumerate(unique_targets):
         target_probes = probes[probes[target_column] == target].copy()
-        barcode_str = barcodes['barcode'].iloc[i]
+        barcode_str = barcodes["barcode"].iloc[i]
         indices = collect_indices(barcode_str)
         target_result = add_bridges(target_probes, bridges, indices, seed=i)
         result_parts.append(target_result)

@@ -9,6 +9,7 @@ from io import StringIO
 
 import pandas as pd
 
+
 def bed_to_df(bed_data):
     """
     Convert BED data to a pandas DataFrame.
@@ -19,7 +20,7 @@ def bed_to_df(bed_data):
     Returns:
         df (pandas.DataFrame): the converted DataFrame.
     """
-    df = pd.read_csv(StringIO(bed_data), sep='\t', header=None)
+    df = pd.read_csv(StringIO(bed_data), sep="\t", header=None)
 
     # success
     return df

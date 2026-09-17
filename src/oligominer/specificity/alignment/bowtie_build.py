@@ -26,16 +26,16 @@ def bowtie_build(input_file, output_file, verbose=False, cores=None):
     Returns:
         index_path (str): absolute path to the created index base.
     """
-    ensure_executable('bowtie2-build')
+    ensure_executable("bowtie2-build")
     index_path = get_abs_path(output_file)
 
     # create the output directory as needed
     check_dir_exists(output_file, parent_dir=True, create=True)
 
     # run bowtie2-build
-    cmd = ['bowtie2-build', input_file, output_file]
+    cmd = ["bowtie2-build", input_file, output_file]
     if cores:
-        cmd.extend(['--threads', str(cores)])
+        cmd.extend(["--threads", str(cores)])
     run_cmd(cmd, verbose=verbose)
 
     # check that all index files were created

@@ -11,8 +11,11 @@ import os
 from oligominer.utils.cores import resolve_cores
 from oligominer.utils.shell_pipeline import run_cmd
 from oligominer.utils import (
-    get_abs_path, check_dir_exists, check_input_exists, check_output_exists,
-    ensure_executable
+    get_abs_path,
+    check_dir_exists,
+    check_input_exists,
+    check_output_exists,
+    ensure_executable,
 )
 
 
@@ -44,10 +47,25 @@ def estimate_hash_size(input_file, floor=MIN_HASH_SIZE):
     return max(int(floor), os.path.getsize(input_file))
 
 
-def jellyfish_build(input_file, output_file, k=18, size=None, cores=None,
-                    canonical=False, out_counter_len=4, text=False, disk=False,
-                    sam=None, min_qual_char=None, min_quality=None,
-                    reprobes=None, shell=None, L=None, U=None, verbose=False):
+def jellyfish_build(
+    input_file,
+    output_file,
+    k=18,
+    size=None,
+    cores=None,
+    canonical=False,
+    out_counter_len=4,
+    text=False,
+    disk=False,
+    sam=None,
+    min_qual_char=None,
+    min_quality=None,
+    reprobes=None,
+    shell=None,
+    L=None,
+    U=None,
+    verbose=False,
+):
     """
     Build a Jellyfish kmer count index (wrapper for 'jellyfish count').
 
@@ -77,7 +95,7 @@ def jellyfish_build(input_file, output_file, k=18, size=None, cores=None,
     Returns:
         index_path (str): absolute path to the created index file.
     """
-    ensure_executable('jellyfish')
+    ensure_executable("jellyfish")
     check_input_exists(input_file)
     index_path = get_abs_path(output_file)
     cores = resolve_cores(cores)
@@ -89,34 +107,40 @@ def jellyfish_build(input_file, output_file, k=18, size=None, cores=None,
 
     # build the jellyfish count command
     cmd = [
-        'jellyfish', 'count',
-        '-m', str(k),
-        '-s', str(size),
-        '-t', str(cores),
-        '-o', str(output_file),
-        '--out-counter-len', str(out_counter_len),
-        input_file
+        "jellyfish",
+        "count",
+        "-m",
+        str(k),
+        "-s",
+        str(size),
+        "-t",
+        str(cores),
+        "-o",
+        str(output_file),
+        "--out-counter-len",
+        str(out_counter_len),
+        input_file,
     ]
     if canonical:
-        cmd.append('--canonical')
+        cmd.append("--canonical")
     if text:
-        cmd.append('--text')
+        cmd.append("--text")
     if disk:
-        cmd.append('--disk')
+        cmd.append("--disk")
     if sam:
-        cmd.append(f'--sam={sam}')
+        cmd.append(f"--sam={sam}")
     if min_qual_char:
-        cmd.extend(['-Q', str(min_qual_char)])
+        cmd.extend(["-Q", str(min_qual_char)])
     if min_quality is not None:
-        cmd.append(f'--min-quality={min_quality}')
+        cmd.append(f"--min-quality={min_quality}")
     if reprobes is not None:
-        cmd.extend(['-p', str(reprobes)])
+        cmd.extend(["-p", str(reprobes)])
     if shell:
-        cmd.extend(['-S', shell])
+        cmd.extend(["-S", shell])
     if L is not None:
-        cmd.extend(['-L', str(L)])
+        cmd.extend(["-L", str(L)])
     if U is not None:
-        cmd.extend(['-U', str(U)])
+        cmd.extend(["-U", str(U)])
 
     run_cmd(cmd, verbose=verbose)
     check_output_exists(index_path)

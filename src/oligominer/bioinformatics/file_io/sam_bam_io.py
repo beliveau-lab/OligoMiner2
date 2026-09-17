@@ -8,6 +8,7 @@ uses samtools via run_cmd to convert binary data to text format.
 from oligominer.utils.shell_pipeline import run_cmd
 from oligominer.utils import check_input_exists, ensure_executable
 
+
 def load_sam_file(input_file):
     """
     Load SAM data from a file.
@@ -26,6 +27,7 @@ def load_sam_file(input_file):
     # success
     return sam_data
 
+
 def load_bam_file(input_file):
     """
     Load SAM data from a BAM file.
@@ -36,10 +38,10 @@ def load_bam_file(input_file):
     Returns:
         sam_data (str): the SAM data as a string.
     """
-    ensure_executable('samtools')
+    ensure_executable("samtools")
     check_input_exists(input_file)
 
-    sam_data = run_cmd(['samtools', 'view', input_file])
+    sam_data = run_cmd(["samtools", "view", input_file])
 
     # success
     return sam_data

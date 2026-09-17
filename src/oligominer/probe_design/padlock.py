@@ -57,9 +57,19 @@ from oligominer.utils.seq_utils import rev_comp
 
 # one row per padlock; arm_5p/arm_3p are probe-strand sequences, coordinates are target
 PADLOCK_COLUMNS = [
-    "seq_id", "start", "stop", "probe_seq",
-    "arm_5p", "arm_3p", "arm5_len", "arm3_len", "gap_len", "gap_seq",
-    "arm5_tm", "arm3_tm", "junction",
+    "seq_id",
+    "start",
+    "stop",
+    "probe_seq",
+    "arm_5p",
+    "arm_3p",
+    "arm5_len",
+    "arm3_len",
+    "gap_len",
+    "gap_seq",
+    "arm5_tm",
+    "arm3_tm",
+    "junction",
 ]
 
 DEFAULT_ARM = {
@@ -192,11 +202,25 @@ def _best_per_start(starts, lengths, tms, tm_target, span):
     return has, length_at, tm_at
 
 
-def mine_padlock_sequence(seq, seq_id="seq", arm5=None, arm3=None, gap=0,
-                          spacing=0, overlap=False, tm_target_join=None,
-                          Na=390, K=0, Tris=0, Mg=0, dNTPs=0,
-                          dnac1=25, dnac2=25, pct_formamide=0,
-                          formamide_factor=0.65):
+def mine_padlock_sequence(
+    seq,
+    seq_id="seq",
+    arm5=None,
+    arm3=None,
+    gap=0,
+    spacing=0,
+    overlap=False,
+    tm_target_join=None,
+    Na=390,
+    K=0,
+    Tris=0,
+    Mg=0,
+    dNTPs=0,
+    dnac1=25,
+    dnac2=25,
+    pct_formamide=0,
+    formamide_factor=0.65,
+):
     """
     Mine padlock probes -- two homology arms, optionally separated by a fillable gap.
 
@@ -244,9 +268,15 @@ def mine_padlock_sequence(seq, seq_id="seq", arm5=None, arm3=None, gap=0,
     arm3 = dict(DEFAULT_ARM) if arm3 is None else arm3
 
     thermo = {
-        "Na": Na, "K": K, "Tris": Tris, "Mg": Mg, "dNTPs": dNTPs,
-        "dnac1": dnac1, "dnac2": dnac2,
-        "pct_formamide": pct_formamide, "formamide_factor": formamide_factor,
+        "Na": Na,
+        "K": K,
+        "Tris": Tris,
+        "Mg": Mg,
+        "dNTPs": dNTPs,
+        "dnac1": dnac1,
+        "dnac2": dnac2,
+        "pct_formamide": pct_formamide,
+        "formamide_factor": formamide_factor,
     }
 
     seq_str = seq.upper()
@@ -277,7 +307,7 @@ def mine_padlock_sequence(seq, seq_id="seq", arm5=None, arm3=None, gap=0,
     l2_sel = len2_at[junction]
     tm2_sel = tm2_at[junction]
 
-    stop = junction + l2_sel                      # end of the full target footprint
+    stop = junction + l2_sel  # end of the full target footprint
     fits = stop <= span
     s1, l1, tm1, junction = s1[fits], l1[fits], tm1[fits], junction[fits]
     l2_sel, tm2_sel, stop = l2_sel[fits], tm2_sel[fits], stop[fits]
@@ -308,22 +338,31 @@ def mine_padlock_sequence(seq, seq_id="seq", arm5=None, arm3=None, gap=0,
 
         t1_stop = t_start + int(l1[i])
         t1 = seq_str[t_start:t1_stop]
-        t2 = seq_str[int(junction[i]):t_stop]
-        gap_seq = seq_str[t1_stop:int(junction[i])]
+        t2 = seq_str[int(junction[i]) : t_stop]
+        gap_seq = seq_str[t1_stop : int(junction[i])]
         if "N" in t1 or "N" in t2 or "N" in gap_seq:
             continue
 
         arm_3p = rev_comp(t1)
         arm_5p = rev_comp(t2)
 
-        rows.append((
-            seq_id, t_start, t_stop,
-            arm_5p + arm_3p,                    # the synthesized homology, probe 5'->3'
-            arm_5p, arm_3p,
-            int(l2_sel[i]), int(l1[i]), int(gap), gap_seq,
-            round(float(tm2_sel[i]), 2), round(float(tm1[i]), 2),
-            int(len(arm_5p)),                   # junction offset within probe_seq
-        ))
+        rows.append(
+            (
+                seq_id,
+                t_start,
+                t_stop,
+                arm_5p + arm_3p,  # the synthesized homology, probe 5'->3'
+                arm_5p,
+                arm_3p,
+                int(l2_sel[i]),
+                int(l1[i]),
+                int(gap),
+                gap_seq,
+                round(float(tm2_sel[i]), 2),
+                round(float(tm1[i]), 2),
+                int(len(arm_5p)),  # junction offset within probe_seq
+            )
+        )
         last_stop = t_stop
 
     # success
@@ -372,10 +411,11 @@ def check_identity(row, target_seq):
     assert len(row["arm_3p"]) == int(row["arm3_len"]), "arm3_len disagrees with arm_3p"
 
     if int(row["gap_len"]) == 0:
-        window = target_seq[int(row["start"]):int(row["stop"])].upper()
+        window = target_seq[int(row["start"]) : int(row["stop"])].upper()
         assert probe == rev_comp(window), (
             "arms concatenated are NOT revcomp of the contiguous target window -- "
-            "the whole padlock-blind downstream path depends on this")
+            "the whole padlock-blind downstream path depends on this"
+        )
 
     # success
     return True

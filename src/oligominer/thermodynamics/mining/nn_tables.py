@@ -31,12 +31,15 @@ NN_DTYPE = np.float64
 #
 
 # lookups are done via DINUC_DH_LUT[first_base][second_base] using int encoded sequences
-DINUC_DH_LUT = np.array([
-    [ -7.9,  -8.4,  -7.8,  -7.2], # AA, AC, AG, AT
-    [ -8.5,  -8.0, -10.6,  -7.8], # CA, CC, CG, CT
-    [ -8.2,  -9.8,  -8.0,  -8.4], # GA, GC, GG, GT
-    [ -7.2,  -8.2,  -8.5,  -7.9], # TA, TC, TG, TT
-], dtype=NN_DTYPE)
+DINUC_DH_LUT = np.array(
+    [
+        [-7.9, -8.4, -7.8, -7.2],  # AA, AC, AG, AT
+        [-8.5, -8.0, -10.6, -7.8],  # CA, CC, CG, CT
+        [-8.2, -9.8, -8.0, -8.4],  # GA, GC, GG, GT
+        [-7.2, -8.2, -8.5, -7.9],  # TA, TC, TG, TT
+    ],
+    dtype=NN_DTYPE,
+)
 
 
 #
@@ -44,12 +47,15 @@ DINUC_DH_LUT = np.array([
 #
 
 # lookups are done via DINUC_DH_LUT[first_base][second_base] using int encoded sequences
-DINUC_DS_LUT = np.array([
-    [-22.2, -22.4, -21.0, -20.4], # AA, AC, AG, AT
-    [-22.7, -19.9, -27.2, -21.0], # CA, CC, CG, CT
-    [-22.2, -24.4, -19.9, -22.4], # GA, GC, GG, GT
-    [-21.3, -22.2, -22.7, -22.2], # TA, TC, TG, TT
-], dtype=NN_DTYPE)
+DINUC_DS_LUT = np.array(
+    [
+        [-22.2, -22.4, -21.0, -20.4],  # AA, AC, AG, AT
+        [-22.7, -19.9, -27.2, -21.0],  # CA, CC, CG, CT
+        [-22.2, -24.4, -19.9, -22.4],  # GA, GC, GG, GT
+        [-21.3, -22.2, -22.7, -22.2],  # TA, TC, TG, TT
+    ],
+    dtype=NN_DTYPE,
+)
 
 
 #
@@ -57,12 +63,15 @@ DINUC_DS_LUT = np.array([
 #
 
 # table with respect to 5' base in the dinucleotide
-TERMINAL_5_DH_LUT = np.array([
-    [2.3, 2.3, 2.3, 2.3], #  AA,  AC,  AG,  AT
-    [0.1, 0.1, 0.1, 0.1], # *CA, *CC, *CG, *CT
-    [0.1, 0.1, 0.1, 0.1], # *GA, *GC, *GG, *GT
-    [2.3, 2.3, 2.3, 2.3], #  TA,  TC,  TG,  TT
-], dtype=NN_DTYPE)
+TERMINAL_5_DH_LUT = np.array(
+    [
+        [2.3, 2.3, 2.3, 2.3],  #  AA,  AC,  AG,  AT
+        [0.1, 0.1, 0.1, 0.1],  # *CA, *CC, *CG, *CT
+        [0.1, 0.1, 0.1, 0.1],  # *GA, *GC, *GG, *GT
+        [2.3, 2.3, 2.3, 2.3],  #  TA,  TC,  TG,  TT
+    ],
+    dtype=NN_DTYPE,
+)
 
 # table with respect to 3' base in the dinucleotide
 #  AA,  AC*, AG*, AT
@@ -77,12 +86,15 @@ TERMINAL_3_DH_LUT = TERMINAL_5_DH_LUT.T
 #
 
 # table with respect to 5' base in the dinucleotide
-TERMINAL_5_DS_LUT = np.array([
-    [ 4.1,  4.1,  4.1,  4.1], #  AA,  AC,  AG,  AT
-    [-2.8, -2.8, -2.8, -2.8], # *CA, *CC, *CG, *CT
-    [-2.8, -2.8, -2.8, -2.8], # *GA, *GC, *GG, *GT
-    [ 4.1,  4.1,  4.1,  4.1], #  TA,  TC,  TG,  TT
-], dtype=NN_DTYPE)
+TERMINAL_5_DS_LUT = np.array(
+    [
+        [4.1, 4.1, 4.1, 4.1],  #  AA,  AC,  AG,  AT
+        [-2.8, -2.8, -2.8, -2.8],  # *CA, *CC, *CG, *CT
+        [-2.8, -2.8, -2.8, -2.8],  # *GA, *GC, *GG, *GT
+        [4.1, 4.1, 4.1, 4.1],  #  TA,  TC,  TG,  TT
+    ],
+    dtype=NN_DTYPE,
+)
 
 # table with respect to 3' base in the dinucleotide
 #  AA,  AC*, AG*, AT
@@ -90,6 +102,3 @@ TERMINAL_5_DS_LUT = np.array([
 #  GA,  GC*, GG*, GT
 #  TA,  TC*, TG*, TT
 TERMINAL_3_DS_LUT = TERMINAL_5_DS_LUT.T
-
-
-

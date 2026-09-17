@@ -39,6 +39,7 @@ def load_appending_data(name):
 # named convenience loaders
 # ------------------------------------------------------------------
 
+
 def load_bridges():
     """
     Load the PaintSHOP bridge set (800 orthogonal bridges).

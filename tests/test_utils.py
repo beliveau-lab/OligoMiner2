@@ -29,8 +29,8 @@ from oligominer.utils.exceptions import (
 # seq_utils
 # ---------------------------------------------------------------------------
 
-class TestRevComp:
 
+class TestRevComp:
     def test_basic(self):
         assert rev_comp("ATCG") == "CGAT"
 
@@ -53,7 +53,6 @@ class TestRevComp:
 
 
 class TestCalcGc:
-
     def test_all_gc(self):
         assert calc_gc("GCGC") == pytest.approx(1.0)
 
@@ -74,8 +73,8 @@ class TestCalcGc:
 # file_paths
 # ---------------------------------------------------------------------------
 
-class TestFilePaths:
 
+class TestFilePaths:
     def test_get_abs_path(self):
         result = get_abs_path("test.txt")
         assert os.path.isabs(result)
@@ -90,8 +89,8 @@ class TestFilePaths:
 # required_files
 # ---------------------------------------------------------------------------
 
-class TestRequiredFiles:
 
+class TestRequiredFiles:
     def test_check_input_exists(self, example_fasta_path):
         assert check_input_exists(example_fasta_path) is True
 
@@ -126,8 +125,8 @@ class TestRequiredFiles:
 # input_dispatch
 # ---------------------------------------------------------------------------
 
-class TestInputDispatch:
 
+class TestInputDispatch:
     def test_require_one_of_first(self):
         # should not raise when exactly one is provided
         require_one_of("hello", None, "a", "b")

@@ -11,8 +11,11 @@ import os
 import pandas as pd
 
 from oligominer.utils import (
-    get_abs_path, get_dir_name,
-    check_dir_exists, check_input_exists, check_output_exists,
+    get_abs_path,
+    get_dir_name,
+    check_dir_exists,
+    check_input_exists,
+    check_output_exists,
 )
 from .exceptions import EmptyExportError
 from .config import GTF_EXTENSIONS, GTF_COLUMNS, merge_files_by_extension
@@ -21,6 +24,7 @@ from .config import GTF_EXTENSIONS, GTF_COLUMNS, merge_files_by_extension
 # ---------------------------------------------------------------------------
 # Loading
 # ---------------------------------------------------------------------------
+
 
 def load_gtf(gtf_path):
     """
@@ -42,11 +46,11 @@ def load_gtf(gtf_path):
 
     df = pd.read_csv(
         gtf_path,
-        sep='\t',
-        comment='#',
+        sep="\t",
+        comment="#",
         header=None,
         names=GTF_COLUMNS,
-        dtype={'seqid': str, 'start': int, 'end': int},
+        dtype={"seqid": str, "start": int, "end": int},
     )
 
     # success
@@ -56,6 +60,7 @@ def load_gtf(gtf_path):
 # ---------------------------------------------------------------------------
 # Attribute parsing
 # ---------------------------------------------------------------------------
+
 
 def parse_attributes(df):
     """
@@ -76,20 +81,16 @@ def parse_attributes(df):
     df = df.copy()
 
     # parse each attribute string into a dict
-    attr_dicts = df['attributes'].apply(_parse_attr_string)
+    attr_dicts = df["attributes"].apply(_parse_attr_string)
 
     # extract commonly used fields
-    df['gene_id'] = attr_dicts.apply(lambda x: x.get('gene_id', ''))
-    df['gene_name'] = attr_dicts.apply(lambda x: x.get('gene_name', ''))
-    df['transcript_id_full'] = attr_dicts.apply(
-        lambda x: x.get('transcript_id', '')
-    )
-    df['transcript_id'] = df['transcript_id_full'].apply(
-        lambda x: x.split('.')[0]
-    )
+    df["gene_id"] = attr_dicts.apply(lambda x: x.get("gene_id", ""))
+    df["gene_name"] = attr_dicts.apply(lambda x: x.get("gene_name", ""))
+    df["transcript_id_full"] = attr_dicts.apply(lambda x: x.get("transcript_id", ""))
+    df["transcript_id"] = df["transcript_id_full"].apply(lambda x: x.split(".")[0])
 
     # drop the raw attributes column
-    df = df.drop(columns=['attributes'])
+    df = df.drop(columns=["attributes"])
 
     # success
     return df
@@ -99,8 +100,8 @@ def parse_attributes(df):
 # Filtering
 # ---------------------------------------------------------------------------
 
-def filter_gtf(df, chrom_names=None, feature_type='exon',
-               incl_str=None, excl_str=None):
+
+def filter_gtf(df, chrom_names=None, feature_type="exon", incl_str=None, excl_str=None):
     """
     Filter a GTF DataFrame by chromosome names, feature type, and regex.
 
@@ -122,16 +123,16 @@ def filter_gtf(df, chrom_names=None, feature_type='exon',
     filtered = df
 
     if chrom_names is not None:
-        filtered = filtered[filtered['seqid'].isin(chrom_names)]
+        filtered = filtered[filtered["seqid"].isin(chrom_names)]
 
     if feature_type is not None:
-        filtered = filtered[filtered['type'] == feature_type]
+        filtered = filtered[filtered["type"] == feature_type]
 
     if incl_str is not None:
-        filtered = filtered[filtered['seqid'].str.contains(incl_str, regex=True)]
+        filtered = filtered[filtered["seqid"].str.contains(incl_str, regex=True)]
 
     if excl_str is not None:
-        filtered = filtered[~filtered['seqid'].str.contains(excl_str, regex=True)]
+        filtered = filtered[~filtered["seqid"].str.contains(excl_str, regex=True)]
 
     # success
     return filtered.reset_index(drop=True)
@@ -140,6 +141,7 @@ def filter_gtf(df, chrom_names=None, feature_type='exon',
 # ---------------------------------------------------------------------------
 # Writing
 # ---------------------------------------------------------------------------
+
 
 def write_gtf(df, filepath):
     """
@@ -154,10 +156,10 @@ def write_gtf(df, filepath):
         filepath (str): destination file path.
     """
     if df.empty:
-        raise EmptyExportError(filepath, 'GTF')
+        raise EmptyExportError(filepath, "GTF")
 
     check_dir_exists(filepath, parent_dir=True, create=True)
-    df.to_csv(filepath, sep='\t', index=False, header=False)
+    df.to_csv(filepath, sep="\t", index=False, header=False)
 
 
 def write_bed(df, filepath):
@@ -173,11 +175,17 @@ def write_bed(df, filepath):
         filepath (str): destination file path.
     """
     if df.empty:
-        raise EmptyExportError(filepath, 'GTF')
+        raise EmptyExportError(filepath, "GTF")
 
     bed_columns = [
-        'seqid', 'start', 'end', 'transcript_id',
-        'score', 'strand', 'transcript_id_full', 'gene_id',
+        "seqid",
+        "start",
+        "end",
+        "transcript_id",
+        "score",
+        "strand",
+        "transcript_id_full",
+        "gene_id",
     ]
 
     # only include columns that are present
@@ -185,14 +193,15 @@ def write_bed(df, filepath):
     bed_df = df[available]
 
     check_dir_exists(filepath, parent_dir=True, create=True)
-    bed_df.to_csv(filepath, sep='\t', index=False, header=False)
+    bed_df.to_csv(filepath, sep="\t", index=False, header=False)
 
 
 # ---------------------------------------------------------------------------
 # Splitting
 # ---------------------------------------------------------------------------
 
-def split_gtf(df, target_dir, suffix='_filtered_gtf.tsv'):
+
+def split_gtf(df, target_dir, suffix="_filtered_gtf.tsv"):
     """
     Split a GTF DataFrame into per-chromosome files.
 
@@ -209,14 +218,14 @@ def split_gtf(df, target_dir, suffix='_filtered_gtf.tsv'):
         written_paths (list): file paths written.
     """
     if df.empty:
-        raise EmptyExportError(target_dir, 'GTF')
+        raise EmptyExportError(target_dir, "GTF")
 
     check_dir_exists(target_dir, create=True)
 
     written_paths = []
-    for chrom, chrom_df in df.groupby('seqid'):
-        out_path = os.path.join(target_dir, f'{chrom}{suffix}')
-        chrom_df.to_csv(out_path, sep='\t', index=False)
+    for chrom, chrom_df in df.groupby("seqid"):
+        out_path = os.path.join(target_dir, f"{chrom}{suffix}")
+        chrom_df.to_csv(out_path, sep="\t", index=False)
         written_paths.append(out_path)
 
     # success
@@ -227,7 +236,8 @@ def split_gtf(df, target_dir, suffix='_filtered_gtf.tsv'):
 # Merging
 # ---------------------------------------------------------------------------
 
-def merge_annotation_beds(input_dir, output_path, extension='.bed'):
+
+def merge_annotation_beds(input_dir, output_path, extension=".bed"):
     """
     Merge per-chromosome annotation BED files into a single file.
 
@@ -251,7 +261,7 @@ def merge_annotation_beds(input_dir, output_path, extension='.bed'):
 
     merged = merge_files_by_extension(input_dir, output_path, {extension})
     if not merged:
-        raise EmptyExportError(output_path, 'GTF')
+        raise EmptyExportError(output_path, "GTF")
 
     check_output_exists(output_path)
 
@@ -262,6 +272,7 @@ def merge_annotation_beds(input_dir, output_path, extension='.bed'):
 # ---------------------------------------------------------------------------
 # Helpers
 # ---------------------------------------------------------------------------
+
 
 def _parse_attr_string(data):
     """
@@ -277,21 +288,21 @@ def _parse_attr_string(data):
         attr_data (dict): {key: value} pairs.
     """
     attr_data = {}
-    cleaned = data.replace('"', '').strip(' ;')
+    cleaned = data.replace('"', "").strip(" ;")
 
-    for field in cleaned.split(';'):
+    for field in cleaned.split(";"):
         field = field.strip()
         if not field:
             continue
 
         # handle GFF3 key=value format
-        if '=' in field:
-            key, _, val = field.partition('=')
+        if "=" in field:
+            key, _, val = field.partition("=")
         else:
             # GTF key "value" format (space-separated)
-            parts = field.split(' ', 1)
+            parts = field.split(" ", 1)
             key = parts[0]
-            val = parts[1] if len(parts) > 1 else ''
+            val = parts[1] if len(parts) > 1 else ""
 
         attr_data[key.strip()] = val.strip()
 

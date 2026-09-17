@@ -43,8 +43,8 @@ is not an optimization, it is a different model.
 import numpy as np
 import pandas as pd
 
-from .l4t import features as _F                                                           # noqa: E402
-from .l4t import thermo as _T                                                             # noqa: E402
+from .l4t import features as _F  # noqa: E402
+from .l4t import thermo as _T  # noqa: E402
 
 # 128x128 lookup so a step is indexed by its two ASCII bytes directly. Entries absent from
 # _STACK_HS (any step containing N, or a non-ACGT byte) stay NaN and are masked out, which
@@ -83,7 +83,7 @@ def _as_matrix(strings, width):
     mat = np.zeros((rows, width), dtype=np.uint8)
     for i, s in enumerate(strings):
         b = np.frombuffer(s.encode("ascii", "replace")[:width], dtype=np.uint8)
-        mat[i, :len(b)] = b
+        mat[i, : len(b)] = b
 
     # success
     return mat
@@ -106,8 +106,7 @@ def stacking_profile_batch(probe_alns, ops_list, celsius, width=None):
     Returns:
         prof (numpy.ndarray): float32, shape (rows, width).
     """
-    lengths = np.fromiter((len(s) for s in probe_alns), dtype=np.int64,
-                          count=len(probe_alns))
+    lengths = np.fromiter((len(s) for s in probe_alns), dtype=np.int64, count=len(probe_alns))
     if width is None:
         width = int(lengths.max()) if len(lengths) else 0
 
@@ -173,10 +172,12 @@ def terminal_block_batch(prof, lengths, K):
     if n_rows == 0 or np.asarray(prof).shape[-1] == 0:
         # a reduction over an empty axis has no identity, so an empty batch is
         # returned in the declared shapes rather than raising
-        return (np.zeros((n_rows, K), dtype=np.float64),
-                np.zeros((n_rows, K), dtype=np.float64),
-                np.zeros((n_rows, 8), dtype=np.float64),
-                np.zeros(n_rows, dtype=np.float64))
+        return (
+            np.zeros((n_rows, K), dtype=np.float64),
+            np.zeros((n_rows, K), dtype=np.float64),
+            np.zeros((n_rows, 8), dtype=np.float64),
+            np.zeros(n_rows, dtype=np.float64),
+        )
 
     p = np.asarray(prof, dtype=np.float64)
     rows, width = p.shape
@@ -209,8 +210,9 @@ def terminal_block_batch(prof, lengths, K):
         i_max = np.nanmax(np.where(interior_mask, p, -np.inf), axis=1)
         # population std (ddof=0), matching numpy's default that the vendored code relies on
         dev = np.where(interior_mask, p - i_mean[:, None], 0.0)
-        i_std = np.sqrt(np.where(has_interior,
-                                 (dev ** 2).sum(axis=1) / np.where(n_int > 0, n_int, 1), 0.0))
+        i_std = np.sqrt(
+            np.where(has_interior, (dev**2).sum(axis=1) / np.where(n_int > 0, n_int, 1), 0.0)
+        )
 
     # worst = K + argmin(interior), reported as distance to the NEARER end
     worst_col = np.argmin(np.where(interior_mask, p, np.inf), axis=1)
@@ -261,19 +263,23 @@ def enc_om2_fast(df, celsius=None, sodium=None, K=None):
     ps.columns = [f"ps_{c}" for c in ps.columns]
 
     cel, na = _F._conditions(df, celsius, sodium)
-    base = pd.DataFrame({
-        "align_score": _F._align_score(df),
-        "probe_len": df["probe_seq"].astype(str).str.len().astype(float).values,
-        "probe_gc": df["probe_seq"].astype(str).map(_F.gc_pct).values,
-        "target_gc": df["target_seq"].astype(str).map(_F.gc_pct).values,
-    })
+    base = pd.DataFrame(
+        {
+            "align_score": _F._align_score(df),
+            "probe_len": df["probe_seq"].astype(str).str.len().astype(float).values,
+            "probe_gc": df["probe_seq"].astype(str).map(_F.gc_pct).values,
+            "target_gc": df["target_seq"].astype(str).map(_F.gc_pct).values,
+        }
+    )
     cig = _F._cigar_block(df)
 
     # duplex_features stays per row -- its inner work is a string walk -- but goes through the
     # cache the vendored encoder bypasses. Repeat alignments are common, so this is the win.
     th = pd.DataFrame(
-        [_T._features_cached(pa, ta, op, float(c), float(s))
-         for pa, ta, op, c, s in zip(df.probe_aln, df.target_aln, df.ops, cel, na)],
+        [
+            _T._features_cached(pa, ta, op, float(c), float(s))
+            for pa, ta, op, c, s in zip(df.probe_aln, df.target_aln, df.ops, cel, na)
+        ],
         columns=_T.FEATURE_COLUMNS,
     )[_F.THERMO_COLS]
 
@@ -284,13 +290,19 @@ def enc_om2_fast(df, celsius=None, sodium=None, K=None):
     s5s, s3s, sums, ovs = terminal_block_batch(prof, lengths, K)
 
     # success
-    return pd.concat([
-        ps.reset_index(drop=True), base, cig, th,
-        pd.DataFrame(np.asarray(s5s, np.float32), columns=[f"s5_{j}" for j in range(K)]),
-        pd.DataFrame(np.asarray(s3s, np.float32), columns=[f"s3_{j}" for j in range(K)]),
-        pd.DataFrame(np.asarray(sums, np.float32), columns=_F.INTERIOR_COLS),
-        pd.DataFrame({"overlap_nt": np.asarray(ovs, np.float32)}),
-    ], axis=1)
+    return pd.concat(
+        [
+            ps.reset_index(drop=True),
+            base,
+            cig,
+            th,
+            pd.DataFrame(np.asarray(s5s, np.float32), columns=[f"s5_{j}" for j in range(K)]),
+            pd.DataFrame(np.asarray(s3s, np.float32), columns=[f"s3_{j}" for j in range(K)]),
+            pd.DataFrame(np.asarray(sums, np.float32), columns=_F.INTERIOR_COLS),
+            pd.DataFrame({"overlap_nt": np.asarray(ovs, np.float32)}),
+        ],
+        axis=1,
+    )
 
 
 def verify(df, verbose=True):
@@ -315,7 +327,8 @@ def verify(df, verbose=True):
     fast = enc_om2_fast(df)
 
     assert list(slow.columns) == list(fast.columns), (
-        f"column names differ: {set(slow.columns) ^ set(fast.columns)}")
+        f"column names differ: {set(slow.columns) ^ set(fast.columns)}"
+    )
 
     a = slow.to_numpy(dtype=np.float64)
     b = fast.to_numpy(dtype=np.float64)
@@ -329,13 +342,20 @@ def verify(df, verbose=True):
         raise AssertionError(
             f"fast encoder differs from vendored at column {slow.columns[c]!r} row {r}: "
             f"{a[r, c]!r} vs {b[r, c]!r} ({len(bad)} cells differ, worst {worst:g}). "
-            f"NOT shippable -- this is a different feature space.")
+            f"NOT shippable -- this is a different feature space."
+        )
 
-    report = {"n_rows": int(len(df)), "n_columns": int(slow.shape[1]),
-              "max_abs_diff": worst, "bit_identical": True}
+    report = {
+        "n_rows": int(len(df)),
+        "n_columns": int(slow.shape[1]),
+        "max_abs_diff": worst,
+        "bit_identical": True,
+    }
     if verbose:
-        print(f"  bit-identical on {report['n_rows']:,} rows x "
-              f"{report['n_columns']} columns (max |diff| = {worst:g})")
+        print(
+            f"  bit-identical on {report['n_rows']:,} rows x "
+            f"{report['n_columns']} columns (max |diff| = {worst:g})"
+        )
 
     # success
     return report

@@ -11,41 +11,40 @@ import random
 import numpy as np
 import pytest
 
-nupack = pytest.importorskip('nupack')
+nupack = pytest.importorskip("nupack")
 
-from oligominer.thermodynamics.nupack import (          # noqa: E402
+from oligominer.thermodynamics.nupack import (  # noqa: E402
     add_pdup_batch,
     calc_pdup,
     calc_pdup_many,
     calc_pdup_one_to_many,
     low_level_available,
 )
-from oligominer.utils.seq_utils import rev_comp         # noqa: E402
+from oligominer.utils.seq_utils import rev_comp  # noqa: E402
 
 # tolerance for an equilibrium solve reached by two different routes
 EXACT = 1e-9
 
 
-@pytest.fixture(scope='module')
+@pytest.fixture(scope="module")
 def duplex_pairs():
     """Probe and target pairs spanning perfect matches through heavy mismatch."""
     random.seed(5)
     pairs = []
     for n_mismatch in (0, 1, 3, 6):
         for _ in range(3):
-            probe = ''.join(random.choice('ACGT') for _ in range(30))
+            probe = "".join(random.choice("ACGT") for _ in range(30))
             target = list(rev_comp(probe))
             for _ in range(n_mismatch):
                 j = random.randrange(len(target))
-                target[j] = random.choice([b for b in 'ACGT' if b != target[j]])
-            pairs.append((probe, ''.join(target)))
+                target[j] = random.choice([b for b in "ACGT" if b != target[j]])
+            pairs.append((probe, "".join(target)))
 
     # success
     return pairs
 
 
 class TestAvailability:
-
     def test_low_level_api_is_reported(self):
         assert isinstance(low_level_available(), bool)
 
@@ -59,7 +58,7 @@ class TestExactness:
 
         assert len(batched) == len(reference)
         worst = max(abs(x - y) for x, y in zip(batched, reference))
-        assert worst < EXACT, f'largest deviation {worst:.3e} over {len(batched)} pairs'
+        assert worst < EXACT, f"largest deviation {worst:.3e} over {len(batched)} pairs"
 
     def test_one_to_many_matches_calc_pdup(self, duplex_pairs):
         probe = duplex_pairs[0][0]
@@ -69,11 +68,11 @@ class TestExactness:
         reference = [calc_pdup(probe, t, conc_a=1e-6, conc_b=1e-12) for t in targets]
 
         worst = max(abs(x - y) for x, y in zip(batched, reference))
-        assert worst < EXACT, f'largest deviation {worst:.3e}'
+        assert worst < EXACT, f"largest deviation {worst:.3e}"
 
     def test_a_self_complementary_probe_is_handled(self):
         """Homodimer symmetry must be corrected or pDup comes out low."""
-        palindrome = 'ACGTACGTACGTACGTACGTACGTACGTAC'
+        palindrome = "ACGTACGTACGTACGTACGTACGTACGTAC"
         target = rev_comp(palindrome)
 
         batched = calc_pdup_many([(palindrome, target)])[0]
@@ -111,15 +110,14 @@ class TestExactness:
 
 
 class TestBehaviour:
-
     def test_a_perfect_match_beats_a_mismatched_one(self):
-        probe = 'ACGTACGTACGTACGTACGTACGTACGTAC'
+        probe = "ACGTACGTACGTACGTACGTACGTACGTAC"
         perfect = rev_comp(probe)
         broken = list(perfect)
         for j in range(0, len(broken), 4):
-            broken[j] = random.choice([b for b in 'ACGT' if b != broken[j]])
+            broken[j] = random.choice([b for b in "ACGT" if b != broken[j]])
 
-        values = calc_pdup_many([(probe, perfect), (probe, ''.join(broken))])
+        values = calc_pdup_many([(probe, perfect), (probe, "".join(broken))])
 
         assert values[0] > values[1]
 
@@ -130,48 +128,51 @@ class TestBehaviour:
 
     def test_empty_input_returns_empty(self):
         assert calc_pdup_many([]) == []
-        assert calc_pdup_one_to_many('ACGTACGTACGTACGTACGTACGT', []) == []
+        assert calc_pdup_one_to_many("ACGTACGTACGTACGTACGTACGT", []) == []
 
     def test_model_temperature_is_honored(self, duplex_pairs):
         """The equilibrium solve must run at the model's own temperature."""
-        cold = nupack.Model(material='dna', ensemble='stacking',
-                            celsius=25.0, sodium=0.39, magnesium=0.0)
-        hot = nupack.Model(material='dna', ensemble='stacking',
-                           celsius=85.0, sodium=0.39, magnesium=0.0)
+        cold = nupack.Model(
+            material="dna", ensemble="stacking", celsius=25.0, sodium=0.39, magnesium=0.0
+        )
+        hot = nupack.Model(
+            material="dna", ensemble="stacking", celsius=85.0, sodium=0.39, magnesium=0.0
+        )
 
         pair = [duplex_pairs[0]]
         assert calc_pdup_many(pair, model=cold)[0] > calc_pdup_many(pair, model=hot)[0]
 
     def test_temperature_matches_calc_pdup_at_that_temperature(self, duplex_pairs):
-        cold = nupack.Model(material='dna', ensemble='stacking',
-                            celsius=25.0, sodium=0.39, magnesium=0.0)
+        cold = nupack.Model(
+            material="dna", ensemble="stacking", celsius=25.0, sodium=0.39, magnesium=0.0
+        )
         batched = calc_pdup_many(duplex_pairs[:4], model=cold)
-        reference = [calc_pdup(a, b, conc_a=1e-6, conc_b=1e-12, model=cold)
-                     for a, b in duplex_pairs[:4]]
+        reference = [
+            calc_pdup(a, b, conc_a=1e-6, conc_b=1e-12, model=cold) for a, b in duplex_pairs[:4]
+        ]
 
         assert np.allclose(batched, reference, atol=EXACT)
 
 
 class TestDataFrameEntryPoint:
-
     def test_pdup_column_is_added(self, duplex_pairs):
         import pandas as pd
 
-        df = pd.DataFrame([{'probe_seq': a, 'derived_seq': b} for a, b in duplex_pairs])
+        df = pd.DataFrame([{"probe_seq": a, "derived_seq": b} for a, b in duplex_pairs])
         out = add_pdup_batch(df)
 
-        assert 'pdup' in out.columns
+        assert "pdup" in out.columns
         assert len(out) == len(df)
-        assert out['pdup'].between(0, 1 + 1e-6).all()
+        assert out["pdup"].between(0, 1 + 1e-6).all()
 
     def test_values_match_the_pairwise_reference(self, duplex_pairs):
         import pandas as pd
 
-        df = pd.DataFrame([{'probe_seq': a, 'derived_seq': b} for a, b in duplex_pairs])
+        df = pd.DataFrame([{"probe_seq": a, "derived_seq": b} for a, b in duplex_pairs])
         out = add_pdup_batch(df)
         reference = [calc_pdup(a, b, conc_a=1e-6, conc_b=1e-12) for a, b in duplex_pairs]
 
-        assert np.allclose(out['pdup'].to_numpy(), reference, atol=EXACT)
+        assert np.allclose(out["pdup"].to_numpy(), reference, atol=EXACT)
 
     def test_rows_stay_with_their_probe_when_grouped(self, duplex_pairs):
         """Grouping by probe must not permute results back onto the wrong rows."""
@@ -179,23 +180,27 @@ class TestDataFrameEntryPoint:
 
         rows = []
         for probe, target in duplex_pairs:
-            rows.append({'probe_seq': probe, 'derived_seq': target})
-            rows.append({'probe_seq': duplex_pairs[0][0], 'derived_seq': target})
+            rows.append({"probe_seq": probe, "derived_seq": target})
+            rows.append({"probe_seq": duplex_pairs[0][0], "derived_seq": target})
         df = pd.DataFrame(rows)
 
         out = add_pdup_batch(df)
-        reference = [calc_pdup(r.probe_seq, r.derived_seq, conc_a=1e-6, conc_b=1e-12)
-                     for r in df.itertuples()]
+        reference = [
+            calc_pdup(r.probe_seq, r.derived_seq, conc_a=1e-6, conc_b=1e-12)
+            for r in df.itertuples()
+        ]
 
-        assert np.allclose(out['pdup'].to_numpy(), reference, atol=EXACT)
+        assert np.allclose(out["pdup"].to_numpy(), reference, atol=EXACT)
 
     def test_a_non_default_index_is_preserved(self, duplex_pairs):
         import pandas as pd
 
-        df = pd.DataFrame([{'probe_seq': a, 'derived_seq': b} for a, b in duplex_pairs],
-                          index=[f'row{i}' for i in range(len(duplex_pairs))])
+        df = pd.DataFrame(
+            [{"probe_seq": a, "derived_seq": b} for a, b in duplex_pairs],
+            index=[f"row{i}" for i in range(len(duplex_pairs))],
+        )
         out = add_pdup_batch(df)
         reference = [calc_pdup(a, b, conc_a=1e-6, conc_b=1e-12) for a, b in duplex_pairs]
 
         assert list(out.index) == list(df.index)
-        assert np.allclose(out['pdup'].to_numpy(), reference, atol=EXACT)
+        assert np.allclose(out["pdup"].to_numpy(), reference, atol=EXACT)

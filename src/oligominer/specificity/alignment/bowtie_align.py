@@ -10,8 +10,11 @@ preset parameter configurations, see bowtie_presets.py.
 from oligominer.utils.cores import resolve_cores
 from oligominer.utils.shell_pipeline import run_cmd, ShellPipeline
 from oligominer.utils import (
-    get_abs_path, check_dir_exists, check_output_exists, require_one_of,
-    ensure_executable
+    get_abs_path,
+    check_dir_exists,
+    check_output_exists,
+    require_one_of,
+    ensure_executable,
 )
 from .exceptions import MissingBowtieIndexError
 from .bowtie_presets import BT2_INDEX_EXTENSIONS
@@ -51,25 +54,53 @@ def validate_index(index_path, verbose=False):
     Raises:
         MissingBowtieIndexError: if the index files do not exist.
     """
-    ensure_executable('bowtie2-inspect')
+    ensure_executable("bowtie2-inspect")
     if not check_index_exists(index_path):
         raise MissingBowtieIndexError(index_path)
-    run_cmd(['bowtie2-inspect', '-s', index_path], verbose=verbose)
+    run_cmd(["bowtie2-inspect", "-s", index_path], verbose=verbose)
 
     # success
     return True
 
 
-def build_bowtie2_cmd(index_path, input_file=None, input_data=None,
-                      sam_output_file=None,
-                      preset=None, D=None, R=None, N=None, L=None, i=None,
-                      local=False, no_1mm_upfront=False, nofw=False, norc=False,
-                      dpad=None, gbar=None, ignore_quals=False,
-                      n_ceil=None, ma=None, mp=None, np=None, rdg=None, rfg=None,
-                      score_min=None,
-                      k=None, a=False, threads=None, reorder=False, mm=False,
-                      fasta_input=False, no_unal=False, no_hd=True, xeq=True,
-                      no_sq=False, time=False, bt2_verbose=False):
+def build_bowtie2_cmd(
+    index_path,
+    input_file=None,
+    input_data=None,
+    sam_output_file=None,
+    preset=None,
+    D=None,
+    R=None,
+    N=None,
+    L=None,
+    i=None,
+    local=False,
+    no_1mm_upfront=False,
+    nofw=False,
+    norc=False,
+    dpad=None,
+    gbar=None,
+    ignore_quals=False,
+    n_ceil=None,
+    ma=None,
+    mp=None,
+    np=None,
+    rdg=None,
+    rfg=None,
+    score_min=None,
+    k=None,
+    a=False,
+    threads=None,
+    reorder=False,
+    mm=False,
+    fasta_input=False,
+    no_unal=False,
+    no_hd=True,
+    xeq=True,
+    no_sq=False,
+    time=False,
+    bt2_verbose=False,
+):
     """
     Build the bowtie2 argv for an alignment.
 
@@ -91,120 +122,148 @@ def build_bowtie2_cmd(index_path, input_file=None, input_data=None,
     See bowtie_align() for the remaining arguments, which have the same meaning.
     """
     index_path = get_abs_path(index_path)
-    cmd = ['bowtie2', '-x', index_path]
-
+    cmd = ["bowtie2", "-x", index_path]
 
     if input_file:
-        cmd.extend(['-U', input_file])
+        cmd.extend(["-U", input_file])
     elif input_data:
-        cmd.extend(['-U', '-'])
+        cmd.extend(["-U", "-"])
 
     if sam_output_file:
-        cmd.extend(['-S', sam_output_file])
+        cmd.extend(["-S", sam_output_file])
 
     if fasta_input:
-        cmd.append('-f')
+        cmd.append("-f")
 
     # apply preset parameters if specified
     if preset is not None:
-        D = preset.get('D', D)
-        R = preset.get('R', R)
-        N = preset.get('N', N)
-        L = preset.get('L', L)
-        i = preset.get('i', i)
-        local = preset.get('local', local)
+        D = preset.get("D", D)
+        R = preset.get("R", R)
+        N = preset.get("N", N)
+        L = preset.get("L", L)
+        i = preset.get("i", i)
+        local = preset.get("local", local)
 
     # add seed parameters if specified
     if D is not None:
-        cmd.extend(['-D', str(D)])
+        cmd.extend(["-D", str(D)])
     if R is not None:
-        cmd.extend(['-R', str(R)])
+        cmd.extend(["-R", str(R)])
     if N is not None:
-        cmd.extend(['-N', str(N)])
+        cmd.extend(["-N", str(N)])
     if L is not None:
-        cmd.extend(['-L', str(L)])
+        cmd.extend(["-L", str(L)])
     if i is not None:
-        cmd.extend(['-i', str(i)])
+        cmd.extend(["-i", str(i)])
 
     # add alignment mode flags
     if local:
-        cmd.append('--local')
+        cmd.append("--local")
 
     # add other options
     if no_1mm_upfront:
-        cmd.append('--no-1mm-upfront')
+        cmd.append("--no-1mm-upfront")
     if nofw:
-        cmd.append('--nofw')
+        cmd.append("--nofw")
     if norc:
-        cmd.append('--norc')
+        cmd.append("--norc")
     if dpad is not None:
-        cmd.extend(['--dpad', str(dpad)])
+        cmd.extend(["--dpad", str(dpad)])
     if gbar is not None:
-        cmd.extend(['--gbar', str(gbar)])
+        cmd.extend(["--gbar", str(gbar)])
     if ignore_quals:
-        cmd.append('--ignore-quals')
+        cmd.append("--ignore-quals")
     if n_ceil is not None:
-        cmd.extend(['--n-ceil', str(n_ceil)])
+        cmd.extend(["--n-ceil", str(n_ceil)])
 
     # add scoring parameters
     if ma is not None:
-        cmd.extend(['--ma', str(ma)])
+        cmd.extend(["--ma", str(ma)])
     if mp is not None:
-        cmd.extend(['--mp', str(mp)])
+        cmd.extend(["--mp", str(mp)])
     if np is not None:
-        cmd.extend(['--np', str(np)])
+        cmd.extend(["--np", str(np)])
     if rdg is not None:
-        cmd.extend(['--rdg', str(rdg)])
+        cmd.extend(["--rdg", str(rdg)])
     if rfg is not None:
-        cmd.extend(['--rfg', str(rfg)])
+        cmd.extend(["--rfg", str(rfg)])
     if score_min is not None:
-        cmd.extend(['--score-min', str(score_min)])
+        cmd.extend(["--score-min", str(score_min)])
 
     # add reporting options
     if k is not None:
-        cmd.extend(['-k', str(k)])
+        cmd.extend(["-k", str(k)])
     if a:
-        cmd.append('-a')
+        cmd.append("-a")
 
     # add threading options
     threads = resolve_cores(threads)
     if threads > 1:
-        cmd.extend(['-p', str(threads)])
+        cmd.extend(["-p", str(threads)])
     if reorder:
-        cmd.append('--reorder')
+        cmd.append("--reorder")
     if mm:
-        cmd.append('--mm')
+        cmd.append("--mm")
 
     # add output format options
     if no_unal:
-        cmd.append('--no-unal')
+        cmd.append("--no-unal")
     if no_hd:
-        cmd.append('--no-hd')
+        cmd.append("--no-hd")
     if xeq:
-        cmd.append('--xeq')
+        cmd.append("--xeq")
     if no_sq:
-        cmd.append('--no-sq')
+        cmd.append("--no-sq")
     if time:
-        cmd.append('-t')
+        cmd.append("-t")
 
     if bt2_verbose:
-        cmd.append('--verbose')
-
+        cmd.append("--verbose")
 
     # success
     return cmd
 
 
-def bowtie_align(index_path, input_file=None, input_data=None,
-                 sam_output_file=None, bam_output_file=None,
-                 preset=None, D=None, R=None, N=None, L=None, i=None,
-                 local=False, no_1mm_upfront=False, nofw=False, norc=False,
-                 dpad=None, gbar=None, ignore_quals=False,
-                 n_ceil=None, ma=None, mp=None, np=None, rdg=None, rfg=None,
-                 score_min=None,
-                 k=None, a=False, threads=None, reorder=False, mm=False,
-                 fasta_input=False, no_unal=False, no_hd=True, xeq=True,
-                 no_sq=False, time=False, verbose=False, bt2_verbose=False):
+def bowtie_align(
+    index_path,
+    input_file=None,
+    input_data=None,
+    sam_output_file=None,
+    bam_output_file=None,
+    preset=None,
+    D=None,
+    R=None,
+    N=None,
+    L=None,
+    i=None,
+    local=False,
+    no_1mm_upfront=False,
+    nofw=False,
+    norc=False,
+    dpad=None,
+    gbar=None,
+    ignore_quals=False,
+    n_ceil=None,
+    ma=None,
+    mp=None,
+    np=None,
+    rdg=None,
+    rfg=None,
+    score_min=None,
+    k=None,
+    a=False,
+    threads=None,
+    reorder=False,
+    mm=False,
+    fasta_input=False,
+    no_unal=False,
+    no_hd=True,
+    xeq=True,
+    no_sq=False,
+    time=False,
+    verbose=False,
+    bt2_verbose=False,
+):
     """
     Align reads to a reference genome using Bowtie2.
 
@@ -270,19 +329,47 @@ def bowtie_align(index_path, input_file=None, input_data=None,
         ValueError: if neither input_file nor input_data is provided.
         RuntimeError: if the alignment fails.
     """
-    require_one_of(input_file, input_data, 'input_file', 'input_data')
-    ensure_executable('bowtie2')
+    require_one_of(input_file, input_data, "input_file", "input_data")
+    ensure_executable("bowtie2")
     if bam_output_file:
-        ensure_executable('samtools')
+        ensure_executable("samtools")
 
     cmd = build_bowtie2_cmd(
-        index_path, input_file=input_file, input_data=input_data,
-        sam_output_file=sam_output_file, preset=preset, D=D, R=R, N=N, L=L, i=i,
-        local=local, no_1mm_upfront=no_1mm_upfront, nofw=nofw, norc=norc,
-        dpad=dpad, gbar=gbar, ignore_quals=ignore_quals, n_ceil=n_ceil, ma=ma,
-        mp=mp, np=np, rdg=rdg, rfg=rfg, score_min=score_min, k=k, a=a,
-        threads=threads, reorder=reorder, mm=mm, fasta_input=fasta_input,
-        no_unal=no_unal, no_hd=no_hd, xeq=xeq, no_sq=no_sq, time=time,
+        index_path,
+        input_file=input_file,
+        input_data=input_data,
+        sam_output_file=sam_output_file,
+        preset=preset,
+        D=D,
+        R=R,
+        N=N,
+        L=L,
+        i=i,
+        local=local,
+        no_1mm_upfront=no_1mm_upfront,
+        nofw=nofw,
+        norc=norc,
+        dpad=dpad,
+        gbar=gbar,
+        ignore_quals=ignore_quals,
+        n_ceil=n_ceil,
+        ma=ma,
+        mp=mp,
+        np=np,
+        rdg=rdg,
+        rfg=rfg,
+        score_min=score_min,
+        k=k,
+        a=a,
+        threads=threads,
+        reorder=reorder,
+        mm=mm,
+        fasta_input=fasta_input,
+        no_unal=no_unal,
+        no_hd=no_hd,
+        xeq=xeq,
+        no_sq=no_sq,
+        time=time,
         bt2_verbose=bt2_verbose,
     )
     # create the pipeline
@@ -291,7 +378,7 @@ def bowtie_align(index_path, input_file=None, input_data=None,
 
     # if BAM output is specified, add samtools command to the pipeline
     if bam_output_file:
-        pipeline.add(['samtools', 'view', '-bS'])
+        pipeline.add(["samtools", "view", "-bS"])
 
     # ensure output directory exists
     if bam_output_file is not None:
@@ -300,7 +387,9 @@ def bowtie_align(index_path, input_file=None, input_data=None,
         check_dir_exists(sam_output_file, parent_dir=True, create=True)
 
     if input_data:
-        result = pipeline.run(input_data=input_data.encode('utf-8'), output_file=bam_output_file, verbose=verbose)
+        result = pipeline.run(
+            input_data=input_data.encode("utf-8"), output_file=bam_output_file, verbose=verbose
+        )
     else:
         result = pipeline.run(output_file=bam_output_file, verbose=verbose)
 

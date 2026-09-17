@@ -27,6 +27,7 @@ from .config import LINKER
 # internal helpers
 # ------------------------------------------------------------------
 
+
 def _maybe_rc(seq, rc):
     """Optionally reverse-complement a sequence."""
     if rc:
@@ -64,6 +65,7 @@ def _join(left_seq, right_seq, linker):
 # core appending functions
 # ------------------------------------------------------------------
 
+
 def append_same(probes, sequences, left=True, rc=False, linker=LINKER):
     """
     Append the same sequence to every probe.
@@ -86,18 +88,14 @@ def append_same(probes, sequences, left=True, rc=False, linker=LINKER):
     """
     result = probes.copy()
 
-    seq = _maybe_rc(sequences['seq'].iloc[0], rc)
-    seq_id = sequences['id'].iloc[0]
+    seq = _maybe_rc(sequences["seq"].iloc[0], rc)
+    seq_id = sequences["id"].iloc[0]
     entry = f"{seq_id}_{sequences['seq'].iloc[0]}"
 
     if left:
-        result['sequence'] = result['sequence'].apply(
-            lambda s: _join(seq, s, linker)
-        )
+        result["sequence"] = result["sequence"].apply(lambda s: _join(seq, s, linker))
     else:
-        result['sequence'] = result['sequence'].apply(
-            lambda s: _join(s, seq, linker)
-        )
+        result["sequence"] = result["sequence"].apply(lambda s: _join(s, seq, linker))
 
     entries = pd.Series(entry, index=result.index)
 
@@ -105,8 +103,7 @@ def append_same(probes, sequences, left=True, rc=False, linker=LINKER):
     return result, entries
 
 
-def append_unique(probes, sequences, target_column, left=True, rc=False,
-                  linker=LINKER):
+def append_unique(probes, sequences, target_column, left=True, rc=False, linker=LINKER):
     """
     Append one unique sequence per target.
 
@@ -139,8 +136,7 @@ def append_unique(probes, sequences, target_column, left=True, rc=False,
 
     if len(sequences) < len(unique_targets):
         raise InvalidInputError(
-            f"Not enough sequences ({len(sequences)}) for "
-            f"{len(unique_targets)} unique targets."
+            f"Not enough sequences ({len(sequences)}) for {len(unique_targets)} unique targets."
         )
 
     result = probes.copy()
@@ -148,15 +144,15 @@ def append_unique(probes, sequences, target_column, left=True, rc=False,
 
     for i, target in enumerate(unique_targets):
         mask = result[target_column] == target
-        seq = _maybe_rc(sequences['seq'].iloc[i], rc)
-        seq_id = sequences['id'].iloc[i]
+        seq = _maybe_rc(sequences["seq"].iloc[i], rc)
+        seq_id = sequences["id"].iloc[i]
 
         if left:
-            result.loc[mask, 'sequence'] = result.loc[mask, 'sequence'].apply(
+            result.loc[mask, "sequence"] = result.loc[mask, "sequence"].apply(
                 lambda s: _join(seq, s, linker)
             )
         else:
-            result.loc[mask, 'sequence'] = result.loc[mask, 'sequence'].apply(
+            result.loc[mask, "sequence"] = result.loc[mask, "sequence"].apply(
                 lambda s: _join(s, seq, linker)
             )
 
@@ -166,8 +162,9 @@ def append_unique(probes, sequences, target_column, left=True, rc=False,
     return result, entries
 
 
-def append_multiple(probes, sequences, n_per_target, target_column,
-                    left=True, rc=False, linker=LINKER):
+def append_multiple(
+    probes, sequences, n_per_target, target_column, left=True, rc=False, linker=LINKER
+):
     """
     Append N sequences per target in round-robin fashion.
 
@@ -218,18 +215,16 @@ def append_multiple(probes, sequences, n_per_target, target_column,
         for j, idx in enumerate(target_indices):
             # cycle through this target's N sequences
             seq_pos = seq_offset + (j % n_per_target)
-            seq = _maybe_rc(sequences['seq'].iloc[seq_pos], rc)
-            seq_id = sequences['id'].iloc[seq_pos]
-            probe_seq = result.at[idx, 'sequence']
+            seq = _maybe_rc(sequences["seq"].iloc[seq_pos], rc)
+            seq_id = sequences["id"].iloc[seq_pos]
+            probe_seq = result.at[idx, "sequence"]
 
             if left:
-                result.at[idx, 'sequence'] = _join(seq, probe_seq, linker)
+                result.at[idx, "sequence"] = _join(seq, probe_seq, linker)
             else:
-                result.at[idx, 'sequence'] = _join(probe_seq, seq, linker)
+                result.at[idx, "sequence"] = _join(probe_seq, seq, linker)
 
-            entries.at[idx] = (
-                f"{seq_id}_{sequences['seq'].iloc[seq_pos]}"
-            )
+            entries.at[idx] = f"{seq_id}_{sequences['seq'].iloc[seq_pos]}"
 
         seq_offset += n_per_target
 
@@ -237,8 +232,7 @@ def append_multiple(probes, sequences, n_per_target, target_column,
     return result, entries
 
 
-def append_custom(probes, sequences, ranges, left=True, rc=False,
-                  linker=LINKER):
+def append_custom(probes, sequences, ranges, left=True, rc=False, linker=LINKER):
     """
     Append one unique sequence per custom probe index range.
 
@@ -270,8 +264,7 @@ def append_custom(probes, sequences, ranges, left=True, rc=False,
 
     if len(sequences) < len(parsed):
         raise InvalidInputError(
-            f"Not enough sequences ({len(sequences)}) for "
-            f"{len(parsed)} custom ranges."
+            f"Not enough sequences ({len(sequences)}) for {len(parsed)} custom ranges."
         )
 
     result = probes.copy()
@@ -280,26 +273,20 @@ def append_custom(probes, sequences, ranges, left=True, rc=False,
     for i, (start, stop) in enumerate(parsed):
         # convert 1-based inclusive to 0-based iloc slice
         idx_slice = slice(start - 1, stop)
-        seq = _maybe_rc(sequences['seq'].iloc[i], rc)
-        seq_id = sequences['id'].iloc[i]
+        seq = _maybe_rc(sequences["seq"].iloc[i], rc)
+        seq_id = sequences["id"].iloc[i]
         iloc_indices = result.index[idx_slice]
 
         if left:
-            result.loc[iloc_indices, 'sequence'] = (
-                result.loc[iloc_indices, 'sequence'].apply(
-                    lambda s: _join(seq, s, linker)
-                )
+            result.loc[iloc_indices, "sequence"] = result.loc[iloc_indices, "sequence"].apply(
+                lambda s: _join(seq, s, linker)
             )
         else:
-            result.loc[iloc_indices, 'sequence'] = (
-                result.loc[iloc_indices, 'sequence'].apply(
-                    lambda s: _join(s, seq, linker)
-                )
+            result.loc[iloc_indices, "sequence"] = result.loc[iloc_indices, "sequence"].apply(
+                lambda s: _join(s, seq, linker)
             )
 
-        entries.loc[iloc_indices] = (
-            f"{seq_id}_{sequences['seq'].iloc[i]}"
-        )
+        entries.loc[iloc_indices] = f"{seq_id}_{sequences['seq'].iloc[i]}"
 
     # success
     return result, entries
@@ -311,9 +298,9 @@ def append_custom(probes, sequences, ranges, left=True, rc=False,
 
 # argument each scheme cannot run without, and why it needs it
 SCHEME_REQUIREMENTS = {
-    'unique': (('target_column',),),
-    'multiple': (('target_column', 'n_per_target'),),
-    'custom': (('ranges',),),
+    "unique": (("target_column",),),
+    "multiple": (("target_column", "n_per_target"),),
+    "custom": (("ranges",),),
 }
 
 
@@ -337,21 +324,27 @@ def _check_scheme_arguments(scheme, target_column, n_per_target, ranges):
     Raises:
         InvalidInputError: naming the missing argument and its scheme.
     """
-    given = {'target_column': target_column, 'n_per_target': n_per_target,
-             'ranges': ranges}
+    given = {"target_column": target_column, "n_per_target": n_per_target, "ranges": ranges}
 
     for required in SCHEME_REQUIREMENTS.get(scheme, ((),))[0]:
         if given[required] is None:
-            raise InvalidInputError(
-                f'scheme {scheme!r} requires {required}, which was not given')
+            raise InvalidInputError(f"scheme {scheme!r} requires {required}, which was not given")
 
     # success
     return True
 
 
-def append_sequences(probes, sequences, scheme, target_column=None,
-                     n_per_target=None, ranges=None, left=True, rc=False,
-                     linker=LINKER):
+def append_sequences(
+    probes,
+    sequences,
+    scheme,
+    target_column=None,
+    n_per_target=None,
+    ranges=None,
+    left=True,
+    rc=False,
+    linker=LINKER,
+):
     """
     Append sequences to probes using the specified scheme.
 
@@ -387,22 +380,17 @@ def append_sequences(probes, sequences, scheme, target_column=None,
     _check_scheme_arguments(scheme, target_column, n_per_target, ranges)
 
     if scheme == "same":
-        result, entries = append_same(
-            probes, sequences, left=left, rc=rc, linker=linker
-        )
+        result, entries = append_same(probes, sequences, left=left, rc=rc, linker=linker)
     elif scheme == "unique":
         result, entries = append_unique(
             probes, sequences, target_column, left=left, rc=rc, linker=linker
         )
     elif scheme == "multiple":
         result, entries = append_multiple(
-            probes, sequences, n_per_target, target_column,
-            left=left, rc=rc, linker=linker
+            probes, sequences, n_per_target, target_column, left=left, rc=rc, linker=linker
         )
     elif scheme == "custom":
-        result, entries = append_custom(
-            probes, sequences, ranges, left=left, rc=rc, linker=linker
-        )
+        result, entries = append_custom(probes, sequences, ranges, left=left, rc=rc, linker=linker)
     else:
         raise InvalidInputError(
             f"Unknown appending scheme: {scheme!r}. "
@@ -416,6 +404,7 @@ def append_sequences(probes, sequences, scheme, target_column=None,
 # ------------------------------------------------------------------
 # appending table assembly
 # ------------------------------------------------------------------
+
 
 def build_appending_table(probes, entries_dict):
     """

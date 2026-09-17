@@ -23,42 +23,44 @@ def pairs():
     """Three two-member units, one row per oligo."""
     rows = []
     for site, (left, right) in {
-        's1': ('AAA', 'TTT'),
-        's2': ('CCC', 'GGG'),
-        's3': ('ACA', 'TGT'),
+        "s1": ("AAA", "TTT"),
+        "s2": ("CCC", "GGG"),
+        "s3": ("ACA", "TGT"),
     }.items():
-        rows.append({'site': site, 'sequence': left})
-        rows.append({'site': site, 'sequence': right})
+        rows.append({"site": site, "sequence": left})
+        rows.append({"site": site, "sequence": right})
 
     # success
-    return assign_units(pd.DataFrame(rows), by='site', roles=['left', 'right'])
+    return assign_units(pd.DataFrame(rows), by="site", roles=["left", "right"])
 
 
 class TestAssignUnits:
-
     def test_rows_sharing_a_site_share_a_unit(self, pairs):
-        assert pairs.groupby('site')['unit_id'].nunique().eq(1).all()
+        assert pairs.groupby("site")["unit_id"].nunique().eq(1).all()
 
     def test_different_sites_get_different_units(self, pairs):
-        assert pairs['unit_id'].nunique() == 3
+        assert pairs["unit_id"].nunique() == 3
 
     def test_roles_are_assigned_in_row_order(self, pairs):
-        assert list(pairs['unit_role']) == ['left', 'right'] * 3
+        assert list(pairs["unit_role"]) == ["left", "right"] * 3
 
     def test_units_can_be_keyed_on_several_columns(self):
-        df = pd.DataFrame([{'chrom': 'chr1', 'start': 1, 'sequence': 'A'},
-                           {'chrom': 'chr1', 'start': 1, 'sequence': 'T'},
-                           {'chrom': 'chr1', 'start': 9, 'sequence': 'C'}])
-        out = assign_units(df, by=['chrom', 'start'])
-        assert out['unit_id'].nunique() == 2
+        df = pd.DataFrame(
+            [
+                {"chrom": "chr1", "start": 1, "sequence": "A"},
+                {"chrom": "chr1", "start": 1, "sequence": "T"},
+                {"chrom": "chr1", "start": 9, "sequence": "C"},
+            ]
+        )
+        out = assign_units(df, by=["chrom", "start"])
+        assert out["unit_id"].nunique() == 2
 
     def test_roles_are_optional(self):
-        df = pd.DataFrame([{'site': 's1', 'sequence': 'A'}])
-        assert 'unit_role' not in assign_units(df, by='site').columns
+        df = pd.DataFrame([{"site": "s1", "sequence": "A"}])
+        assert "unit_role" not in assign_units(df, by="site").columns
 
 
 class TestUnitSizes:
-
     def test_sizes_are_reported_per_unit(self, pairs):
         assert set(unit_sizes(pairs)) == {2}
 
@@ -78,12 +80,12 @@ class TestFilterUnits:
         kept, dropped = filter_units(pairs, keep=[True, False, True, True, True, True])
         assert dropped == 1
         assert len(kept) == 4
-        assert 0 not in set(kept['unit_id'])
+        assert 0 not in set(kept["unit_id"])
 
     def test_no_orphan_is_left_behind(self, pairs):
         """The surviving member of a broken pair must not remain in the output."""
         kept, _ = filter_units(pairs, keep=[True, False, True, True, True, True])
-        assert 'AAA' not in set(kept['sequence'])
+        assert "AAA" not in set(kept["sequence"])
 
     def test_surviving_units_keep_every_member(self, pairs):
         kept, _ = filter_units(pairs, keep=[False, False, True, True, True, True])
@@ -105,9 +107,8 @@ class TestFilterUnits:
 
 
 class TestDropIncompleteUnits:
-
     def test_an_orphaned_member_is_removed(self, pairs):
-        orphaned = pairs.iloc[:5]           # unit 2 lost its second member
+        orphaned = pairs.iloc[:5]  # unit 2 lost its second member
         kept, dropped = drop_incomplete_units(orphaned)
         assert dropped == 1
         assert set(unit_sizes(kept)) == {2}
@@ -123,27 +124,26 @@ class TestDropIncompleteUnits:
         assert dropped == 3
 
     def test_an_empty_table_is_handled(self):
-        empty = pd.DataFrame(columns=['unit_id', 'sequence'])
+        empty = pd.DataFrame(columns=["unit_id", "sequence"])
         kept, dropped = drop_incomplete_units(empty)
         assert len(kept) == 0
         assert dropped == 0
 
 
 class TestUnitsToOrders:
-
     def test_one_row_per_unit(self, pairs):
         assert len(units_to_orders(pairs)) == 3
 
     def test_each_role_becomes_a_column(self, pairs):
         orders = units_to_orders(pairs)
-        assert 'left' in orders.columns
-        assert 'right' in orders.columns
+        assert "left" in orders.columns
+        assert "right" in orders.columns
 
     def test_members_stay_with_their_unit(self, pairs):
-        orders = units_to_orders(pairs).set_index('unit_id')
-        first = pairs[pairs['unit_id'] == 0]
-        assert orders.loc[0, 'left'] == first.iloc[0]['sequence']
-        assert orders.loc[0, 'right'] == first.iloc[1]['sequence']
+        orders = units_to_orders(pairs).set_index("unit_id")
+        first = pairs[pairs["unit_id"] == 0]
+        assert orders.loc[0, "left"] == first.iloc[0]["sequence"]
+        assert orders.loc[0, "right"] == first.iloc[1]["sequence"]
 
 
 class TestInferredUnitSize:
@@ -152,11 +152,13 @@ class TestInferredUnitSize:
     def test_intact_units_survive_when_most_units_are_broken(self):
         # three pairs lost a member and one did not; the survivor is the one
         # that must be kept, even though size 1 is the more common size
-        rows = pd.DataFrame({
-            'unit_id': [0, 1, 2, 3, 3],
-            'sequence': list('ABCDE'),
-        })
+        rows = pd.DataFrame(
+            {
+                "unit_id": [0, 1, 2, 3, 3],
+                "sequence": list("ABCDE"),
+            }
+        )
 
         kept, n_dropped = drop_incomplete_units(rows)
-        assert kept['unit_id'].tolist() == [3, 3]
+        assert kept["unit_id"].tolist() == [3, 3]
         assert n_dropped == 3

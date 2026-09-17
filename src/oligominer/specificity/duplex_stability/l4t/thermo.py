@@ -50,6 +50,7 @@ PROVENANCE
     (NUPACK 4.0.2.0, material DNA, parameter set dna04.2; committed in-repo so this module
      never reaches into site-packages and never depends on an installed NUPACK.)
 """
+
 from __future__ import annotations
 
 import json
@@ -100,8 +101,10 @@ def _load_params(path: Path = PARAM_PATH) -> dict:
     for section in ("dG", "dH"):
         for table in ("stack", "terminal_penalty", "terminal_mismatch", "join_penalty"):
             if table not in d.get(section, {}):
-                raise KeyError(f"{path.name} is missing d['{section}']['{table}'] -- "
-                               "not a dna04.2-shaped parameter file.")
+                raise KeyError(
+                    f"{path.name} is missing d['{section}']['{table}'] -- "
+                    "not a dna04.2-shaped parameter file."
+                )
     return d
 
 
@@ -213,11 +216,12 @@ DEFAULT_SODIUM = 0.390
 
 class _Helix(NamedTuple):
     """One contiguous run of '=' columns, already scored."""
+
     dG: float
     n_bp: int
     gc_stacks: int
     at_stacks: int
-    term_mm_dG: float     # of dG, how much came from terminal-mismatch columns
+    term_mm_dG: float  # of dG, how much came from terminal-mismatch columns
     n_term_mm: int
 
 
@@ -251,8 +255,9 @@ def _bottom(target_char: str) -> str:
     return _COMPLEMENT.get(target_char, "N")
 
 
-def _terminal_dG(probe_aln: str, target_aln: str, start: int, stop: int,
-                 ops: str, five_prime: bool) -> tuple[float, float, bool]:
+def _terminal_dG(
+    probe_aln: str, target_aln: str, start: int, stop: int, ops: str, five_prime: bool
+) -> tuple[float, float, bool]:
     """(dH, dS, is_mismatch) for ONE end of the helix spanning [start, stop).
 
     THE BRANCH. A helix end is one of two physically distinct things and dna04.2 prices them
@@ -273,10 +278,10 @@ def _terminal_dG(probe_aln: str, target_aln: str, start: int, stop: int,
     stabilisation of a stacked mismatch and make bulged duplexes look better than clean ones.
     """
     if five_prime:
-        i = start - 1                       # column immediately 5' of the helix on the top strand
+        i = start - 1  # column immediately 5' of the helix on the top strand
         close_top = probe_aln[start]
     else:
-        i = stop                            # column immediately 3' of the helix on the top strand
+        i = stop  # column immediately 3' of the helix on the top strand
         close_top = probe_aln[stop - 1]
     close_bot = _COMPLEMENT.get(close_top, "N")
 
@@ -310,8 +315,9 @@ def _terminal_dG(probe_aln: str, target_aln: str, start: int, stop: int,
     return hs[0], hs[1], False
 
 
-def _run_energy(probe_aln: str, target_aln: str, ops: str, start: int, stop: int,
-                t_kelvin: float, ln_na: float) -> _Helix:
+def _run_energy(
+    probe_aln: str, target_aln: str, ops: str, start: int, stop: int, t_kelvin: float, ln_na: float
+) -> _Helix:
     """Score one helix.
 
     THE SAMENESS POINT. Within an '=' run the probe strand ALONE is the top strand, read 5'->3',
@@ -331,7 +337,7 @@ def _run_energy(probe_aln: str, target_aln: str, ops: str, start: int, stop: int
     # and the join penalty below, which for a lone A.T is net positive -- correctly, an isolated
     # base pair is not a stabilising element. No special-casing needed beyond the empty loop.
     for k in range(n_bp - 1):
-        step = seq[k:k + 2]
+        step = seq[k : k + 2]
         hs = _STACK_HS.get(step + _revcomp(step)) if "N" not in step else None
         if hs is None:
             # Non-ACGT character. Skip the step rather than guessing an energy; a silently
@@ -364,8 +370,14 @@ def _run_energy(probe_aln: str, target_aln: str, ops: str, start: int, stop: int
     # makes the helix LESS stable -- the expected direction for sub-molar sodium.
     dS += SALT_COEF * max(n_bp - 1, 0) * ln_na
 
-    return _Helix(dG=dH - t_kelvin * dS, n_bp=n_bp, gc_stacks=gc_stacks, at_stacks=at_stacks,
-                  term_mm_dG=term_mm_dG, n_term_mm=n_term_mm)
+    return _Helix(
+        dG=dH - t_kelvin * dS,
+        n_bp=n_bp,
+        gc_stacks=gc_stacks,
+        at_stacks=at_stacks,
+        term_mm_dG=term_mm_dG,
+        n_term_mm=n_term_mm,
+    )
 
 
 def _helices(duplex, celsius: float, sodium: float) -> list[_Helix]:
@@ -397,8 +409,9 @@ def duplex_dG(duplex, celsius: float = DEFAULT_CELSIUS, sodium: float = DEFAULT_
     return sum(h.dG for h in _helices(duplex, celsius, sodium))
 
 
-def duplex_features(duplex, celsius: float = DEFAULT_CELSIUS,
-                    sodium: float = DEFAULT_SODIUM) -> dict:
+def duplex_features(
+    duplex, celsius: float = DEFAULT_CELSIUS, sodium: float = DEFAULT_SODIUM
+) -> dict:
     """A small thermodynamic feature block for one duplex.
 
     `max_helix_dG` is deliberately separate from `nn_dG`: nucleation is a single-helix event, so
@@ -437,13 +450,15 @@ class _DuplexLite(NamedTuple):
     Deliberate: `thermo.py` lives in the zoo and must not depend on a dated study directory. It
     is duck-typed on the three fields, so a real `Duplex` works unchanged.
     """
+
     probe_aln: str
     target_aln: str
     ops: str
 
 
-def stacking_profile(duplex, width: int, celsius: float = DEFAULT_CELSIUS,
-                     sodium: float = DEFAULT_SODIUM):
+def stacking_profile(
+    duplex, width: int, celsius: float = DEFAULT_CELSIUS, sodium: float = DEFAULT_SODIUM
+):
     """Per-COLUMN stacking free energy: the vector whose sum `nn_dG` throws away.
 
     WHY THIS EXISTS. `duplex_features` reports the SUM of the stacking energies. The controlled-
@@ -482,18 +497,24 @@ def stacking_profile(duplex, width: int, celsius: float = DEFAULT_CELSIUS,
             col = start + k
             if col >= width:
                 break
-            step = seq[k:k + 2]
+            step = seq[k : k + 2]
             hs = _STACK_HS.get(step + _revcomp(step)) if "N" not in step else None
             if hs is None:
-                continue                       # non-ACGT: skip rather than invent an energy
+                continue  # non-ACGT: skip rather than invent an energy
             out[col] = hs[0] - t_kelvin * hs[1]
     return out
 
 
 FEATURE_COLUMNS = [
-    "nn_dG", "nn_dG_per_base", "max_helix_dG",
-    "n_helices", "longest_helix_bp", "gc_stacks", "at_stacks",
-    "term_mismatch_dG", "n_term_mismatches",
+    "nn_dG",
+    "nn_dG_per_base",
+    "max_helix_dG",
+    "n_helices",
+    "longest_helix_bp",
+    "gc_stacks",
+    "at_stacks",
+    "term_mismatch_dG",
+    "n_term_mismatches",
 ]
 
 
@@ -502,16 +523,22 @@ FEATURE_COLUMNS = [
 # strings themselves rather than on a row index so the hit rate survives shuffling and chunking.
 # 2**20 entries is a few hundred MB worst case; drop it if memory-bound.
 @lru_cache(maxsize=1 << 20)
-def _features_cached(probe_aln: str, target_aln: str, ops: str,
-                     celsius: float, sodium: float) -> tuple:
+def _features_cached(
+    probe_aln: str, target_aln: str, ops: str, celsius: float, sodium: float
+) -> tuple:
     d = _DuplexLite(probe_aln, target_aln, ops)
     f = duplex_features(d, celsius=celsius, sodium=sodium)
     return tuple(f[k] for k in FEATURE_COLUMNS)
 
 
-def dG_for_rows(probe_aln_list, target_aln_list, ops_list,
-                celsius: float = DEFAULT_CELSIUS, sodium: float = DEFAULT_SODIUM,
-                index=None) -> pd.DataFrame:
+def dG_for_rows(
+    probe_aln_list,
+    target_aln_list,
+    ops_list,
+    celsius: float = DEFAULT_CELSIUS,
+    sodium: float = DEFAULT_SODIUM,
+    index=None,
+) -> pd.DataFrame:
     """Apply `duplex_features` over parallel sequences of alignment columns -> DataFrame.
 
     Pure Python per unique row; the win at scale comes from the lru_cache, not from vectorising
@@ -536,19 +563,24 @@ def _perfect(seq: str) -> _DuplexLite:
 def _with_mismatch(seq: str, pos: int) -> _DuplexLite:
     """Same duplex with column `pos` turned into an 'X' by substituting the TARGET base."""
     sub = "A" if seq[pos] != "A" else "T"
-    return _DuplexLite(seq, seq[:pos] + sub + seq[pos + 1:],
-                       "=" * pos + "X" + "=" * (len(seq) - pos - 1))
+    return _DuplexLite(
+        seq, seq[:pos] + sub + seq[pos + 1 :], "=" * pos + "X" + "=" * (len(seq) - pos - 1)
+    )
 
 
 if __name__ == "__main__":
     # 1. The tripwire. Study 20260718 finding 5, as a live assertion.
     bad = santalucia_crosscheck()
     assert not bad, "dna04.2 stacks have MOVED off SantaLucia 1998:\n  " + "\n  ".join(bad)
-    print(f"SantaLucia-1998 cross-check: {len(_SANTALUCIA_1998)}/{len(_SANTALUCIA_1998)} unique "
-          f"WC steps agree with dna04.2 to 0.01 kcal/mol (dG37 and dH)")
-    print(f"loaded: {PARAM_PATH.name}  "
-          f"stack={len(STACK_dG)}  terminal_mismatch={len(TERM_MM_dG)}  "
-          f"terminal_penalty={len(TERM_PEN_dG)}  join_penalty={JOIN_dG}")
+    print(
+        f"SantaLucia-1998 cross-check: {len(_SANTALUCIA_1998)}/{len(_SANTALUCIA_1998)} unique "
+        f"WC steps agree with dna04.2 to 0.01 kcal/mol (dG37 and dH)"
+    )
+    print(
+        f"loaded: {PARAM_PATH.name}  "
+        f"stack={len(STACK_dG)}  terminal_mismatch={len(TERM_MM_dG)}  "
+        f"terminal_penalty={len(TERM_PEN_dG)}  join_penalty={JOIN_dG}"
+    )
 
     # 2. Layout sanity: the stack table must be invariant under the 180-degree rotation that
     #    `_terminal_dG` relies on to score the 3' end of a helix. If this fails, the four-char
@@ -563,7 +595,7 @@ if __name__ == "__main__":
     #    SAMENESS handling is load-bearing here -- read the two strings as complementary strands
     #    and all-GC stops being the stable one.
     assert dg_gc < -20.0, dg_gc
-    assert dg_at > 0.0, dg_at        # 30 bp of AT is not bound at 74.5 C
+    assert dg_at > 0.0, dg_at  # 30 bp of AT is not bound at 74.5 C
     assert dg_gc < dg_at - 15.0, (dg_gc, dg_at)
 
     # 4. A central mismatch splits one 30 bp helix into two, paying a second join penalty and
@@ -590,16 +622,31 @@ if __name__ == "__main__":
     lone = _DuplexLite("AATAA", "CGTCG", "XX=XX")
     assert duplex_dG(lone) > 0, duplex_dG(lone)
 
-    labels = ["30bp all-GC", "30bp all-AT", "GC, mismatch at col 15 (middle)",
-              "GC, mismatch at col 0 (end)", "1bp A.T island, mismatch-flanked"]
+    labels = [
+        "30bp all-GC",
+        "30bp all-AT",
+        "GC, mismatch at col 15 (middle)",
+        "GC, mismatch at col 0 (end)",
+        "1bp A.T island, mismatch-flanked",
+    ]
     cases = [gc, at, mid, end, lone]
-    rows = dG_for_rows([c.probe_aln for c in cases], [c.target_aln for c in cases],
-                       [c.ops for c in cases], index=labels)
+    rows = dG_for_rows(
+        [c.probe_aln for c in cases],
+        [c.target_aln for c in cases],
+        [c.ops for c in cases],
+        index=labels,
+    )
     pd.set_option("display.width", 200)
     print(f"\nconditions: {DEFAULT_CELSIUS} C, {DEFAULT_SODIUM} M Na+ | params: dna04.2\n")
     print(rows.round(3).to_string())
-    print("\nGC - AT dG gap:        {:+.2f} kcal/mol  <- invisible to bowtie2's --ma score".format(
-        dg_gc - dg_at))
-    print("end - middle mismatch: {:+.2f} kcal/mol  <- invisible to a mismatch COUNT".format(
-        dg_end - dg_mid))
+    print(
+        "\nGC - AT dG gap:        {:+.2f} kcal/mol  <- invisible to bowtie2's --ma score".format(
+            dg_gc - dg_at
+        )
+    )
+    print(
+        "end - middle mismatch: {:+.2f} kcal/mol  <- invisible to a mismatch COUNT".format(
+            dg_end - dg_mid
+        )
+    )
     print("\nall self-checks passed")

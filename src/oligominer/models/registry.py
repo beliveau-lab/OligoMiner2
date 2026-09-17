@@ -29,70 +29,69 @@ temperature.
 
 from importlib.resources import files
 
-MODEL_DATA = files('oligominer.data.models.zoo')
+MODEL_DATA = files("oligominer.data.models.zoo")
 
 REGISTRY = {
-    'physics-xgb': {
-        'display': 'physics-XGB',
-        'family': 'om2',
-        'kind': 'xgb',
-        'artifact': 'om2_xgb_flagship.pkl',
-        'card': 'om2_xgb_flagship.card.json',
-        'encoding': 'L4t',
-        'n_features': 103,
-        'width_free': True,
-        'outputs_pdup': True,
-        'link': 'logit',
-        'condition_aware': True,
+    "physics-xgb": {
+        "display": "physics-XGB",
+        "family": "om2",
+        "kind": "xgb",
+        "artifact": "om2_xgb_flagship.pkl",
+        "card": "om2_xgb_flagship.card.json",
+        "encoding": "L4t",
+        "n_features": 103,
+        "width_free": True,
+        "outputs_pdup": True,
+        "link": "logit",
+        "condition_aware": True,
     },
-    'duplex-BiLSTM': {
-        'display': 'duplex-BiLSTM',
-        'family': 'om2',
-        'kind': 'bilstm',
-        'artifact': 'om2_bilstm_flagship.pt',
-        'card': 'om2_bilstm_flagship.card.json',
-        'encoding': 'duplex-paircol',
-        'ncond': 0,
-        'outputs_pdup': True,
-        'link': None,
-        'condition_aware': False,
+    "duplex-BiLSTM": {
+        "display": "duplex-BiLSTM",
+        "family": "om2",
+        "kind": "bilstm",
+        "artifact": "om2_bilstm_flagship.pt",
+        "card": "om2_bilstm_flagship.card.json",
+        "encoding": "duplex-paircol",
+        "ncond": 0,
+        "outputs_pdup": True,
+        "link": None,
+        "condition_aware": False,
     },
-    'ps-xgb': {
-        'display': 'PaintSHOP-XGB',
-        'family': 'baseline',
-        'kind': 'xgb',
-        'artifact': 'ps_xgb_baseline.pkl',
-        'card': 'ps_xgb_baseline.card.json',
-        'encoding': 'paintshop-37feat',
-        'n_features': 37,
-        'width_free': True,
-        'outputs_pdup': True,
-        'link': 'logit',
-        'condition_aware': False,
+    "ps-xgb": {
+        "display": "PaintSHOP-XGB",
+        "family": "baseline",
+        "kind": "xgb",
+        "artifact": "ps_xgb_baseline.pkl",
+        "card": "ps_xgb_baseline.card.json",
+        "encoding": "paintshop-37feat",
+        "n_features": 37,
+        "width_free": True,
+        "outputs_pdup": True,
+        "link": "logit",
+        "condition_aware": False,
     },
-    'om1-lda': {
-        'display': 'OligoMiner1-LDA',
-        'family': 'baseline',
-        'kind': 'lda',
-        'artifact': 'om1_lda_baseline.pkl',
-        'card': 'om1_lda_baseline.card.json',
-        'encoding': 'alignment-3feat',
-        'n_features': 3,
-        'outputs_pdup': False,
-        'link': None,
-        'condition_aware': False,
+    "om1-lda": {
+        "display": "OligoMiner1-LDA",
+        "family": "baseline",
+        "kind": "lda",
+        "artifact": "om1_lda_baseline.pkl",
+        "card": "om1_lda_baseline.card.json",
+        "encoding": "alignment-3feat",
+        "n_features": 3,
+        "outputs_pdup": False,
+        "link": None,
+        "condition_aware": False,
     },
 }
 
 # the models this package ships as its own, in the order a comparison presents them
-OM2_MODELS = [name for name, entry in REGISTRY.items() if entry['family'] == 'om2']
+OM2_MODELS = [name for name, entry in REGISTRY.items() if entry["family"] == "om2"]
 
 # the incumbents OM2 is measured against
-BASELINE_MODELS = [name for name, entry in REGISTRY.items()
-                   if entry['family'] == 'baseline']
+BASELINE_MODELS = [name for name, entry in REGISTRY.items() if entry["family"] == "baseline"]
 
 # the model used when a caller does not name one
-DEFAULT_MODEL = 'physics-xgb'
+DEFAULT_MODEL = "physics-xgb"
 
 
 def spec(name):
@@ -109,7 +108,7 @@ def spec(name):
         KeyError: naming the valid keys, so a typo cannot become a silent fallback.
     """
     if name not in REGISTRY:
-        raise KeyError(f'unknown model {name!r}; the registered models are {sorted(REGISTRY)}')
+        raise KeyError(f"unknown model {name!r}; the registered models are {sorted(REGISTRY)}")
 
     # success
     return REGISTRY[name]
@@ -126,7 +125,7 @@ def artifact_path(name):
         path (pathlib.Path): the artifact's location in the package data.
     """
     # success
-    return MODEL_DATA / spec(name)['artifact']
+    return MODEL_DATA / spec(name)["artifact"]
 
 
 def card_path(name):
@@ -140,7 +139,7 @@ def card_path(name):
         path (pathlib.Path): the card's location in the package data.
     """
     # success
-    return MODEL_DATA / spec(name)['card']
+    return MODEL_DATA / spec(name)["card"]
 
 
 def available():
@@ -163,7 +162,7 @@ def missing_artifacts():
     """
     missing = []
     for name, entry in REGISTRY.items():
-        for key in ('artifact', 'card'):
+        for key in ("artifact", "card"):
             if not (MODEL_DATA / entry[key]).is_file():
                 missing.append(f"{name}:{key} -> {entry[key]}")
 

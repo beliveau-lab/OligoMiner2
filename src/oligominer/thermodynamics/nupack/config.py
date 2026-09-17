@@ -17,11 +17,11 @@ FORMAMIDE_FACTOR = 0.65
 SODIUM_M = 0.390
 
 GET_DEFAULT_NUPACK_MODEL = lambda: nupack.Model(
-    material='dna',
-    ensemble='stacking',
+    material="dna",
+    ensemble="stacking",
     celsius=effective_hyb_temperature(HYB_CELSIUS, PCT_FORMAMIDE, FORMAMIDE_FACTOR),
     sodium=SODIUM_M,
-    magnesium=0.0
+    magnesium=0.0,
 )
 
 # pre-instantiated default model for repeated use

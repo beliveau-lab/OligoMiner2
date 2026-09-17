@@ -78,6 +78,7 @@ $3 != "*" {
 }
 """
 
+
 def bam_to_bed(input_file=None, bam_data=None, output_file=None, verbose=False):
     """
     Convert BAM alignments to BED format.
@@ -95,13 +96,13 @@ def bam_to_bed(input_file=None, bam_data=None, output_file=None, verbose=False):
     Raises:
         ValueError: if neither input_file nor bam_data is provided.
     """
-    require_one_of(input_file, bam_data, 'input_file', 'bam_data')
+    require_one_of(input_file, bam_data, "input_file", "bam_data")
 
     if input_file is not None:
-        ensure_executable('samtools')
-        bam_data = run_cmd(['samtools', 'view', input_file])
+        ensure_executable("samtools")
+        bam_data = run_cmd(["samtools", "view", input_file])
 
-    result = run_cmd(['awk', AWK_SCRIPT], input_data=bam_data, verbose=verbose)
+    result = run_cmd(["awk", AWK_SCRIPT], input_data=bam_data, verbose=verbose)
     if output_file is not None:
         with open(output_file, "w") as f:
             f.write(result)
@@ -121,7 +122,7 @@ def sam_to_bed(sam_data):
     Returns:
         result (str): the converted BED data.
     """
-    result = run_cmd(['awk', AWK_SCRIPT], input_data=sam_data)
+    result = run_cmd(["awk", AWK_SCRIPT], input_data=sam_data)
 
     # success
     return result

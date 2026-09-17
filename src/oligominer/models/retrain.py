@@ -40,7 +40,7 @@ import pandas as pd
 from .registry import REGISTRY, artifact_path, spec
 
 # the condition each model's shipping artifact was fitted at
-SHIPPING_CELSIUS = {'duplex-BiLSTM': 69.5, 'physics-xgb': None}
+SHIPPING_CELSIUS = {"duplex-BiLSTM": 69.5, "physics-xgb": None}
 
 # pDup deciles the flat corpus balances across
 N_DECILES = 10
@@ -57,16 +57,15 @@ def _sha256(path):
         digest (str): the hex digest.
     """
     digest = hashlib.sha256()
-    with open(path, 'rb') as handle:
-        for chunk in iter(lambda: handle.read(1 << 20), b''):
+    with open(path, "rb") as handle:
+        for chunk in iter(lambda: handle.read(1 << 20), b""):
             digest.update(chunk)
 
     # success
     return digest.hexdigest()
 
 
-def build_flat_corpus(duplexes, out, celsius=None, n_per_decile=None, seed=0,
-                      label_col='pdup'):
+def build_flat_corpus(duplexes, out, celsius=None, n_per_decile=None, seed=0, label_col="pdup"):
     """
     Cut a corpus with equal representation in every pDup decile.
 
@@ -89,10 +88,10 @@ def build_flat_corpus(duplexes, out, celsius=None, n_per_decile=None, seed=0,
     """
     df = pd.read_parquet(duplexes) if isinstance(duplexes, str) else duplexes.copy()
     if label_col not in df.columns:
-        raise KeyError(f'no {label_col!r} column in the duplex table')
+        raise KeyError(f"no {label_col!r} column in the duplex table")
 
     if celsius is not None:
-        for column in ('label_celsius', 'celsius', 't_eff'):
+        for column in ("label_celsius", "celsius", "t_eff"):
             if column in df.columns:
                 df = df[np.isclose(df[column], celsius)].copy()
                 break
@@ -114,17 +113,17 @@ def build_flat_corpus(duplexes, out, celsius=None, n_per_decile=None, seed=0,
     cut.to_parquet(out)
 
     sidecar = {
-        'rows': int(len(cut)),
-        'n_per_decile': int(n_per_decile),
-        'celsius': celsius,
-        'seed': seed,
-        'label_col': label_col,
-        'flat_in_pdup': True,
-        'decile_counts': {int(k): int(v) for k, v in counts.items()},
-        'sha256': _sha256(out),
-        'built_at': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
+        "rows": int(len(cut)),
+        "n_per_decile": int(n_per_decile),
+        "celsius": celsius,
+        "seed": seed,
+        "label_col": label_col,
+        "flat_in_pdup": True,
+        "decile_counts": {int(k): int(v) for k, v in counts.items()},
+        "sha256": _sha256(out),
+        "built_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
     }
-    out.with_suffix('.corpus.json').write_text(json.dumps(sidecar, indent=1))
+    out.with_suffix(".corpus.json").write_text(json.dumps(sidecar, indent=1))
 
     # success
     return out
@@ -147,8 +146,9 @@ def _check_not_registered(out):
     for name in REGISTRY:
         if Path(str(artifact_path(name))).resolve() == resolved:
             raise ValueError(
-                f'{out} is the registered artifact for {name!r}. Re-training writes a '
-                f'new file; promoting it is a separate, deliberate act.')
+                f"{out} is the registered artifact for {name!r}. Re-training writes a "
+                f"new file; promoting it is a separate, deliberate act."
+            )
 
     # success
     return Path(out)
@@ -167,19 +167,23 @@ def _warn_off_regime(name, celsius):
     """
     expected = SHIPPING_CELSIUS.get(name, None)
 
-    if name == 'duplex-BiLSTM' and celsius is None:
+    if name == "duplex-BiLSTM" and celsius is None:
         warnings.warn(
-            'duplex-BiLSTM has no condition channel, so a corpus pooling several '
-            'temperatures shows it identical tokens at different labels and it will '
-            'correctly learn to hedge. Pass celsius to fit at one condition.',
-            RuntimeWarning, stacklevel=3)
+            "duplex-BiLSTM has no condition channel, so a corpus pooling several "
+            "temperatures shows it identical tokens at different labels and it will "
+            "correctly learn to hedge. Pass celsius to fit at one condition.",
+            RuntimeWarning,
+            stacklevel=3,
+        )
         return False
 
     if expected is not None and celsius is not None and celsius != expected:
         warnings.warn(
-            f'{name} ships fitted at {expected} C and is being fitted at {celsius} C. '
-            f'The result is a different model and must be labeled as such.',
-            RuntimeWarning, stacklevel=3)
+            f"{name} ships fitted at {expected} C and is being fitted at {celsius} C. "
+            f"The result is a different model and must be labeled as such.",
+            RuntimeWarning,
+            stacklevel=3,
+        )
         return False
 
     # success
@@ -223,31 +227,30 @@ def write_card(name, out, corpus, celsius, seed, extra=None):
     """
     entry = spec(name)
     card = {
-        'name': f'{name}-retrained',
-        'based_on': name,
-        'role': 'RETRAINED',
-        'family': entry['family'],
-        'kind': entry['kind'],
-        'encoding': entry['encoding'],
-        'outputs_pdup': entry['outputs_pdup'],
-        'link': entry.get('link'),
-        'celsius': celsius,
-        'seed': seed,
-        'corpus': str(corpus) if isinstance(corpus, (str, Path)) else 'in-memory frame',
-        'corpus_sha256': _corpus_digest(corpus),
-        'fitted_at': time.strftime('%Y-%m-%dT%H:%M:%SZ', time.gmtime()),
+        "name": f"{name}-retrained",
+        "based_on": name,
+        "role": "RETRAINED",
+        "family": entry["family"],
+        "kind": entry["kind"],
+        "encoding": entry["encoding"],
+        "outputs_pdup": entry["outputs_pdup"],
+        "link": entry.get("link"),
+        "celsius": celsius,
+        "seed": seed,
+        "corpus": str(corpus) if isinstance(corpus, (str, Path)) else "in-memory frame",
+        "corpus_sha256": _corpus_digest(corpus),
+        "fitted_at": time.strftime("%Y-%m-%dT%H:%M:%SZ", time.gmtime()),
     }
     card.update(extra or {})
 
-    path = Path(out).with_suffix('.card.json')
+    path = Path(out).with_suffix(".card.json")
     path.write_text(json.dumps(card, indent=1))
 
     # success
     return path
 
 
-def retrain(name, corpus, out, celsius=None, seed=0, label_col='pdup',
-            hyperparams=None):
+def retrain(name, corpus, out, celsius=None, seed=0, label_col="pdup", hyperparams=None):
     """
     Fit a registered model on a new corpus and write its card.
 
@@ -268,27 +271,30 @@ def retrain(name, corpus, out, celsius=None, seed=0, label_col='pdup',
             re-fitted through this API.
     """
     entry = spec(name)
-    if entry['family'] != 'om2':
+    if entry["family"] != "om2":
         raise ValueError(
-            f'{name!r} is a {entry["family"]} model kept for comparison; only '
-            f'OligoMiner2 models are re-fitted here')
+            f"{name!r} is a {entry['family']} model kept for comparison; only "
+            f"OligoMiner2 models are re-fitted here"
+        )
 
     out = _check_not_registered(out)
     _warn_off_regime(name, celsius)
 
     df = pd.read_parquet(corpus) if isinstance(corpus, str) else corpus
     if label_col not in df.columns:
-        raise KeyError(f'no {label_col!r} column in the corpus')
+        raise KeyError(f"no {label_col!r} column in the corpus")
 
-    if entry['kind'] == 'xgb':
+    if entry["kind"] == "xgb":
         info = _fit_xgb(name, df, out, label_col, seed, hyperparams)
     else:
         raise ValueError(
-            f'{name!r} is fitted with torch on a GPU, which this API does not '
-            f'orchestrate. Use the corpus builder here and fit it in a GPU job.')
+            f"{name!r} is fitted with torch on a GPU, which this API does not "
+            f"orchestrate. Use the corpus builder here and fit it in a GPU job."
+        )
 
-    info['card'] = str(write_card(name, out, corpus, celsius, seed,
-                                  extra={'n_train': int(len(df))}))
+    info["card"] = str(
+        write_card(name, out, corpus, celsius, seed, extra={"n_train": int(len(df))})
+    )
 
     # success
     return info
@@ -316,25 +322,34 @@ def _fit_xgb(name, df, out, label_col, seed, hyperparams):
     from .loaders import _encode
 
     entry = spec(name)
-    features = _encode(entry['encoding'], df, 42)
+    features = _encode(entry["encoding"], df, 42)
     labels = df[label_col].to_numpy(dtype=np.float64)
 
     # the model is fitted on the logit of pDup, matching its link
-    if entry.get('link') == 'logit':
+    if entry.get("link") == "logit":
         clipped = np.clip(labels, 1e-6, 1 - 1e-6)
         labels = np.log(clipped / (1 - clipped))
 
-    params = {'max_depth': 8, 'n_estimators': 200, 'learning_rate': 0.1,
-              'subsample': 0.9, 'random_state': seed}
+    params = {
+        "max_depth": 8,
+        "n_estimators": 200,
+        "learning_rate": 0.1,
+        "subsample": 0.9,
+        "random_state": seed,
+    }
     params.update(hyperparams or {})
 
     model = xgb.XGBRegressor(**params)
     model.fit(features.values.astype(np.float32), labels)
 
     out.parent.mkdir(parents=True, exist_ok=True)
-    with out.open('wb') as handle:
-        pickle.dump({'model': model, 'features': list(features.columns)}, handle)
+    with out.open("wb") as handle:
+        pickle.dump({"model": model, "features": list(features.columns)}, handle)
 
     # success
-    return {'artifact': str(out), 'n_train': int(len(df)),
-            'n_features': int(features.shape[1]), 'params': params}
+    return {
+        "artifact": str(out),
+        "n_train": int(len(df)),
+        "n_features": int(features.shape[1]),
+        "params": params,
+    }

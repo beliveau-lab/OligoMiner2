@@ -21,11 +21,16 @@ from .transcript_seq import _resolve_fasta, _select_features, get_spliced_seq
 # bases of each flanking exon included in a junction window by default
 DEFAULT_FLANK = 40
 
-JUNCTION_COLUMNS = ['transcript_id', 'junction_index', 'junction_offset',
-                    'window_start', 'window_stop', 'seq']
+JUNCTION_COLUMNS = [
+    "transcript_id",
+    "junction_index",
+    "junction_offset",
+    "window_start",
+    "window_stop",
+    "seq",
+]
 
-DISCRIMINATING_COLUMNS = ['gene_id', 'transcript_id', 'seqid', 'start', 'end',
-                          'strand', 'length']
+DISCRIMINATING_COLUMNS = ["gene_id", "transcript_id", "seqid", "start", "end", "strand", "length"]
 
 
 def exon_order(gtf_df, transcript_id):
@@ -40,10 +45,10 @@ def exon_order(gtf_df, transcript_id):
         exons (pandas.DataFrame): the exons, sorted 5' to 3' along the transcript.
     """
     exons = _select_features(gtf_df, transcript_id=transcript_id)
-    ascending = exons.iloc[0]['strand'] == '+'
+    ascending = exons.iloc[0]["strand"] == "+"
 
     # success
-    return exons.sort_values('start', ascending=ascending).reset_index(drop=True)
+    return exons.sort_values("start", ascending=ascending).reset_index(drop=True)
 
 
 def junction_offsets(gtf_df, transcript_id):
@@ -59,7 +64,7 @@ def junction_offsets(gtf_df, transcript_id):
             adjacent exon pair. Empty for a single-exon transcript.
     """
     exons = exon_order(gtf_df, transcript_id)
-    lengths = (exons['end'] - exons['start'] + 1).tolist()
+    lengths = (exons["end"] - exons["start"] + 1).tolist()
 
     offsets = []
     running = 0
@@ -97,14 +102,16 @@ def junction_windows(gtf_df, fasta, transcript_id, flank=DEFAULT_FLANK):
     for index, offset in enumerate(offsets):
         start = max(0, offset - flank)
         stop = min(len(spliced), offset + flank)
-        rows.append({
-            'transcript_id': transcript_id,
-            'junction_index': index,
-            'junction_offset': offset - start,
-            'window_start': start,
-            'window_stop': stop,
-            'seq': spliced[start:stop],
-        })
+        rows.append(
+            {
+                "transcript_id": transcript_id,
+                "junction_index": index,
+                "junction_offset": offset - start,
+                "window_start": start,
+                "window_stop": stop,
+                "seq": spliced[start:stop],
+            }
+        )
 
     # success
     return pd.DataFrame(rows, columns=JUNCTION_COLUMNS)
@@ -124,8 +131,7 @@ def spans_junction(start, stop, junction_offset, min_overhang=1):
         spans (bool): True when the probe straddles the junction.
     """
     # success
-    return (start <= junction_offset - min_overhang
-            and stop >= junction_offset + min_overhang)
+    return start <= junction_offset - min_overhang and stop >= junction_offset + min_overhang
 
 
 def junction_probes(probes, junction_offset, min_overhang=1):
@@ -142,8 +148,7 @@ def junction_probes(probes, junction_offset, min_overhang=1):
         kept (list): the probes that span the junction.
     """
     # success
-    return [p for p in probes
-            if spans_junction(p[1], p[2], junction_offset, min_overhang)]
+    return [p for p in probes if spans_junction(p[1], p[2], junction_offset, min_overhang)]
 
 
 def discriminating_regions(gtf_df, gene_id=None, min_length=1):
@@ -166,16 +171,16 @@ def discriminating_regions(gtf_df, gene_id=None, min_length=1):
             DISCRIMINATING_COLUMNS.
     """
     exons = gtf_df
-    if 'feature' in exons.columns:
-        exons = exons[exons['feature'] == 'exon']
+    if "feature" in exons.columns:
+        exons = exons[exons["feature"] == "exon"]
     if gene_id is not None:
-        exons = exons[exons['gene_id'] == gene_id]
+        exons = exons[exons["gene_id"] == gene_id]
 
     rows = []
-    for gene, gene_exons in exons.groupby('gene_id', sort=False):
+    for gene, gene_exons in exons.groupby("gene_id", sort=False):
         by_transcript = {
             transcript: _interval_set(block)
-            for transcript, block in gene_exons.groupby('transcript_id', sort=False)
+            for transcript, block in gene_exons.groupby("transcript_id", sort=False)
         }
         if len(by_transcript) < 2:
             continue
@@ -190,16 +195,22 @@ def discriminating_regions(gtf_df, gene_id=None, min_length=1):
             if not unique:
                 continue
 
-            seqid = gene_exons['seqid'].iloc[0]
-            strand = gene_exons['strand'].iloc[0]
+            seqid = gene_exons["seqid"].iloc[0]
+            strand = gene_exons["strand"].iloc[0]
             for start, end in _merge_positions(unique):
                 length = end - start + 1
                 if length >= min_length:
-                    rows.append({
-                        'gene_id': gene, 'transcript_id': transcript,
-                        'seqid': seqid, 'start': start, 'end': end,
-                        'strand': strand, 'length': length,
-                    })
+                    rows.append(
+                        {
+                            "gene_id": gene,
+                            "transcript_id": transcript,
+                            "seqid": seqid,
+                            "start": start,
+                            "end": end,
+                            "strand": strand,
+                            "length": length,
+                        }
+                    )
 
     # success
     return pd.DataFrame(rows, columns=DISCRIMINATING_COLUMNS)
@@ -216,7 +227,7 @@ def _interval_set(block):
         positions (set): the covered genomic positions.
     """
     positions = set()
-    for start, end in zip(block['start'], block['end']):
+    for start, end in zip(block["start"], block["end"]):
         positions.update(range(int(start), int(end) + 1))
 
     # success

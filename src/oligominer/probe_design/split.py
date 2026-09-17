@@ -37,12 +37,12 @@ from oligominer.probe_design.units import ROLE_COLUMN, UNIT_COLUMN
 from oligominer.utils.exceptions import InvalidInputError
 
 # the two members of a pair, named by their position on the target
-UPSTREAM = 'upstream'
-DOWNSTREAM = 'downstream'
+UPSTREAM = "upstream"
+DOWNSTREAM = "downstream"
 ROLES = [UPSTREAM, DOWNSTREAM]
 
 # domain layout each member is assembled from
-SPLIT_LAYOUT = ['append_5p', 'homology', 'append_3p']
+SPLIT_LAYOUT = ["append_5p", "homology", "append_3p"]
 
 
 class SplitArchitecture:
@@ -58,21 +58,28 @@ class SplitArchitecture:
         max_gap (int): most bases allowed between the two footprints.
     """
 
-    def __init__(self, name, upstream_5p='', upstream_3p='',
-                 downstream_5p='', downstream_3p='', linker='',
-                 min_gap=0, max_gap=2):
+    def __init__(
+        self,
+        name,
+        upstream_5p="",
+        upstream_3p="",
+        downstream_5p="",
+        downstream_3p="",
+        linker="",
+        min_gap=0,
+        max_gap=2,
+    ):
         if min_gap > max_gap:
-            raise InvalidInputError(
-                f'min_gap {min_gap} exceeds max_gap {max_gap}')
+            raise InvalidInputError(f"min_gap {min_gap} exceeds max_gap {max_gap}")
         if min_gap < 0:
-            raise InvalidInputError(f'min_gap must be >= 0, got {min_gap}')
+            raise InvalidInputError(f"min_gap must be >= 0, got {min_gap}")
 
         self.name = name
         self.appends = {
-            (UPSTREAM, '5p'): upstream_5p,
-            (UPSTREAM, '3p'): upstream_3p,
-            (DOWNSTREAM, '5p'): downstream_5p,
-            (DOWNSTREAM, '3p'): downstream_3p,
+            (UPSTREAM, "5p"): upstream_5p,
+            (UPSTREAM, "3p"): upstream_3p,
+            (DOWNSTREAM, "5p"): downstream_5p,
+            (DOWNSTREAM, "3p"): downstream_3p,
         }
         self.linker = linker
         self.min_gap = min_gap
@@ -90,20 +97,18 @@ class SplitArchitecture:
             sequence (str): the appended sequence, "" when nothing is appended.
         """
         if role not in ROLES:
-            raise InvalidInputError(f'unknown role {role!r}; expected {ROLES}')
-        if end not in ('5p', '3p'):
+            raise InvalidInputError(f"unknown role {role!r}; expected {ROLES}")
+        if end not in ("5p", "3p"):
             raise InvalidInputError(f"unknown end {end!r}; expected '5p' or '3p'")
 
         # success
         return self.appends[(role, end)]
 
     def __repr__(self):
-        return (f'SplitArchitecture({self.name!r}, '
-                f'gap {self.min_gap}-{self.max_gap})')
+        return f"SplitArchitecture({self.name!r}, gap {self.min_gap}-{self.max_gap})"
 
 
-def hcr3(initiator_5p, initiator_3p, name='hcr3', spacer='AA',
-         min_gap=0, max_gap=2):
+def hcr3(initiator_5p, initiator_3p, name="hcr3", spacer="AA", min_gap=0, max_gap=2):
     """
     Build the architecture for an HCR 3.0 split-initiator pair.
 
@@ -130,12 +135,16 @@ def hcr3(initiator_5p, initiator_3p, name='hcr3', spacer='AA',
     """
     # success
     return SplitArchitecture(
-        name, upstream_3p=initiator_3p, downstream_5p=initiator_5p,
-        linker=spacer, min_gap=min_gap, max_gap=max_gap)
+        name,
+        upstream_3p=initiator_3p,
+        downstream_5p=initiator_5p,
+        linker=spacer,
+        min_gap=min_gap,
+        max_gap=max_gap,
+    )
 
 
-def split_fish(bridge_5p, bridge_3p, name='split-fish', spacer='',
-               min_gap=0, max_gap=1):
+def split_fish(bridge_5p, bridge_3p, name="split-fish", spacer="", min_gap=0, max_gap=1):
     """
     Build the architecture for a split-FISH bridge pair.
 
@@ -158,12 +167,16 @@ def split_fish(bridge_5p, bridge_3p, name='split-fish', spacer='',
     """
     # success
     return SplitArchitecture(
-        name, upstream_5p=bridge_5p, downstream_3p=bridge_3p,
-        linker=spacer, min_gap=min_gap, max_gap=max_gap)
+        name,
+        upstream_5p=bridge_5p,
+        downstream_3p=bridge_3p,
+        linker=spacer,
+        min_gap=min_gap,
+        max_gap=max_gap,
+    )
 
 
-def pair_probes(df, architecture, by='seq_id', start_column='start',
-                end_column='stop'):
+def pair_probes(df, architecture, by="seq_id", start_column="start", end_column="stop"):
     """
     Pair probes whose footprints are adjacent on the target.
 
@@ -192,12 +205,16 @@ def pair_probes(df, architecture, by='seq_id', start_column='start',
     """
     for column in (by, start_column, end_column):
         if column not in df.columns:
-            raise InvalidInputError(f'probe table has no {column!r} column')
+            raise InvalidInputError(f"probe table has no {column!r} column")
 
     if df.empty:
         out = df.copy()
-        for column, dtype in ((UNIT_COLUMN, 'int64'), (ROLE_COLUMN, object),
-                              ('gap', 'int64'), ('architecture', object)):
+        for column, dtype in (
+            (UNIT_COLUMN, "int64"),
+            (ROLE_COLUMN, object),
+            ("gap", "int64"),
+            ("architecture", object),
+        ):
             out[column] = pd.Series(dtype=dtype)
         return out
 
@@ -221,18 +238,18 @@ def pair_probes(df, architecture, by='seq_id', start_column='start',
                 i += 1
 
     out = df.loc[keep].copy()
-    out['gap'] = gaps
+    out["gap"] = gaps
 
     # each consecutive kept row belongs to one pair, in the order they were kept
     out[UNIT_COLUMN] = [i // 2 for i in range(len(out))]
     out[ROLE_COLUMN] = [ROLES[i % 2] for i in range(len(out))]
-    out['architecture'] = architecture.name
+    out["architecture"] = architecture.name
 
     # success
     return out.reset_index(drop=True)
 
 
-def assemble_split(pairs, architecture, homology_column='probe_seq'):
+def assemble_split(pairs, architecture, homology_column="probe_seq"):
     """
     Attach the architecture's domains to each member of each pair.
 
@@ -246,34 +263,38 @@ def assemble_split(pairs, architecture, homology_column='probe_seq'):
             assembled oligo, and append_5p/append_3p recording what was added.
     """
     if homology_column not in pairs.columns:
-        raise InvalidInputError(
-            f'pair table has no {homology_column!r} column')
+        raise InvalidInputError(f"pair table has no {homology_column!r} column")
     if ROLE_COLUMN not in pairs.columns:
-        raise InvalidInputError(
-            f'pair table has no {ROLE_COLUMN!r} column; run pair_probes first')
+        raise InvalidInputError(f"pair table has no {ROLE_COLUMN!r} column; run pair_probes first")
 
     roles = pairs[ROLE_COLUMN]
-    five = roles.map(lambda role: architecture.append_for(role, '5p'))
-    three = roles.map(lambda role: architecture.append_for(role, '3p'))
+    five = roles.map(lambda role: architecture.append_for(role, "5p"))
+    three = roles.map(lambda role: architecture.append_for(role, "3p"))
 
     assembly = DomainAssembly(pairs.index, SPLIT_LAYOUT)
-    assembly.set_domain('append_5p', five)
-    assembly.set_domain('homology', pairs[homology_column])
-    assembly.set_domain('append_3p', three)
-    assembly.set_linker('append_5p', 'homology', architecture.linker)
-    assembly.set_linker('homology', 'append_3p', architecture.linker)
+    assembly.set_domain("append_5p", five)
+    assembly.set_domain("homology", pairs[homology_column])
+    assembly.set_domain("append_3p", three)
+    assembly.set_linker("append_5p", "homology", architecture.linker)
+    assembly.set_linker("homology", "append_3p", architecture.linker)
 
     out = pairs.copy()
-    out['append_5p'] = five
-    out['append_3p'] = three
-    out['sequence'] = assembly.assemble()
+    out["append_5p"] = five
+    out["append_3p"] = three
+    out["sequence"] = assembly.assemble()
 
     # success
     return out
 
 
-def design_split(df, architecture, by='seq_id', start_column='start',
-                 end_column='stop', homology_column='probe_seq'):
+def design_split(
+    df,
+    architecture,
+    by="seq_id",
+    start_column="start",
+    end_column="stop",
+    homology_column="probe_seq",
+):
     """
     Pair adjacent probes and assemble both members of every pair.
 
@@ -288,17 +309,15 @@ def design_split(df, architecture, by='seq_id', start_column='start',
     Returns:
         out (pandas.DataFrame): two rows per pair, assembled and unit-labelled.
     """
-    pairs = pair_probes(df, architecture, by=by, start_column=start_column,
-                        end_column=end_column)
+    pairs = pair_probes(df, architecture, by=by, start_column=start_column, end_column=end_column)
     if pairs.empty:
         out = pairs.copy()
-        for column in ('append_5p', 'append_3p', 'sequence'):
+        for column in ("append_5p", "append_3p", "sequence"):
             out[column] = pd.Series(dtype=object)
         return out
 
     # success
-    return assemble_split(pairs, architecture,
-                          homology_column=homology_column)
+    return assemble_split(pairs, architecture, homology_column=homology_column)
 
 
 def pair_summary(df, pairs):
@@ -318,9 +337,9 @@ def pair_summary(df, pairs):
 
     # success
     return {
-        'n_probes': n_probes,
-        'n_pairs': n_pairs,
-        'n_paired_probes': 2 * n_pairs,
-        'n_unpaired_probes': n_probes - 2 * n_pairs,
-        'fraction_paired': (2 * n_pairs / n_probes) if n_probes else 0.0,
+        "n_probes": n_probes,
+        "n_pairs": n_pairs,
+        "n_paired_probes": 2 * n_pairs,
+        "n_unpaired_probes": n_probes - 2 * n_pairs,
+        "fraction_paired": (2 * n_pairs / n_probes) if n_probes else 0.0,
     }

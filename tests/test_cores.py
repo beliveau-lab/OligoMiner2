@@ -21,7 +21,6 @@ def clean_env(monkeypatch):
 
 
 class TestResolutionOrder:
-
     def test_explicit_wins_over_everything(self, clean_env, monkeypatch):
         monkeypatch.setenv("NSLOTS", "8")
         monkeypatch.setenv(cores.ENV_VAR, "4")
@@ -50,7 +49,6 @@ class TestResolutionOrder:
 
 
 class TestGuards:
-
     def test_never_returns_below_one(self, clean_env, monkeypatch):
         monkeypatch.setattr(cores, "_affinity", lambda: 0)
         assert cores.resolve_cores() == 1
@@ -76,7 +74,6 @@ class TestGuards:
 
 
 class TestDescribe:
-
     def test_describe_reports_the_rejected_values_too(self, clean_env, monkeypatch):
         monkeypatch.setenv("NSLOTS", "8")
         monkeypatch.setattr(cores, "_affinity", lambda: 16)

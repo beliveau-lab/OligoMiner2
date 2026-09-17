@@ -10,7 +10,13 @@ import re
 
 from pyfaidx import Fasta
 
-from oligominer.utils import get_abs_path, get_dir_name, check_dir_exists, check_input_exists, check_output_exists
+from oligominer.utils import (
+    get_abs_path,
+    get_dir_name,
+    check_dir_exists,
+    check_input_exists,
+    check_output_exists,
+)
 from .chrom_sizes import get_or_create_fai
 from .exceptions import EmptyExportError
 from .config import FASTA_EXTENSIONS, merge_files_by_extension
@@ -18,6 +24,7 @@ from .config import FASTA_EXTENSIONS, merge_files_by_extension
 # ---------------------------------------------------------------------------
 # Loading
 # ---------------------------------------------------------------------------
+
 
 def load_fasta(fasta_path, upper=False):
     """
@@ -44,6 +51,7 @@ def load_fasta(fasta_path, upper=False):
 # Writing
 # ---------------------------------------------------------------------------
 
+
 def write_fasta(seqs, filepath, line_width=60):
     """
     Write sequences to a multi-FASTA file.
@@ -57,7 +65,7 @@ def write_fasta(seqs, filepath, line_width=60):
         line_width (int): characters per line (None/0 for no wrapping).
     """
     if not seqs:
-        raise EmptyExportError(filepath, 'FASTA')
+        raise EmptyExportError(filepath, "FASTA")
 
     # normalize pyfaidx.Fasta to plain dict
     if isinstance(seqs, Fasta):
@@ -66,14 +74,14 @@ def write_fasta(seqs, filepath, line_width=60):
     # ensure output directory exists
     check_dir_exists(filepath, parent_dir=True, create=True)
 
-    with open(filepath, 'w') as fh:
+    with open(filepath, "w") as fh:
         for seqid, seq in seqs.items():
             fh.write(f">{seqid}\n")
             if line_width:
                 for i in range(0, len(seq), line_width):
-                    fh.write(seq[i:i + line_width] + '\n')
+                    fh.write(seq[i : i + line_width] + "\n")
             else:
-                fh.write(seq + '\n')
+                fh.write(seq + "\n")
 
 
 def split_fasta(seqs, target_dir, line_width=60):
@@ -89,7 +97,7 @@ def split_fasta(seqs, target_dir, line_width=60):
         written_paths (list): file paths written.
     """
     if not seqs:
-        raise EmptyExportError(target_dir, 'FASTA')
+        raise EmptyExportError(target_dir, "FASTA")
 
     check_dir_exists(target_dir, create=True)
 
@@ -127,6 +135,7 @@ def seqs_to_fasta(seq_list, seq_id_list=None):
 # ---------------------------------------------------------------------------
 # Filtering
 # ---------------------------------------------------------------------------
+
 
 def filter_seq_ids(seq_source, incl_str=None, excl_str=None):
     """
@@ -205,7 +214,7 @@ def merge_fastas(input_dir, output_path):
 
     merged = merge_files_by_extension(input_dir, output_path, FASTA_EXTENSIONS)
     if not merged:
-        raise EmptyExportError(output_path, 'FASTA')
+        raise EmptyExportError(output_path, "FASTA")
 
     check_output_exists(output_path)
 

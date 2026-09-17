@@ -32,17 +32,16 @@ def transcript_ids(gtf_df, gene_id=None):
         ids (list): the transcript ids, in first-seen order.
     """
     records = gtf_df
-    if 'feature' in records.columns:
-        records = records[records['feature'] == 'exon']
+    if "feature" in records.columns:
+        records = records[records["feature"] == "exon"]
     if gene_id is not None:
-        records = records[records['gene_id'] == gene_id]
+        records = records[records["gene_id"] == gene_id]
 
     # success
-    return list(dict.fromkeys(records['transcript_id']))
+    return list(dict.fromkeys(records["transcript_id"]))
 
 
-def build_transcriptome(gtf_df, fasta, out_fasta, gene_id=None,
-                        min_length=1, skip_errors=True):
+def build_transcriptome(gtf_df, fasta, out_fasta, gene_id=None, min_length=1, skip_errors=True):
     """
     Write a FASTA of spliced transcript sequences.
 
@@ -67,7 +66,7 @@ def build_transcriptome(gtf_df, fasta, out_fasta, gene_id=None,
     total_bases = 0
     skipped = []
 
-    with open(out_fasta, 'w') as handle:
+    with open(out_fasta, "w") as handle:
         for transcript in ids:
             try:
                 sequence = get_spliced_seq(gtf_df, genome, transcript)
@@ -81,19 +80,19 @@ def build_transcriptome(gtf_df, fasta, out_fasta, gene_id=None,
                 skipped.append(transcript)
                 continue
 
-            handle.write(f'>{transcript}\n')
+            handle.write(f">{transcript}\n")
             for i in range(0, len(sequence), LINE_WIDTH):
-                handle.write(sequence[i:i + LINE_WIDTH] + '\n')
+                handle.write(sequence[i : i + LINE_WIDTH] + "\n")
 
             n_written += 1
             total_bases += len(sequence)
 
     info = {
-        'out_fasta': out_fasta,
-        'n_written': n_written,
-        'total_bases': total_bases,
-        'n_skipped': len(skipped),
-        'skipped': skipped,
+        "out_fasta": out_fasta,
+        "n_written": n_written,
+        "total_bases": total_bases,
+        "n_skipped": len(skipped),
+        "skipped": skipped,
     }
 
     # success
@@ -112,14 +111,14 @@ def transcript_lengths(gtf_df, gene_id=None):
         lengths (dict): transcript id mapped to its spliced length in bases.
     """
     records = gtf_df
-    if 'feature' in records.columns:
-        records = records[records['feature'] == 'exon']
+    if "feature" in records.columns:
+        records = records[records["feature"] == "exon"]
     if gene_id is not None:
-        records = records[records['gene_id'] == gene_id]
+        records = records[records["gene_id"] == gene_id]
 
     lengths = {}
-    for transcript, block in records.groupby('transcript_id', sort=False):
-        lengths[transcript] = int((block['end'] - block['start'] + 1).sum())
+    for transcript, block in records.groupby("transcript_id", sort=False):
+        lengths[transcript] = int((block["end"] - block["start"] + 1).sum())
 
     # success
     return lengths

@@ -19,11 +19,11 @@ import numpy as np
 
 # ACGT → 0,1,2,3 in either case; all other characters (N, ambiguous bases) → 4
 DNA_ASCII_LUT = np.full(256, 4, dtype=np.uint8)
-DNA_ASCII_LUT[[ord(base) for base in 'ACGTacgt']] = [0, 1, 2, 3, 0, 1, 2, 3]
+DNA_ASCII_LUT[[ord(base) for base in "ACGTacgt"]] = [0, 1, 2, 3, 0, 1, 2, 3]
 
 # upper-case ACGT → 0,1,2,3; lowercase (soft-masked) bases join N at 4
 SOFTMASK_ASCII_LUT = np.full(256, 4, dtype=np.uint8)
-SOFTMASK_ASCII_LUT[[ord(base) for base in 'ACGT']] = [0, 1, 2, 3]
+SOFTMASK_ASCII_LUT[[ord(base) for base in "ACGT"]] = [0, 1, 2, 3]
 
 
 def seq_to_8bit(seq, mask_soft=False):
@@ -42,9 +42,7 @@ def seq_to_8bit(seq, mask_soft=False):
     lut = SOFTMASK_ASCII_LUT if mask_soft else DNA_ASCII_LUT
 
     # encode fasta sequence as 8bit integer array
-    nuc_array = lut[np.frombuffer(bytes(str(seq), 'utf-8'), dtype=np.uint8)]
+    nuc_array = lut[np.frombuffer(bytes(str(seq), "utf-8"), dtype=np.uint8)]
 
     # success
     return nuc_array
-
-

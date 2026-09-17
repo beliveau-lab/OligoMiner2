@@ -21,7 +21,9 @@ def seqs_to_fastq(seq_list, seq_id_list=None):
     if seq_id_list is None:
         seq_id_list = [f"seq_{i}" for i in range(len(seq_list))]
 
-    lines = [f"@{seq_id}\n{seq}\n+\n{'~' * len(seq)}\n" for seq_id, seq in zip(seq_id_list, seq_list)]
+    lines = [
+        f"@{seq_id}\n{seq}\n+\n{'~' * len(seq)}\n" for seq_id, seq in zip(seq_id_list, seq_list)
+    ]
     fastq_str = "".join(lines)
 
     # success

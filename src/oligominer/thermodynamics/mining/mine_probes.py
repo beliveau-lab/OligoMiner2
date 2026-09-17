@@ -35,7 +35,7 @@ from oligominer.utils.cores import resolve_cores
 from oligominer.utils.exceptions import ConfigurationError
 
 # Column order for probe result tuples: (seq_id, start, stop, probe_seq, tm)
-PROBE_COLUMNS = ['seq_id', 'start', 'stop', 'probe_seq', 'tm']
+PROBE_COLUMNS = ["seq_id", "start", "stop", "probe_seq", "tm"]
 
 # the 16 ACGT dinucleotides, and the entropy of a perfectly even mix of them
 N_DINUCLEOTIDES = 16
@@ -44,7 +44,7 @@ MAX_DINUCLEOTIDE_ENTROPY = np.log2(N_DINUCLEOTIDES)
 
 def mine_sequence(
     seq,
-    seq_id='seq',
+    seq_id="seq",
     min_length=30,
     max_length=37,
     min_tm=42,
@@ -130,46 +130,48 @@ def mine_sequence(
     if exhaustive and (not allow_overlap or spacing > 0):
         raise ConfigurationError(
             "exhaustive mode is incompatible with allow_overlap=False and "
-            "spacing > 0. In exhaustive mode all valid probes are returned.")
+            "spacing > 0. In exhaustive mode all valid probes are returned."
+        )
 
     if chunk_size < max_length:
         raise ConfigurationError(
-            f'chunk_size {chunk_size} is smaller than max_length '
-            f'{max_length}. A chunk that cannot hold one full-length probe '
-            f'drops every probe starting in the first max_length bases of the '
-            f'sequence, so the result would be quietly short rather than '
-            f'wrong in a visible way.')
+            f"chunk_size {chunk_size} is smaller than max_length "
+            f"{max_length}. A chunk that cannot hold one full-length probe "
+            f"drops every probe starting in the first max_length bases of the "
+            f"sequence, so the result would be quietly short rather than "
+            f"wrong in a visible way."
+        )
 
     cores = resolve_cores(cores)
 
     config = GET_DEFAULT_MINING_CONFIG()
-    config['min_length'] = min_length
-    config['max_length'] = max_length
-    config['min_tm'] = min_tm
-    config['max_tm'] = max_tm
-    config['tm_target'] = tm_target
-    config['chunk_size'] = chunk_size
-    config['allow_overlap'] = allow_overlap
-    config['spacing'] = spacing
-    config['exhaustive'] = exhaustive
-    config['cores'] = cores
-    config['min_gc'] = min_gc
-    config['max_gc'] = max_gc
-    config['mask_soft'] = mask_soft
-    config['min_entropy'] = min_entropy
-    config['max_homopolymer'] = max_homopolymer
-    config['prohibited_seqs'] = prohibited_seqs
-    config['Na'] = Na
-    config['K'] = K
-    config['Tris'] = Tris
-    config['Mg'] = Mg
-    config['dNTPs'] = dNTPs
-    config['dnac1'] = dnac1
-    config['dnac2'] = dnac2
-    config['pct_formamide'] = pct_formamide
-    config['formamide_factor'] = formamide_factor
+    config["min_length"] = min_length
+    config["max_length"] = max_length
+    config["min_tm"] = min_tm
+    config["max_tm"] = max_tm
+    config["tm_target"] = tm_target
+    config["chunk_size"] = chunk_size
+    config["allow_overlap"] = allow_overlap
+    config["spacing"] = spacing
+    config["exhaustive"] = exhaustive
+    config["cores"] = cores
+    config["min_gc"] = min_gc
+    config["max_gc"] = max_gc
+    config["mask_soft"] = mask_soft
+    config["min_entropy"] = min_entropy
+    config["max_homopolymer"] = max_homopolymer
+    config["prohibited_seqs"] = prohibited_seqs
+    config["Na"] = Na
+    config["K"] = K
+    config["Tris"] = Tris
+    config["Mg"] = Mg
+    config["dNTPs"] = dNTPs
+    config["dnac1"] = dnac1
+    config["dnac2"] = dnac2
+    config["pct_formamide"] = pct_formamide
+    config["formamide_factor"] = formamide_factor
     if prohibited_seqs:
-        config['_prohibited_encoded'] = [seq_to_8bit(p) for p in prohibited_seqs]
+        config["_prohibited_encoded"] = [seq_to_8bit(p) for p in prohibited_seqs]
 
     # encode from the sequence as given so case is available to the soft-mask
     # lookup table, and report probe sequences from the upper-cased copy
@@ -223,15 +225,13 @@ def mine_fasta(input_file, cores=None, **mining_params):
     all_probes = []
     for seq_id in fasta.keys():
         seq_str = str(fasta[seq_id])
-        all_probes.extend(
-            mine_sequence(seq_str, seq_id=seq_id, cores=cores, **mining_params)
-        )
+        all_probes.extend(mine_sequence(seq_str, seq_id=seq_id, cores=cores, **mining_params))
 
     # success
     return all_probes
 
 
-def write_probes(probes, output_file, fmt='bed'):
+def write_probes(probes, output_file, fmt="bed"):
     """Write probe results to a file.
 
     Args:
@@ -242,7 +242,7 @@ def write_probes(probes, output_file, fmt='bed'):
     check_dir_exists(output_file, parent_dir=True, create=True)
 
     write_fn = _WRITERS[fmt]
-    with open(output_file, 'w', buffering=WRITE_BUFFER_SIZE) as outfile:
+    with open(output_file, "w", buffering=WRITE_BUFFER_SIZE) as outfile:
         write_fn(probes, outfile)
 
 
@@ -258,6 +258,7 @@ def probes_to_df(probes):
             probe_seq, tm.
     """
     import pandas as pd
+
     return pd.DataFrame(probes, columns=PROBE_COLUMNS)
 
 
@@ -265,11 +266,12 @@ def probes_to_df(probes):
 # Probe file writers (internal)
 # ---------------------------------------------------------------------------
 
+
 def _write_probes_bed(probes, outfile):
     """Write probe tuples as BED records."""
     lines = []
     for seq_id, start, stop, probe_seq, tm in probes:
-        lines.append(f'{seq_id}\t{start}\t{stop}\t{probe_seq}\t{tm:.2f}\n')
+        lines.append(f"{seq_id}\t{start}\t{stop}\t{probe_seq}\t{tm:.2f}\n")
     outfile.writelines(lines)
 
 
@@ -277,26 +279,23 @@ def _write_probes_fastq(probes, outfile):
     """Write probe tuples as FASTQ records."""
     lines = []
     for seq_id, start, stop, probe_seq, tm in probes:
-        lines.append(
-            f"@{seq_id}:{start}-{stop}\n"
-            f"{probe_seq}\n+\n{'~' * len(probe_seq)}\n"
-        )
+        lines.append(f"@{seq_id}:{start}-{stop}\n{probe_seq}\n+\n{'~' * len(probe_seq)}\n")
     outfile.writelines(lines)
 
 
 def _write_probes_csv(probes, outfile):
     """Write probe tuples as CSV records."""
-    outfile.write(','.join(PROBE_COLUMNS) + '\n')
+    outfile.write(",".join(PROBE_COLUMNS) + "\n")
     lines = []
     for seq_id, start, stop, probe_seq, tm in probes:
-        lines.append(f'{seq_id},{start},{stop},{probe_seq},{tm:.2f}\n')
+        lines.append(f"{seq_id},{start},{stop},{probe_seq},{tm:.2f}\n")
     outfile.writelines(lines)
 
 
 _WRITERS = {
-    'bed': _write_probes_bed,
-    'fastq': _write_probes_fastq,
-    'csv': _write_probes_csv,
+    "bed": _write_probes_bed,
+    "fastq": _write_probes_fastq,
+    "csv": _write_probes_csv,
 }
 
 
@@ -318,8 +317,8 @@ def _collect_probes(seq_id, seq_str, chunk_results, allow_overlap, spacing):
     current_probe_stop = -1
     for coord_result, tm_result in chunk_results:
         starts = coord_result[:, 0].tolist()
-        stops  = coord_result[:, 1].tolist()
-        tms    = tm_result.tolist()
+        stops = coord_result[:, 1].tolist()
+        tms = tm_result.tolist()
         for probe_start, probe_stop, tm in zip(starts, stops, tms):
             if not allow_overlap and probe_start < current_probe_stop:
                 continue
@@ -353,15 +352,15 @@ def chunk_generator(seq_id, nuc_array, config):
             for each chunk.
     """
 
-    num_chunks = np.ceil(nuc_array.size / config['chunk_size']).astype(int)
+    num_chunks = np.ceil(nuc_array.size / config["chunk_size"]).astype(int)
 
     chunk_start = 0
-    chunk_stop = chunk_start + config['chunk_size']
+    chunk_stop = chunk_start + config["chunk_size"]
     for _ in range(num_chunks):
         # .copy() so the full nuc_array can be freed after chunking
         chunk = (seq_id, nuc_array[chunk_start:chunk_stop].copy(), chunk_start, chunk_stop, config)
-        chunk_start = chunk_stop - config['max_length'] + 1
-        chunk_stop = min(chunk_stop + config['chunk_size'], nuc_array.size)
+        chunk_start = chunk_stop - config["max_length"] + 1
+        chunk_stop = min(chunk_stop + config["chunk_size"], nuc_array.size)
         yield chunk
 
 
@@ -384,9 +383,9 @@ def process_chunk(_seq_id, chunk_nuc_arr, chunk_start, _chunk_stop, config):
             selected probe.
     """
 
-    min_length = config['min_length']
-    max_length = config['max_length']
-    n_lengths  = max_length - min_length + 1
+    min_length = config["min_length"]
+    max_length = config["max_length"]
+    n_lengths = max_length - min_length + 1
 
     result_length = chunk_nuc_arr.size - max_length + 1
     if result_length <= 0:
@@ -394,7 +393,7 @@ def process_chunk(_seq_id, chunk_nuc_arr, chunk_start, _chunk_stop, config):
 
     # --- N-mask: identify positions with non-ACGT bases (encoded as 4) ---
     # Clip N→0 for Tm LUT lookups (Tm values for N-containing probes will be masked out anyway)
-    has_n = (chunk_nuc_arr == 4)
+    has_n = chunk_nuc_arr == 4
     if has_n.any():
         n_cumsum = np.concatenate([[0], np.cumsum(has_n.astype(np.int32))])
         tm_nuc_arr = chunk_nuc_arr.copy()
@@ -407,17 +406,17 @@ def process_chunk(_seq_id, chunk_nuc_arr, chunk_start, _chunk_stop, config):
     tm_grid = get_tm_grid(tm_nuc_arr, config)
 
     # valid_mask: inclusive Tm range
-    valid_mask = (tm_grid >= config['min_tm']) & (tm_grid <= config['max_tm'])
+    valid_mask = (tm_grid >= config["min_tm"]) & (tm_grid <= config["max_tm"])
 
     # apply N-mask: exclude any probe window containing an N
     if n_cumsum is not None:
         for j in range(n_lengths):
             L = min_length + j
-            contains_n = (n_cumsum[L:L + result_length] - n_cumsum[:result_length]) > 0
+            contains_n = (n_cumsum[L : L + result_length] - n_cumsum[:result_length]) > 0
             valid_mask[:, j] &= ~contains_n
 
     # apply homopolymer filter: reject probes with any run longer than max_homopolymer
-    max_hpoly = config.get('max_homopolymer')
+    max_hpoly = config.get("max_homopolymer")
     if max_hpoly is not None:
         r = max_hpoly + 1  # minimum prohibited run length
         n_run_pos = chunk_nuc_arr.size - r + 1
@@ -425,20 +424,20 @@ def process_chunk(_seq_id, chunk_nuc_arr, chunk_start, _chunk_stop, config):
             # has_run[k] = True if chunk_nuc_arr[k:k+r] are all the same base
             has_run = np.ones(n_run_pos, dtype=bool)
             for i in range(1, r):
-                has_run &= (chunk_nuc_arr[:n_run_pos] == chunk_nuc_arr[i:i + n_run_pos])
+                has_run &= chunk_nuc_arr[:n_run_pos] == chunk_nuc_arr[i : i + n_run_pos]
             run_cumsum = np.concatenate([[0], np.cumsum(has_run.astype(np.int32))])
             for j in range(n_lengths):
                 L = min_length + j
                 n_run_in_probe = L - r + 1  # positions in probe where a run of r can start
                 if n_run_in_probe > 0:
                     valid_mask[:, j] &= (
-                        run_cumsum[n_run_in_probe:n_run_in_probe + result_length]
+                        run_cumsum[n_run_in_probe : n_run_in_probe + result_length]
                         - run_cumsum[:result_length]
                     ) == 0
 
     # apply low-complexity filter: reject probes whose dinucleotide composition
     # carries too little entropy, which is what simple repeats look like
-    min_entropy = config.get('min_entropy')
+    min_entropy = config.get("min_entropy")
     if min_entropy is not None and chunk_nuc_arr.size >= 2:
         # dinucleotide code at each position, 0-15 for ACGT pairs and -1 where a
         # non-ACGT base makes the pair meaningless
@@ -458,24 +457,26 @@ def process_chunk(_seq_id, chunk_nuc_arr, chunk_start, _chunk_stop, config):
         pair_cumsums = np.empty((N_DINUCLEOTIDES, len(pair_code) + 1), dtype=np.int32)
         for code in range(N_DINUCLEOTIDES):
             pair_cumsums[code] = np.concatenate(
-                [[0], np.cumsum((pair_code == code).astype(np.int32))])
+                [[0], np.cumsum((pair_code == code).astype(np.int32))]
+            )
 
         for j in range(n_lengths):
             L = min_length + j
             n_pairs = L - 1
             if n_pairs < 1:
                 continue
-            counts = (pair_cumsums[:, n_pairs:n_pairs + result_length]
-                      - pair_cumsums[:, :result_length]).astype(np.float64)
+            counts = (
+                pair_cumsums[:, n_pairs : n_pairs + result_length] - pair_cumsums[:, :result_length]
+            ).astype(np.float64)
             totals = counts.sum(axis=0)
-            with np.errstate(divide='ignore', invalid='ignore'):
+            with np.errstate(divide="ignore", invalid="ignore"):
                 proportions = np.where(totals > 0, counts / np.maximum(totals, 1), 0.0)
                 logs = np.where(proportions > 0, np.log2(np.maximum(proportions, 1e-12)), 0.0)
             entropy = -(proportions * logs).sum(axis=0) / MAX_DINUCLEOTIDE_ENTROPY
             valid_mask[:, j] &= (entropy >= min_entropy) & (totals > 0)
 
     # apply prohibited_seqs filter: reject probes containing any prohibited substring
-    prohibited_encoded = config.get('_prohibited_encoded')
+    prohibited_encoded = config.get("_prohibited_encoded")
     if prohibited_encoded:
         for p_enc in prohibited_encoded:
             pl = len(p_enc)
@@ -485,7 +486,7 @@ def process_chunk(_seq_id, chunk_nuc_arr, chunk_start, _chunk_stop, config):
             # match[k] = True if chunk_nuc_arr[k:k+pl] == p_enc
             match = chunk_nuc_arr[:n_match_pos] == p_enc[0]
             for i in range(1, pl):
-                match &= chunk_nuc_arr[i:i + n_match_pos] == p_enc[i]
+                match &= chunk_nuc_arr[i : i + n_match_pos] == p_enc[i]
             match_cumsum = np.concatenate([[0], np.cumsum(match.astype(np.int32))])
             for j in range(n_lengths):
                 L = min_length + j
@@ -493,31 +494,30 @@ def process_chunk(_seq_id, chunk_nuc_arr, chunk_start, _chunk_stop, config):
                     continue
                 n_start = L - pl + 1  # positions in probe where p can start
                 valid_mask[:, j] &= (
-                    match_cumsum[n_start:n_start + result_length]
-                    - match_cumsum[:result_length]
+                    match_cumsum[n_start : n_start + result_length] - match_cumsum[:result_length]
                 ) == 0
 
-    if config.get('exhaustive'):
+    if config.get("exhaustive"):
         # exhaustive mode: return all valid (position, length) combinations
         starts, length_idx = np.where(valid_mask)
     else:
         # select best probe length per start position
-        if config['tm_target'] is None:
+        if config["tm_target"] is None:
             # greedy minimum length: pick the first (shortest) valid probe per position
             length_idx = np.argmax(valid_mask, axis=1)
         else:
             # closest-to-target: among valid lengths, pick the one with Tm nearest tm_target
-            masked_deltas = np.where(valid_mask, np.abs(tm_grid - config['tm_target']), np.inf)
+            masked_deltas = np.where(valid_mask, np.abs(tm_grid - config["tm_target"]), np.inf)
             length_idx = np.argmin(masked_deltas, axis=1)
 
         # filter out positions where no valid probe exists
         any_valid = valid_mask.any(axis=1)
-        starts     = np.where(any_valid)[0]
+        starts = np.where(any_valid)[0]
         length_idx = length_idx[any_valid]
 
     # apply GC% filter post-selection (only compute for chosen probes, not full grid)
-    min_gc = config.get('min_gc')
-    max_gc = config.get('max_gc')
+    min_gc = config.get("min_gc")
+    max_gc = config.get("max_gc")
     if (min_gc is not None or max_gc is not None) and len(starts):
         lengths = min_length + length_idx
         is_gc = ((tm_nuc_arr == 1) | (tm_nuc_arr == 2)).astype(np.int32)
@@ -528,7 +528,7 @@ def process_chunk(_seq_id, chunk_nuc_arr, chunk_start, _chunk_stop, config):
             gc_ok &= gc_fracs >= min_gc / 100.0
         if max_gc is not None:
             gc_ok &= gc_fracs <= max_gc / 100.0
-        starts     = starts[gc_ok]
+        starts = starts[gc_ok]
         length_idx = length_idx[gc_ok]
 
     if len(starts) == 0:
@@ -539,7 +539,7 @@ def process_chunk(_seq_id, chunk_nuc_arr, chunk_start, _chunk_stop, config):
 
     # convert chunk-relative start + length index → genome start + stop
     coord_result = np.empty((len(starts), 2), dtype=int)
-    coord_result[:, 0] = starts + chunk_start                           # genome start
+    coord_result[:, 0] = starts + chunk_start  # genome start
     coord_result[:, 1] = coord_result[:, 0] + min_length + length_idx  # genome stop
 
     return coord_result, tm_result

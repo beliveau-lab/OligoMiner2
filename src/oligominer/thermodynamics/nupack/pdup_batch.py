@@ -59,10 +59,10 @@ def low_level_available():
         available (bool): True when the batch submit path is importable.
     """
     try:
-        from nupack import config                                      # noqa: F401
+        from nupack import config  # noqa: F401
         from nupack.concentration import solve_complex_concentrations  # noqa: F401
-        from nupack.core import SequenceList                           # noqa: F401
-        from nupack.thermo import ComputeOptions, Job, PFJob, submit   # noqa: F401
+        from nupack.core import SequenceList  # noqa: F401
+        from nupack.thermo import ComputeOptions, Job, PFJob, submit  # noqa: F401
     except ImportError:
         return False
 
@@ -88,7 +88,7 @@ def _strand(seq):
 
     strand = _STRAND_CACHE.get(seq)
     if strand is None:
-        strand = _STRAND_CACHE[seq] = nupack.Strand(seq, name=f's{len(_STRAND_CACHE)}')
+        strand = _STRAND_CACHE[seq] = nupack.Strand(seq, name=f"s{len(_STRAND_CACHE)}")
 
     # success
     return strand
@@ -141,8 +141,7 @@ def _logq(result, complex_):
     from nupack.core import SequenceList
 
     # success
-    return (result[SequenceList(complex_)].pfunc.value().logq
-            - np.log(int(complex_.symmetry())))
+    return result[SequenceList(complex_)].pfunc.value().logq - np.log(int(complex_.symmetry()))
 
 
 def _solve(logq, model):
@@ -160,8 +159,13 @@ def _solve(logq, model):
     from nupack.concentration import solve_complex_concentrations
 
     conc = solve_complex_concentrations(
-        _COMPLEX_INDICES, logq, [CONC_A, CONC_B],
-        kelvin=model.temperature, as_strands=True, rotational_correction=False)
+        _COMPLEX_INDICES,
+        logq,
+        [CONC_A, CONC_B],
+        kelvin=model.temperature,
+        as_strands=True,
+        rotational_correction=False,
+    )
 
     # success
     return float(conc[0] / CONC_B)
@@ -189,15 +193,14 @@ def calc_pdup_many(pairs, model=None, batch_complexes=BATCH_COMPLEXES):
         return []
 
     if not low_level_available():
-        return [calc_pdup(a, b, conc_a=CONC_A, conc_b=CONC_B, model=model)
-                for a, b in pairs]
+        return [calc_pdup(a, b, conc_a=CONC_A, conc_b=CONC_B, model=model) for a, b in pairs]
 
     # five complexes per pair, so convert the complex budget into a pair budget
     per_batch = max(1, batch_complexes // 5)
 
     values = []
     for start in range(0, len(pairs), per_batch):
-        values.extend(_pdup_batch(pairs[start:start + per_batch], model))
+        values.extend(_pdup_batch(pairs[start : start + per_batch], model))
 
     # success
     return values
@@ -219,18 +222,22 @@ def _pdup_batch(pairs, model):
     complexes, spans = [], []
     for probe, target in pairs:
         spans.append(len(complexes))
-        complexes += [_complex(probe, target), _complex(probe), _complex(target),
-                      _complex(probe, probe), _complex(target, target)]
+        complexes += [
+            _complex(probe, target),
+            _complex(probe),
+            _complex(target),
+            _complex(probe, probe),
+            _complex(target, target),
+        ]
 
     result = submit(model, [Job(c, PFJob()) for c in complexes], _options()).get()
     logq = [_logq(result, c) for c in complexes]
 
     # success
-    return [_solve(logq[i:i + 5], model) for i in spans]
+    return [_solve(logq[i : i + 5], model) for i in spans]
 
 
-def calc_pdup_one_to_many(probe, targets, model=None,
-                          batch_complexes=BATCH_COMPLEXES):
+def calc_pdup_one_to_many(probe, targets, model=None, batch_complexes=BATCH_COMPLEXES):
     """
     Compute pDup for one probe against many targets.
 
@@ -261,8 +268,7 @@ def calc_pdup_one_to_many(probe, targets, model=None,
 
     values = []
     for start in range(0, len(targets), per_batch):
-        values.extend(_pdup_one_to_many_batch(
-            probe, targets[start:start + per_batch], model))
+        values.extend(_pdup_one_to_many_batch(probe, targets[start : start + per_batch], model))
 
     # success
     return values
@@ -299,8 +305,9 @@ def _pdup_one_to_many_batch(probe, targets, model):
     return values
 
 
-def add_pdup_batch(merged_df, model=None, probe_col='probe_seq',
-                   target_col='derived_seq', out_col='pdup'):
+def add_pdup_batch(
+    merged_df, model=None, probe_col="probe_seq", target_col="derived_seq", out_col="pdup"
+):
     """
     Add a pDup column to a duplex table.
 
@@ -325,7 +332,8 @@ def add_pdup_batch(merged_df, model=None, probe_col='probe_seq',
     for probe, block in out.groupby(probe_col, sort=False):
         positions = out.index.get_indexer(block.index)
         values[positions] = calc_pdup_one_to_many(
-            str(probe), [str(t) for t in block[target_col]], model=model)
+            str(probe), [str(t) for t in block[target_col]], model=model
+        )
 
     out[out_col] = values
 

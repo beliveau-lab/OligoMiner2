@@ -26,7 +26,8 @@ Domain assignment uses the four schemes -- ``same`` / ``unique`` / ``multiple``
 import pandas as pd
 
 from oligominer.probe_design.appending.appending import (
-    append_sequences, build_appending_table,
+    append_sequences,
+    build_appending_table,
 )
 from oligominer.probe_design.appending.config import LINKER
 from oligominer.utils.exceptions import InvalidInputError
@@ -66,8 +67,7 @@ class DomainAssembly:
         self.layout = list(layout)
         # object dtype throughout: pandas 3 str-dtype and object do not concatenate,
         # and domain values arrive from callers under both
-        self.domains = {name: pd.Series("", index=index, dtype=object)
-                        for name in self.layout}
+        self.domains = {name: pd.Series("", index=index, dtype=object) for name in self.layout}
         self.linkers = {}
         self.entries = {}
 
@@ -85,8 +85,7 @@ class DomainAssembly:
         self._require(name)
         if isinstance(values, str):
             values = pd.Series(values, index=self.index, dtype=object)
-        self.domains[name] = (pd.Series(values).astype(object)
-                              .reindex(self.index).fillna(""))
+        self.domains[name] = pd.Series(values).astype(object).reindex(self.index).fillna("")
 
         # success
         return self
@@ -106,16 +105,24 @@ class DomainAssembly:
         self._require(left)
         self._require(right)
         if self.layout.index(right) != self.layout.index(left) + 1:
-            raise InvalidInputError(
-                f"{left!r} and {right!r} are not adjacent in {self.layout}")
+            raise InvalidInputError(f"{left!r} and {right!r} are not adjacent in {self.layout}")
         self.linkers[(left, right)] = linker
 
         # success
         return self
 
-    def append_into(self, name, sequences, scheme, label=None, rc=False,
-                    target_column=None, n_per_target=None, ranges=None,
-                    probes=None):
+    def append_into(
+        self,
+        name,
+        sequences,
+        scheme,
+        label=None,
+        rc=False,
+        target_column=None,
+        n_per_target=None,
+        ranges=None,
+        probes=None,
+    ):
         """
         Assign sequences into a domain using one of the four appending schemes.
 
@@ -149,9 +156,15 @@ class DomainAssembly:
             frame[target_column] = probes[target_column].reindex(self.index)
 
         result, entries = append_sequences(
-            frame, sequences, scheme,
-            target_column=target_column, n_per_target=n_per_target,
-            ranges=ranges, left=True, rc=rc, linker="",
+            frame,
+            sequences,
+            scheme,
+            target_column=target_column,
+            n_per_target=n_per_target,
+            ranges=ranges,
+            left=True,
+            rc=rc,
+            linker="",
         )
 
         self.domains[name] = result["sequence"].astype(object)
@@ -216,15 +229,13 @@ class DomainAssembly:
     def _require(self, name):
         """Raise if name is not in the layout."""
         if name not in self.domains:
-            raise InvalidInputError(
-                f"unknown domain {name!r}; layout is {self.layout}")
+            raise InvalidInputError(f"unknown domain {name!r}; layout is {self.layout}")
 
         # success
         return True
 
 
-def assemble_padlock(padlock_df, backbone, linker_5p="", linker_3p="",
-                     backbone_id="backbone"):
+def assemble_padlock(padlock_df, backbone, linker_5p="", linker_3p="", backbone_id="backbone"):
     """
     Insert a backbone between the two homology arms of every padlock.
 
@@ -253,8 +264,9 @@ def assemble_padlock(padlock_df, backbone, linker_5p="", linker_3p="",
     asm.set_linker("backbone", "arm_3p", linker_3p)
 
     bb_repr = backbone if isinstance(backbone, str) else "per-row"
-    asm.entries["backbone"] = pd.Series(f"{backbone_id}_{bb_repr}",
-                                        index=padlock_df.index, dtype=object)
+    asm.entries["backbone"] = pd.Series(
+        f"{backbone_id}_{bb_repr}", index=padlock_df.index, dtype=object
+    )
 
     result = padlock_df.copy()
     result["full_oligo"] = asm.assemble()
@@ -280,8 +292,9 @@ def check_backbone_placement(row):
     oligo = row["full_oligo"]
     assert oligo.startswith(row["arm_5p"]), "5' arm is not at the 5' end of the oligo"
     assert oligo.endswith(row["arm_3p"]), "3' arm is not at the 3' end of the oligo"
-    assert len(oligo) > len(row["arm_5p"]) + len(row["arm_3p"]), \
+    assert len(oligo) > len(row["arm_5p"]) + len(row["arm_3p"]), (
         "nothing was inserted between the arms"
+    )
 
     # success
     return True

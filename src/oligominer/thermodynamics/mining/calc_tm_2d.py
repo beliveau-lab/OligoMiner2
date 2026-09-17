@@ -25,8 +25,9 @@ from .nn_tables import (
     TERMINAL_5_DS_LUT,
     TERMINAL_5_DH_LUT,
     TERMINAL_3_DS_LUT,
-    TERMINAL_3_DH_LUT
+    TERMINAL_3_DH_LUT,
 )
+
 
 def get_dinuc_grid(nuc_array, max_length):
     """Build a 2D grid of dinucleotide pairs for all sliding windows.
@@ -48,8 +49,9 @@ def get_dinuc_grid(nuc_array, max_length):
             within the probe window. N_positions = len(nuc_array) - max_length + 1.
     """
     dinuc_array = np.lib.stride_tricks.sliding_window_view(nuc_array, 2)
-    dinuc_grid =  np.lib.stride_tricks.sliding_window_view(dinuc_array, max_length - 1, axis=0)
+    dinuc_grid = np.lib.stride_tricks.sliding_window_view(dinuc_array, max_length - 1, axis=0)
     return dinuc_grid
+
 
 def get_dS_grid(dinuc_grid, min_length, max_length, Na=50, K=0, Tris=0, Mg=0, dNTPs=0):
     """Compute the entropy (dS) grid for all candidate probes with salt correction.
@@ -89,20 +91,20 @@ def get_dS_grid(dinuc_grid, min_length, max_length, Na=50, K=0, Tris=0, Mg=0, dN
     """
 
     # look up dS values in lookup table
-    dS_grid = DINUC_DS_LUT[dinuc_grid[:,0,:],dinuc_grid[:,1,:]]
+    dS_grid = DINUC_DS_LUT[dinuc_grid[:, 0, :], dinuc_grid[:, 1, :]]
 
     # adjust dS values based on 5' termini
-    dS_grid[:,0] += TERMINAL_5_DS_LUT[dinuc_grid[:,0,0],dinuc_grid[:,1,0]]
+    dS_grid[:, 0] += TERMINAL_5_DS_LUT[dinuc_grid[:, 0, 0], dinuc_grid[:, 1, 0]]
 
     # compute cumulative sum across each row (in-place to avoid temporary memory allocation)
     np.cumsum(dS_grid, axis=1, out=dS_grid)
 
     # adjust dS values based on 3' termini, for every probe length to be designed
     for i in range(min_length - 2, (max_length + 1) - 2):
-        dS_grid[:,i] += TERMINAL_3_DS_LUT[dinuc_grid[:,0,i],dinuc_grid[:,1,i]]
+        dS_grid[:, i] += TERMINAL_3_DS_LUT[dinuc_grid[:, 0, i], dinuc_grid[:, 1, i]]
 
     # trim to needed columns and copy so the (N, max_length-1) backing array is freed
-    dS_grid = dS_grid[:,min_length - 2:].copy()
+    dS_grid = dS_grid[:, min_length - 2 :].copy()
 
     #
     # salt corrections to dS values
@@ -118,15 +120,14 @@ def get_dS_grid(dinuc_grid, min_length, max_length, Na=50, K=0, Tris=0, Mg=0, dN
         Mon += 120 * np.sqrt(Mg - dNTPs)
     mon = Mon * 1e-3
     if not mon:
-        raise ValueError(
-            "Total ion concentration of zero is not allowed in this method."
-        )
+        raise ValueError("Total ion concentration of zero is not allowed in this method.")
     seq_lengths = np.arange(min_length, max_length + 1)
     salt_correction = 0.368 * (seq_lengths - 1) * np.log(mon)
     dS_grid += salt_correction
 
     # success
     return dS_grid
+
 
 def get_dH_grid(dinuc_grid, min_length, max_length):
     """Compute the enthalpy (dH) grid for all candidate probes.
@@ -150,20 +151,20 @@ def get_dH_grid(dinuc_grid, min_length, max_length):
     """
 
     # look up dH values in lookup table
-    dH_grid = DINUC_DH_LUT[dinuc_grid[:,0,:],dinuc_grid[:,1,:]]
+    dH_grid = DINUC_DH_LUT[dinuc_grid[:, 0, :], dinuc_grid[:, 1, :]]
 
     # adjust dH values based on 5' termini
-    dH_grid[:,0] += TERMINAL_5_DH_LUT[dinuc_grid[:,0,0],dinuc_grid[:,1,0]]
+    dH_grid[:, 0] += TERMINAL_5_DH_LUT[dinuc_grid[:, 0, 0], dinuc_grid[:, 1, 0]]
 
     # compute cumulative sum across each row (in-place to avoid temporary memory allocation)
     np.cumsum(dH_grid, axis=1, out=dH_grid)
 
     # adjust dH values based on 3' termini, for every probe length to be designed
     for i in range(min_length - 2, (max_length + 1) - 2):
-        dH_grid[:,i] += TERMINAL_3_DH_LUT[dinuc_grid[:,0,i],dinuc_grid[:,1,i]]
+        dH_grid[:, i] += TERMINAL_3_DH_LUT[dinuc_grid[:, 0, i], dinuc_grid[:, 1, i]]
 
     # trim to needed columns and copy so the (N, max_length-1) backing array is freed
-    dH_grid = dH_grid[:,min_length - 2:].copy()
+    dH_grid = dH_grid[:, min_length - 2 :].copy()
 
     # success
     return dH_grid
@@ -206,26 +207,33 @@ def get_tm_grid(nuc_array, config):
     """
 
     # get a grid from the dinucleotide array using a sliding window
-    dinuc_grid = get_dinuc_grid(nuc_array, config['max_length'])
+    dinuc_grid = get_dinuc_grid(nuc_array, config["max_length"])
 
     R = 1.987  # universal gas constant in Cal/degrees C*Mol
-    k = (config['dnac1'] - (config['dnac2'] / 2.0)) * 1e-9
+    k = (config["dnac1"] - (config["dnac2"] / 2.0)) * 1e-9
 
     # compute dS first, add concentration term in-place
-    denom = get_dS_grid(dinuc_grid, config['min_length'], config['max_length'],
-                        Na=config['Na'], K=config['K'], Tris=config['Tris'],
-                        Mg=config['Mg'], dNTPs=config['dNTPs'])
+    denom = get_dS_grid(
+        dinuc_grid,
+        config["min_length"],
+        config["max_length"],
+        Na=config["Na"],
+        K=config["K"],
+        Tris=config["Tris"],
+        Mg=config["Mg"],
+        dNTPs=config["dNTPs"],
+    )
     denom += R * np.log(k)
 
     # compute dH, scale and divide in-place to avoid temporary arrays
-    tm = get_dH_grid(dinuc_grid, config['min_length'], config['max_length'])
+    tm = get_dH_grid(dinuc_grid, config["min_length"], config["max_length"])
     tm *= 1000.0
     tm /= denom
     del denom
-    tm -= 273.15 # convert from Kelvin to Celsius
+    tm -= 273.15  # convert from Kelvin to Celsius
 
-    if config['pct_formamide']:
-        tm -= (config['pct_formamide'] * config['formamide_factor'])
+    if config["pct_formamide"]:
+        tm -= config["pct_formamide"] * config["formamide_factor"]
 
     # success
     return tm

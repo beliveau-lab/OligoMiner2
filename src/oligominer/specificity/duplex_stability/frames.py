@@ -23,13 +23,13 @@ import pandas as pd
 # alignment operations that consume a base from both the probe and the target.
 # S is included because the extracted target window spans the full probe
 # footprint, so a soft-clipped flank lines up positionally rather than gapping
-_CONSUMES_BOTH = '=XMS'
+_CONSUMES_BOTH = "=XMS"
 
 # consumes the probe only, leaving a gap in the target
-_CONSUMES_PROBE = 'I'
+_CONSUMES_PROBE = "I"
 
 # consumes the target only, leaving a gap in the probe
-_CONSUMES_TARGET = 'DN'
+_CONSUMES_TARGET = "DN"
 
 DEFAULT_CELSIUS = 47.0
 DEFAULT_SODIUM = 0.39
@@ -48,16 +48,16 @@ def expand_cigar(cigar):
         ops (str): one operation character per alignment column.
     """
     ops = []
-    count = ''
+    count = ""
     for char in str(cigar):
         if char.isdigit():
             count += char
         else:
             ops.append(char * int(count or 1))
-            count = ''
+            count = ""
 
     # success
-    return ''.join(ops)
+    return "".join(ops)
 
 
 def build_aln(probe, target, ops):
@@ -89,21 +89,22 @@ def build_aln(probe, target, ops):
             if probe_i >= len(probe):
                 return None, None
             probe_out.append(probe[probe_i])
-            target_out.append('-')
+            target_out.append("-")
             probe_i += 1
         elif op in _CONSUMES_TARGET:
             if target_i >= len(target):
                 return None, None
-            probe_out.append('-')
+            probe_out.append("-")
             target_out.append(target[target_i])
             target_i += 1
 
     # success
-    return ''.join(probe_out), ''.join(target_out)
+    return "".join(probe_out), "".join(target_out)
 
 
-def build_duplex_frame(merged_df, celsius=DEFAULT_CELSIUS, sodium=DEFAULT_SODIUM,
-                       drop_malformed=True):
+def build_duplex_frame(
+    merged_df, celsius=DEFAULT_CELSIUS, sodium=DEFAULT_SODIUM, drop_malformed=True
+):
     """
     Shape a merged probe and alignment table into an encoder-ready frame.
 
@@ -131,43 +132,43 @@ def build_duplex_frame(merged_df, celsius=DEFAULT_CELSIUS, sodium=DEFAULT_SODIUM
     df = merged_df.copy()
 
     if df.empty:
-        for column in ('target_seq', 'ops', 'probe_aln', 'target_aln'):
+        for column in ("target_seq", "ops", "probe_aln", "target_aln"):
             df[column] = pd.Series(dtype=object)
-        df['align_score'] = pd.Series(dtype=float)
-        df['length'] = pd.Series(dtype=int)
-        df.attrs['n_dropped_malformed'] = 0
+        df["align_score"] = pd.Series(dtype=float)
+        df["length"] = pd.Series(dtype=int)
+        df.attrs["n_dropped_malformed"] = 0
         return df
 
-    if 'target_seq' not in df:
-        df['target_seq'] = df['derived_seq']
-    if 'ops' not in df:
-        df['ops'] = df['align_cigar'].map(expand_cigar)
+    if "target_seq" not in df:
+        df["target_seq"] = df["derived_seq"]
+    if "ops" not in df:
+        df["ops"] = df["align_cigar"].map(expand_cigar)
 
     probe_aln, target_aln = [], []
-    for probe, target, ops in zip(df['probe_seq'], df['target_seq'], df['ops']):
+    for probe, target, ops in zip(df["probe_seq"], df["target_seq"], df["ops"]):
         aligned_probe, aligned_target = build_aln(str(probe), str(target), str(ops))
         probe_aln.append(aligned_probe)
         target_aln.append(aligned_target)
 
-    df['probe_aln'] = probe_aln
-    df['target_aln'] = target_aln
+    df["probe_aln"] = probe_aln
+    df["target_aln"] = target_aln
 
     n_before = len(df)
-    malformed = df['probe_aln'].isna() | df['target_aln'].isna()
+    malformed = df["probe_aln"].isna() | df["target_aln"].isna()
     if drop_malformed and malformed.any():
         df = df[~malformed].copy()
-    df.attrs['n_dropped_malformed'] = int(n_before - len(df))
+    df.attrs["n_dropped_malformed"] = int(n_before - len(df))
 
     # alignment scores arrive from BED as strings and can be the literal "NA"
-    if 'align_score' in df:
-        df['align_score'] = pd.to_numeric(df['align_score'], errors='coerce').fillna(0.0)
+    if "align_score" in df:
+        df["align_score"] = pd.to_numeric(df["align_score"], errors="coerce").fillna(0.0)
     else:
-        df['align_score'] = 0.0
+        df["align_score"] = 0.0
 
     df = _apply_condition(df, celsius, sodium)
 
-    if 'length' not in df:
-        df['length'] = df['probe_seq'].str.len()
+    if "length" not in df:
+        df["length"] = df["probe_seq"].str.len()
 
     _check_ops_distinguish_matches(df)
 
@@ -196,8 +197,8 @@ def _check_ops_distinguish_matches(df):
     if len(df) == 0:
         return True
 
-    ops = df['ops'].astype(str)
-    if not ops.str.contains('[=X]', regex=True).any():
+    ops = df["ops"].astype(str)
+    if not ops.str.contains("[=X]", regex=True).any():
         raise ValueError(
             "no alignment in this frame uses '=' or 'X' operations, so matches "
             "and mismatches cannot be told apart and every thermodynamic feature "
@@ -225,20 +226,21 @@ def _apply_condition(df, celsius, sodium):
         KeyError: if celsius is None and no label_celsius column exists.
     """
     if celsius is not None:
-        if 'label_celsius' in df.columns:
-            df['label_celsius'] = df['label_celsius'].fillna(float(celsius))
+        if "label_celsius" in df.columns:
+            df["label_celsius"] = df["label_celsius"].fillna(float(celsius))
         else:
-            df['label_celsius'] = float(celsius)
-    elif 'label_celsius' not in df.columns:
+            df["label_celsius"] = float(celsius)
+    elif "label_celsius" not in df.columns:
         raise KeyError(
-            'celsius=None requires the frame to carry a label_celsius column '
-            'per row, and this one does not')
+            "celsius=None requires the frame to carry a label_celsius column "
+            "per row, and this one does not"
+        )
 
     if sodium is not None:
-        if 'label_sodium' in df.columns:
-            df['label_sodium'] = df['label_sodium'].fillna(float(sodium))
+        if "label_sodium" in df.columns:
+            df["label_sodium"] = df["label_sodium"].fillna(float(sodium))
         else:
-            df['label_sodium'] = float(sodium)
+            df["label_sodium"] = float(sodium)
 
     # success
     return df

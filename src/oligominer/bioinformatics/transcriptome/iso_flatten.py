@@ -29,14 +29,20 @@ def flatten_isoforms(df):
             seqid, start, end, gene_id, score, strand, coverage.
     """
     # group exons by gene
-    grouped = df.groupby('gene_id').aggregate({
-        'seqid': 'first',
-        'start': lambda x: tuple(x),
-        'end': lambda x: tuple(x),
-        'score': 'first',
-        'strand': lambda x: tuple(x),
-        'transcript_id_full': lambda x: tuple(x),
-    }).reset_index(drop=False)
+    grouped = (
+        df.groupby("gene_id")
+        .aggregate(
+            {
+                "seqid": "first",
+                "start": lambda x: tuple(x),
+                "end": lambda x: tuple(x),
+                "score": "first",
+                "strand": lambda x: tuple(x),
+                "transcript_id_full": lambda x: tuple(x),
+            }
+        )
+        .reset_index(drop=False)
+    )
 
     # flatten each gene's exons to shared segments
     segment_lists = grouped.apply(_flatten_gene_exons, axis=1)
@@ -44,7 +50,7 @@ def flatten_isoforms(df):
 
     flat_df = pd.DataFrame(
         merged_segments,
-        columns=['seqid', 'start', 'end', 'gene_id', 'score', 'strand', 'coverage'],
+        columns=["seqid", "start", "end", "gene_id", "score", "strand", "coverage"],
     )
 
     # success
@@ -82,14 +88,13 @@ def _flatten_gene_exons(row):
     # build per-base coverage array
     coverage = np.zeros(max_end - min_start, dtype=int)
     for i in range(num_exons):
-        coverage[starts_norm[i]:ends_norm[i]] += 1
+        coverage[starts_norm[i] : ends_norm[i]] += 1
     max_coverage = np.max(coverage)
 
     # determine output intervals
     output_starts = starts
     output_ends = ends
     if max_coverage > 1:
-
         # find start and end coordinates of maximally shared segments
         mask = (coverage == max_coverage).astype(int)
         shared_starts = np.where(np.append([mask[0]], np.diff(mask)) == 1)[0]

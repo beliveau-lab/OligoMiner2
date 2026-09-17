@@ -34,12 +34,15 @@ def run_cmd(cmd, input_data=None, output_file=None, binary=False, verbose=False)
     Raises:
         ExternalCommandFailed: if the command fails.
     """
-    result = ShellPipeline(binary=binary).add(cmd).run(
-        input_data=input_data, output_file=output_file, verbose=verbose
+    result = (
+        ShellPipeline(binary=binary)
+        .add(cmd)
+        .run(input_data=input_data, output_file=output_file, verbose=verbose)
     )
 
     # success
     return result
+
 
 class ShellPipeline:
     """
@@ -146,7 +149,7 @@ class ShellPipeline:
                 stdin=subprocess.PIPE if input_data is not None else None,
                 stdout=subprocess.PIPE,
                 stderr=subprocess.PIPE,
-                text=text_mode
+                text=text_mode,
             ) as p:
                 current_stdout, err = p.communicate(input=input_data)
         except Exception as e:
@@ -161,7 +164,9 @@ class ShellPipeline:
             sys.stderr.flush()
 
         if p.returncode != 0:
-            raise ExternalCommandFailed(cmd, returncode=p.returncode, stderr=err.strip() if err else None)
+            raise ExternalCommandFailed(
+                cmd, returncode=p.returncode, stderr=err.strip() if err else None
+            )
 
         # success
         return current_stdout
@@ -177,7 +182,7 @@ class ShellPipeline:
         Raises:
             MissingOutputFile: if writing to the file fails.
         """
-        mode = 'wb' if self.binary else 'w'
+        mode = "wb" if self.binary else "w"
         try:
             with open(output_file, mode) as f:
                 f.write(data)

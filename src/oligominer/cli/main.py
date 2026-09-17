@@ -1,8 +1,8 @@
 """
 # OligoMiner Command-Line Interface (CLI)
 
-This module sets up the command-line interface for OligoMiner, allowing 
-users to run various commands related to oligonucleotide probe design 
+This module sets up the command-line interface for OligoMiner, allowing
+users to run various commands related to oligonucleotide probe design
 directly from the terminal.
 
 Commands are organized into subcommands, each handled by its own module. A
@@ -10,13 +10,12 @@ command module exposes `register(subparsers)`, which adds its parser and sets
 `func` to the callable that runs it; `main` dispatches on that attribute.
 """
 
-
 import argparse
 
 from .. import __version__
 
 # configure main CLI help text
-HELP_TEXT = rf'''
+HELP_TEXT = rf"""
   ____  _ _             __  __ _               _____ _____ 
  / __ \| (_)           |  \/  (_)             |_   _|_   _|
 | |  | | |_  __ _  ___ | \  / |_ _ __   ___ _ __| |   | |  
@@ -29,7 +28,7 @@ HELP_TEXT = rf'''
 Version:   {__version__}
 Docs:      https://oligominer.org/docs/{__version__}/
 Code:      https://github.com/beliveau-lab/OligoMiner2
-'''
+"""
 
 
 def build_parser():
@@ -42,7 +41,9 @@ def build_parser():
     Returns:
         parser (argparse.ArgumentParser): the configured parser.
     """
-    parser = argparse.ArgumentParser(prog="oligominer", description=HELP_TEXT, formatter_class=argparse.RawTextHelpFormatter)
+    parser = argparse.ArgumentParser(
+        prog="oligominer", description=HELP_TEXT, formatter_class=argparse.RawTextHelpFormatter
+    )
 
     parser.add_argument(
         "--version",

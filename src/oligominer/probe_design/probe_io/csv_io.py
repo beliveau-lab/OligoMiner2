@@ -11,8 +11,14 @@ from oligominer.thermodynamics.mining import PROBE_COLUMNS
 
 # expected column order for alignment CSV files
 ALIGN_COLUMNS = [
-    'align_seqid', 'align_start', 'align_stop', 'seqid',
-    'align_score', 'align_strand', 'align_cigar', 'derived_seq'
+    "align_seqid",
+    "align_start",
+    "align_stop",
+    "seqid",
+    "align_score",
+    "align_strand",
+    "align_cigar",
+    "derived_seq",
 ]
 
 

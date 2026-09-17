@@ -20,7 +20,7 @@ from oligominer.utils.exceptions import ConfigurationError
 from .config import LDA_TEMPERATURES as AVAILABLE_TEMPERATURES
 
 # ordered feature columns expected by the model
-FEATURE_COLUMNS = ('probe_len', 'align_score', 'probe_gc')
+FEATURE_COLUMNS = ("probe_len", "align_score", "probe_gc")
 
 # pre-fit LDA coefficients from OligoMiner v1, indexed by temperature
 # features are [probe_len, align_score, gc_percentage]
@@ -101,11 +101,11 @@ def compute_features(df):
     """
     features = pd.DataFrame()
 
-    features['probe_len'] = df['probe_seq'].str.len().astype(float)
-    features['align_score'] = df['align_score'].astype(float)
+    features["probe_len"] = df["probe_seq"].str.len().astype(float)
+    features["align_score"] = df["align_score"].astype(float)
 
     # gc as percentage (0-100) to match original BioPython GC() used in training
-    features['probe_gc'] = df['probe_seq'].apply(calc_gc, as_percent=True)
+    features["probe_gc"] = df["probe_seq"].apply(calc_gc, as_percent=True)
 
     # success
     return features
@@ -164,14 +164,14 @@ def predict_duplex(probe_seq, align_score, temperature=42, normalize=True):
     Returns:
         prediction (float): predicted off-target duplex probability.
     """
-    df = pd.DataFrame({
-        'probe_seq': [probe_seq],
-        'align_score': [align_score],
-    })
-
-    predictions = predict_duplex_batch(
-        df, temperature=temperature, normalize=normalize
+    df = pd.DataFrame(
+        {
+            "probe_seq": [probe_seq],
+            "align_score": [align_score],
+        }
     )
+
+    predictions = predict_duplex_batch(df, temperature=temperature, normalize=normalize)
 
     # success
     return float(predictions[0])

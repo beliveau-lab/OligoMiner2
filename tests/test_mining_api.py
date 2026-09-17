@@ -16,7 +16,7 @@ from oligominer.utils.exceptions import ConfigurationError
 
 
 # parameters of mine_sequence that describe the input rather than the mining regime
-_NOT_CONFIG = {'seq', 'seq_id'}
+_NOT_CONFIG = {"seq", "seq_id"}
 
 
 def _signature_params():
@@ -28,7 +28,6 @@ def _signature_params():
 
 
 class TestConfigMatchesSignature:
-
     def test_every_documented_key_is_accepted(self):
         documented = set(GET_DEFAULT_MINING_CONFIG())
         rejected = documented - _signature_params()
@@ -46,7 +45,7 @@ class TestConfigMatchesSignature:
     def test_each_documented_key_can_actually_be_passed(self, key):
         """Every documented key is accepted as a keyword argument."""
         value = GET_DEFAULT_MINING_CONFIG()[key]
-        mine_sequence('ACGT' * 40, seq_id='t', **{key: value})
+        mine_sequence("ACGT" * 40, seq_id="t", **{key: value})
 
     def test_defaults_agree_in_value_not_just_in_name(self):
         """The documented default and the signature default are the same value."""
@@ -56,7 +55,8 @@ class TestConfigMatchesSignature:
         mismatched = {
             key: (documented[key], sig[key].default)
             for key in documented
-            if key in sig and sig[key].default is not inspect.Parameter.empty
+            if key in sig
+            and sig[key].default is not inspect.Parameter.empty
             and sig[key].default != documented[key]
         }
         assert mismatched == {}, f"config and signature defaults disagree: {mismatched}"
@@ -66,13 +66,14 @@ class TestGcIsReachable:
     """The GC bounds reach the filter and change which probes are returned."""
 
     # 30 nt of pure GC (100% GC) and pure AT (0% GC), both well outside 20-80
-    GC_RICH = 'GCGCGCGCGCGCGCGCGCGCGCGCGCGCGC'
-    AT_RICH = 'ATATATATATATATATATATATATATATAT'
+    GC_RICH = "GCGCGCGCGCGCGCGCGCGCGCGCGCGCGC"
+    AT_RICH = "ATATATATATATATATATATATATATATAT"
 
     def test_widening_gc_bounds_changes_the_result(self):
         """A GC-rich sequence is filtered at the default bounds and kept when widened."""
-        params = dict(seq_id='t', min_length=30, max_length=30,
-                      min_tm=0, max_tm=200, max_homopolymer=None)
+        params = dict(
+            seq_id="t", min_length=30, max_length=30, min_tm=0, max_tm=200, max_homopolymer=None
+        )
 
         default_bounds = mine_sequence(self.GC_RICH, **params)
         widened = mine_sequence(self.GC_RICH, min_gc=0, max_gc=100, **params)
@@ -81,8 +82,9 @@ class TestGcIsReachable:
         assert len(widened) > 0
 
     def test_narrowing_gc_bounds_filters_probes_out(self):
-        params = dict(seq_id='t', min_length=30, max_length=30,
-                      min_tm=0, max_tm=200, max_homopolymer=None)
+        params = dict(
+            seq_id="t", min_length=30, max_length=30, min_tm=0, max_tm=200, max_homopolymer=None
+        )
 
         kept = mine_sequence(self.AT_RICH, min_gc=0, max_gc=100, **params)
         filtered = mine_sequence(self.AT_RICH, min_gc=40, max_gc=60, **params)
@@ -91,8 +93,9 @@ class TestGcIsReachable:
         assert len(filtered) == 0
 
     def test_gc_bounds_can_be_disabled(self):
-        params = dict(seq_id='t', min_length=30, max_length=30,
-                      min_tm=0, max_tm=200, max_homopolymer=None)
+        params = dict(
+            seq_id="t", min_length=30, max_length=30, min_tm=0, max_tm=200, max_homopolymer=None
+        )
 
         probes = mine_sequence(self.GC_RICH, min_gc=None, max_gc=None, **params)
 
@@ -107,13 +110,19 @@ class TestGcIsReachable:
 
 
 class TestAllowOverlap:
-
-    SEQ = 'ACGT' * 60
+    SEQ = "ACGT" * 60
 
     def _params(self):
-        return dict(seq_id='t', min_length=30, max_length=30,
-                    min_tm=0, max_tm=200, max_homopolymer=None,
-                    min_gc=0, max_gc=100)
+        return dict(
+            seq_id="t",
+            min_length=30,
+            max_length=30,
+            min_tm=0,
+            max_tm=200,
+            max_homopolymer=None,
+            min_gc=0,
+            max_gc=100,
+        )
 
     def test_allow_overlap_actually_changes_behaviour(self):
         overlapping = mine_sequence(self.SEQ, allow_overlap=True, **self._params())
@@ -127,16 +136,15 @@ class TestAllowOverlap:
 
 
 class TestExhaustiveGuard:
-
-    SEQ = 'ACGT' * 60
+    SEQ = "ACGT" * 60
 
     def test_exhaustive_with_no_overlap_raises(self):
         with pytest.raises(ConfigurationError):
-            mine_sequence(self.SEQ, seq_id='t', exhaustive=True, allow_overlap=False)
+            mine_sequence(self.SEQ, seq_id="t", exhaustive=True, allow_overlap=False)
 
     def test_exhaustive_with_spacing_raises(self):
         with pytest.raises(ConfigurationError):
-            mine_sequence(self.SEQ, seq_id='t', exhaustive=True, spacing=5)
+            mine_sequence(self.SEQ, seq_id="t", exhaustive=True, spacing=5)
 
 
 class TestChunkSizeValidation:
@@ -147,21 +155,28 @@ class TestChunkSizeValidation:
     """
 
     def test_a_chunk_smaller_than_a_probe_is_rejected(self):
-        with pytest.raises(ConfigurationError, match='chunk_size'):
-            mine_sequence('ATCG' * 50, min_length=30, max_length=37,
-                          min_tm=0, max_tm=100, chunk_size=10)
+        with pytest.raises(ConfigurationError, match="chunk_size"):
+            mine_sequence(
+                "ATCG" * 50, min_length=30, max_length=37, min_tm=0, max_tm=100, chunk_size=10
+            )
 
     def test_a_chunk_equal_to_max_length_is_accepted(self):
-        probes = mine_sequence('ATCG' * 50, min_length=30, max_length=37,
-                               min_tm=0, max_tm=100, min_gc=0, max_gc=100,
-                               chunk_size=37)
+        probes = mine_sequence(
+            "ATCG" * 50,
+            min_length=30,
+            max_length=37,
+            min_tm=0,
+            max_tm=100,
+            min_gc=0,
+            max_gc=100,
+            chunk_size=37,
+        )
         assert probes
 
     def test_chunking_does_not_change_the_probe_set(self):
         # the reason the guard matters: below it, results silently differ
-        seq = 'ATCG' * 50
-        params = dict(min_length=30, max_length=37, min_tm=0, max_tm=100,
-                      min_gc=0, max_gc=100)
+        seq = "ATCG" * 50
+        params = dict(min_length=30, max_length=37, min_tm=0, max_tm=100, min_gc=0, max_gc=100)
 
         whole = mine_sequence(seq, chunk_size=100_000, **params)
         chunked = mine_sequence(seq, chunk_size=40, **params)
@@ -181,19 +196,19 @@ class TestMiningKeywordRouting:
         from oligominer.probe_design.pipeline import mine_probe_candidates
         from oligominer.utils.exceptions import InvalidInputError
 
-        with pytest.raises(InvalidInputError, match='not mining parameters'):
-            mine_probe_candidates('genome.fa', nofw=True)
+        with pytest.raises(InvalidInputError, match="not mining parameters"):
+            mine_probe_candidates("genome.fa", nofw=True)
 
     def test_the_error_lists_what_mining_does_accept(self):
         from oligominer.probe_design.pipeline import mine_probe_candidates
         from oligominer.utils.exceptions import InvalidInputError
 
-        with pytest.raises(InvalidInputError, match='min_length'):
-            mine_probe_candidates('genome.fa', normalize=False)
+        with pytest.raises(InvalidInputError, match="min_length"):
+            mine_probe_candidates("genome.fa", normalize=False)
 
     def test_several_unknown_keywords_are_all_named(self):
         from oligominer.probe_design.pipeline import mine_probe_candidates
         from oligominer.utils.exceptions import InvalidInputError
 
         with pytest.raises(InvalidInputError, match="'nofw'.*'norc'"):
-            mine_probe_candidates('genome.fa', nofw=True, norc=True)
+            mine_probe_candidates("genome.fa", nofw=True, norc=True)

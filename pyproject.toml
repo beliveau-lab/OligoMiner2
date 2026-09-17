@@ -122,6 +122,25 @@ allow-direct-references = true
 # publishing configuration (using uv)
 #
 
+[tool.ruff]
+line-length = 100
+
+[tool.ruff.lint]
+# ANN is deliberately absent: this project does not require annotations.
+select = ["E", "W", "F", "I", "B", "UP", "SIM", "RUF", "D"]
+
+[tool.ruff.lint.pydocstyle]
+convention = "google"
+
+[tool.ruff.lint.per-file-ignores]
+# tests document themselves by their names
+"tests/**" = ["D"]
+# vendored verbatim from the studies that fitted the shipping models; reformatting them risks
+# moving a model's predictions for no documentation gain
+"src/oligominer/specificity/duplex_stability/l4t/**" = ["D", "E", "W", "I", "B", "UP", "SIM", "RUF"]
+"src/oligominer/**/bilstm_arch.py" = ["D", "E", "W", "I", "B", "UP", "SIM", "RUF"]
+
+
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 # NOTE: no pythonpath = ["src"]. With a src layout the tests import the INSTALLED package, so a

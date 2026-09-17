@@ -43,7 +43,7 @@ def utc_now():
         stamp (str): the timestamp, second resolution, with a Z suffix.
     """
     # success
-    return datetime.now(timezone.utc).strftime('%Y-%m-%dT%H:%M:%SZ')
+    return datetime.now(timezone.utc).strftime("%Y-%m-%dT%H:%M:%SZ")
 
 
 def new_manifest(name=None):
@@ -58,15 +58,15 @@ def new_manifest(name=None):
     """
     # success
     return {
-        'schema_version': SCHEMA_VERSION,
-        'name': name,
-        'created': utc_now(),
-        'oligominer_version': _package_version(),
-        'n_probes': 0,
-        'columns': [],
-        'target': {},
-        'stages': [],
-        'attrition': {},
+        "schema_version": SCHEMA_VERSION,
+        "name": name,
+        "created": utc_now(),
+        "oligominer_version": _package_version(),
+        "n_probes": 0,
+        "columns": [],
+        "target": {},
+        "stages": [],
+        "attrition": {},
     }
 
 
@@ -80,14 +80,13 @@ def _package_version():
     try:
         from oligominer._version import __version__
     except ImportError:
-        return 'unknown'
+        return "unknown"
 
     # success
     return __version__
 
 
-def record_stage(manifest, name, params=None, n_in=None, n_out=None,
-                 **details):
+def record_stage(manifest, name, params=None, n_in=None, n_out=None, **details):
     """
     Append a pipeline stage to a manifest.
 
@@ -115,25 +114,26 @@ def record_stage(manifest, name, params=None, n_in=None, n_out=None,
     """
     if n_in is not None and n_out is not None and int(n_out) > int(n_in):
         raise SchemaError(
-            f'stage {name!r} reports {n_out} probes leaving and {n_in} entering; '
-            f'a filtering stage cannot emit more than it received. Omit n_in for '
-            f'a stage that creates probes.')
+            f"stage {name!r} reports {n_out} probes leaving and {n_in} entering; "
+            f"a filtering stage cannot emit more than it received. Omit n_in for "
+            f"a stage that creates probes."
+        )
 
     stage = {
-        'stage': name,
-        'at': utc_now(),
-        'params': params or {},
+        "stage": name,
+        "at": utc_now(),
+        "params": params or {},
     }
     if n_in is not None:
-        stage['n_in'] = int(n_in)
+        stage["n_in"] = int(n_in)
     if n_out is not None:
-        stage['n_out'] = int(n_out)
+        stage["n_out"] = int(n_out)
     if n_in is not None and n_out is not None:
-        stage['n_dropped'] = int(n_in) - int(n_out)
+        stage["n_dropped"] = int(n_in) - int(n_out)
     stage.update(details)
 
-    manifest['stages'].append(stage)
-    manifest['attrition'] = attrition_summary(manifest)
+    manifest["stages"].append(stage)
+    manifest["attrition"] = attrition_summary(manifest)
 
     # success
     return manifest
@@ -150,18 +150,18 @@ def attrition_summary(manifest):
         summary (dict): n_in at the first stage, n_out at the last, and the
             number dropped per stage that reported both.
     """
-    stages = manifest.get('stages', [])
-    with_out = [s for s in stages if 'n_out' in s]
+    stages = manifest.get("stages", [])
+    with_out = [s for s in stages if "n_out" in s]
     if not with_out:
         return {}
 
-    filtering = [s for s in stages if 'n_dropped' in s]
+    filtering = [s for s in stages if "n_dropped" in s]
 
     # success
     return {
-        'n_in': with_out[0]['n_out'],
-        'n_out': with_out[-1]['n_out'],
-        'by_stage': {s['stage']: s['n_dropped'] for s in filtering},
+        "n_in": with_out[0]["n_out"],
+        "n_out": with_out[-1]["n_out"],
+        "by_stage": {s["stage"]: s["n_dropped"] for s in filtering},
     }
 
 
@@ -179,19 +179,20 @@ def validate_manifest(manifest):
         SchemaError: if a required field is missing or the version is unreadable.
     """
     if not isinstance(manifest, dict):
-        raise SchemaError(f'manifest must be a dict, got {type(manifest).__name__}')
+        raise SchemaError(f"manifest must be a dict, got {type(manifest).__name__}")
 
-    version = manifest.get('schema_version')
+    version = manifest.get("schema_version")
     if version is None:
-        raise SchemaError('manifest carries no schema_version')
+        raise SchemaError("manifest carries no schema_version")
     if version not in SUPPORTED_VERSIONS:
         raise SchemaError(
-            f'probe set schema version {version} cannot be read by this release, '
-            f'which supports {list(SUPPORTED_VERSIONS)}. Upgrade oligominer.')
+            f"probe set schema version {version} cannot be read by this release, "
+            f"which supports {list(SUPPORTED_VERSIONS)}. Upgrade oligominer."
+        )
 
-    for field in ('created', 'n_probes', 'columns', 'stages'):
+    for field in ("created", "n_probes", "columns", "stages"):
         if field not in manifest:
-            raise SchemaError(f'manifest is missing required field {field!r}')
+            raise SchemaError(f"manifest is missing required field {field!r}")
 
     # success
     return manifest
@@ -214,15 +215,15 @@ def upgrade_manifest(manifest):
     Raises:
         SchemaError: if no upgrade path reaches the current version.
     """
-    version = manifest.get('schema_version')
+    version = manifest.get("schema_version")
     while version != SCHEMA_VERSION:
         migrate = MIGRATIONS.get(version)
         if migrate is None:
             raise SchemaError(
-                f'no migration from probe set schema version {version} '
-                f'to {SCHEMA_VERSION}')
+                f"no migration from probe set schema version {version} to {SCHEMA_VERSION}"
+            )
         manifest = migrate(manifest)
-        version = manifest['schema_version']
+        version = manifest["schema_version"]
 
     # success
     return manifest

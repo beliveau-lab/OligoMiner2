@@ -22,8 +22,15 @@ import pandas as pd
 
 from oligominer.utils.seq_utils import rev_comp
 
-BED_COLUMNS = ['align_seqid', 'align_start', 'align_stop', 'seqid',
-               'align_score', 'align_strand', 'align_cigar']
+BED_COLUMNS = [
+    "align_seqid",
+    "align_start",
+    "align_stop",
+    "seqid",
+    "align_score",
+    "align_strand",
+    "align_cigar",
+]
 
 
 def load_reference(fasta_path):
@@ -78,23 +85,22 @@ def clamp_intervals(align_df, sizes):
         KeyError: if an alignment names a chromosome absent from the reference.
     """
     out = align_df.copy()
-    limits = out['align_seqid'].map(sizes)
+    limits = out["align_seqid"].map(sizes)
 
     if limits.isna().any():
-        missing = sorted(out.loc[limits.isna(), 'align_seqid'].unique())[:5]
-        raise KeyError(
-            f'alignments reference chromosomes absent from the FASTA: {missing}')
+        missing = sorted(out.loc[limits.isna(), "align_seqid"].unique())[:5]
+        raise KeyError(f"alignments reference chromosomes absent from the FASTA: {missing}")
 
-    start = out['align_start'].to_numpy(dtype=np.int64)
-    stop = out['align_stop'].to_numpy(dtype=np.int64)
+    start = out["align_start"].to_numpy(dtype=np.int64)
+    stop = out["align_stop"].to_numpy(dtype=np.int64)
     limit = limits.to_numpy(dtype=np.int64)
 
     new_start = np.clip(start, 0, limit)
     new_stop = np.clip(stop, 0, limit)
 
-    out['was_clamped'] = (new_start != start) | (new_stop != stop)
-    out['align_start'] = new_start
-    out['align_stop'] = new_stop
+    out["was_clamped"] = (new_start != start) | (new_stop != stop)
+    out["align_start"] = new_start
+    out["align_stop"] = new_stop
 
     # success
     return out
@@ -113,25 +119,25 @@ def fetch_derived_seqs(align_df, fasta, to_upper=True):
     Returns:
         seqs (pandas.Series): the derived sequence per row, indexed like align_df.
     """
-    seqs = pd.Series('', index=align_df.index, dtype=object)
+    seqs = pd.Series("", index=align_df.index, dtype=object)
 
-    starts = align_df['align_start'].to_numpy(dtype=np.int64)
-    stops = align_df['align_stop'].to_numpy(dtype=np.int64)
-    if 'align_strand' in align_df:
-        strands = align_df['align_strand'].to_numpy()
+    starts = align_df["align_start"].to_numpy(dtype=np.int64)
+    stops = align_df["align_stop"].to_numpy(dtype=np.int64)
+    if "align_strand" in align_df:
+        strands = align_df["align_strand"].to_numpy()
     else:
-        strands = np.full(len(align_df), '+')
+        strands = np.full(len(align_df), "+")
 
-    for chrom, block in align_df.groupby('align_seqid', sort=False):
+    for chrom, block in align_df.groupby("align_seqid", sort=False):
         # materialize the chromosome once so each interval is a string slice
         chrom_seq = str(fasta[chrom])
         positions = align_df.index.get_indexer(block.index)
         values = []
         for i in positions:
-            piece = chrom_seq[starts[i]:stops[i]]
+            piece = chrom_seq[starts[i] : stops[i]]
             if to_upper:
                 piece = piece.upper()
-            if strands[i] == '-':
+            if strands[i] == "-":
                 piece = rev_comp(piece.upper())
             values.append(piece)
         seqs.loc[block.index] = values
@@ -154,7 +160,7 @@ def reconstruct(align_df, fasta_path, to_upper=True):
     """
     fasta = load_reference(fasta_path)
     out = clamp_intervals(align_df, chrom_sizes(fasta))
-    out['derived_seq'] = fetch_derived_seqs(out, fasta, to_upper=to_upper)
+    out["derived_seq"] = fetch_derived_seqs(out, fasta, to_upper=to_upper)
 
     # success
     return out

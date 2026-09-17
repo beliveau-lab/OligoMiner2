@@ -30,6 +30,7 @@ CONDITIONS. Channel ORDER is a contract: `ncond=k` uses the first k of (t_eff, l
 and nothing else. A net fitted with length in channel 1 and served with temperature there is not
 detectably broken -- it is just wrong. The spec is written into every artifact and asserted on load.
 """
+
 import sys
 from pathlib import Path
 
@@ -40,7 +41,7 @@ HERE = Path(__file__).resolve().parent
 
 # ---- tokenizer ----------------------------------------------------------------------------------
 BASES, PAD = "ACGT-", 0
-VOCAB = 1 + len(BASES) ** 2          # 26 = PAD + 25 ordered (probe base, target base) pair states
+VOCAB = 1 + len(BASES) ** 2  # 26 = PAD + 25 ordered (probe base, target base) pair states
 _IDX = {b: i for i, b in enumerate(BASES)}
 
 
@@ -65,17 +66,18 @@ def tokenize(df, width):
 
 
 # ---- conditions ---------------------------------------------------------------------------------
-T_LO, T_HI = 7.0, 97.0            # C, effective temperature (T + 0.65 x %formamide)
-L_LO, L_HI = 10, 80               # nt, probe length
-NA_LO, NA_HI = 0.05, 1.00         # M sodium, normalised in log10 space
+T_LO, T_HI = 7.0, 97.0  # C, effective temperature (T + 0.65 x %formamide)
+L_LO, L_HI = 10, 80  # nt, probe length
+NA_LO, NA_HI = 0.05, 1.00  # M sodium, normalised in log10 space
 CHANNELS = ["t_eff", "length", "log10_sodium"]
 CONDITION_SPEC = {
-    "version": "1", "channels": CHANNELS,
+    "version": "1",
+    "channels": CHANNELS,
     "normalization": "min-max to [0,1] over fixed ranges; sodium in log10 space",
     "ranges": {"t_eff": [T_LO, T_HI], "length": [L_LO, L_HI], "sodium_M": [NA_LO, NA_HI]},
     "note": "channel ORDER is part of the contract; ncond=k uses the first k channels",
 }
-THRESHOLD = 0.2                   # a binder is pDup >= 0.2, everywhere
+THRESHOLD = 0.2  # a binder is pDup >= 0.2, everywhere
 
 
 def _mm(v, lo, hi):
@@ -92,17 +94,33 @@ def encode_conditions(df, ncond):
     """
     if ncond == 0:
         return np.zeros((len(df), 0), dtype=np.float32)
-    cols = [_mm(df["label_celsius"].values, T_LO, T_HI),
-            _mm(df["length"].values, L_LO, L_HI),
-            _mm(np.log10(np.clip(df["label_sodium"].values, 1e-6, None)),
-                np.log10(NA_LO), np.log10(NA_HI))]
+    cols = [
+        _mm(df["label_celsius"].values, T_LO, T_HI),
+        _mm(df["length"].values, L_LO, L_HI),
+        _mm(
+            np.log10(np.clip(df["label_sodium"].values, 1e-6, None)),
+            np.log10(NA_LO),
+            np.log10(NA_HI),
+        ),
+    ]
     return np.stack(cols[:ncond], axis=1).astype(np.float32)
 
 
 # ---- the network --------------------------------------------------------------------------------
-DEFAULT = {"embed_dim": 16, "hidden": 64, "layers": 2, "dropout": 0.3,
-           "lr": 3e-4, "weight_decay": 1e-2, "batch_size": 512,
-           "epochs": 30, "patience": 5, "val_frac": 0.1, "seed": 0, "loss": "bce"}
+DEFAULT = {
+    "embed_dim": 16,
+    "hidden": 64,
+    "layers": 2,
+    "dropout": 0.3,
+    "lr": 3e-4,
+    "weight_decay": 1e-2,
+    "batch_size": 512,
+    "epochs": 30,
+    "patience": 5,
+    "val_frac": 0.1,
+    "seed": 0,
+    "loss": "bce",
+}
 
 
 def _net(hp, ncond):
@@ -133,26 +151,40 @@ def _net(hp, ncond):
         -- the compression measured in `20260727_c`. Early fusion or FiLM-style modulation are the
         candidate fixes and are this study's one open modelling arm.
         """
+
         def __init__(s):
             super().__init__()
             s.emb = nn.Embedding(VOCAB, hp["embed_dim"], padding_idx=PAD)
-            s.lstm = nn.LSTM(hp["embed_dim"], hp["hidden"], hp["layers"], batch_first=True,
-                             bidirectional=True,
-                             dropout=hp["dropout"] if hp["layers"] > 1 else 0.0)
-            pooled = hp["hidden"] * 2 * 2 + ncond          # (mean, max) x bidirectional + conditions
+            s.lstm = nn.LSTM(
+                hp["embed_dim"],
+                hp["hidden"],
+                hp["layers"],
+                batch_first=True,
+                bidirectional=True,
+                dropout=hp["dropout"] if hp["layers"] > 1 else 0.0,
+            )
+            pooled = hp["hidden"] * 2 * 2 + ncond  # (mean, max) x bidirectional + conditions
             s.head = nn.Sequential(
-                nn.Linear(pooled, 256), nn.ReLU(), nn.Dropout(hp["dropout"]),
-                nn.Linear(256, 64), nn.ReLU(), nn.Dropout(hp["dropout"]),
-                nn.Linear(64, 1), nn.Sigmoid())
+                nn.Linear(pooled, 256),
+                nn.ReLU(),
+                nn.Dropout(hp["dropout"]),
+                nn.Linear(256, 64),
+                nn.ReLU(),
+                nn.Dropout(hp["dropout"]),
+                nn.Linear(64, 1),
+                nn.Sigmoid(),
+            )
 
         def forward(s, tok, cond):
             x = s.emb(tok)
             lens = (tok != PAD).sum(1).clamp(min=1)
-            packed = nn.utils.rnn.pack_padded_sequence(x, lens.cpu(), batch_first=True,
-                                                       enforce_sorted=False)
+            packed = nn.utils.rnn.pack_padded_sequence(
+                x, lens.cpu(), batch_first=True, enforce_sorted=False
+            )
             out, _ = s.lstm(packed)
-            out, _ = nn.utils.rnn.pad_packed_sequence(out, batch_first=True,
-                                                      total_length=tok.shape[1])
+            out, _ = nn.utils.rnn.pad_packed_sequence(
+                out, batch_first=True, total_length=tok.shape[1]
+            )
             m = (tok != PAD).unsqueeze(-1).to(out.dtype)
             mean = (out * m).sum(1) / m.sum(1).clamp(min=1)
             mx = torch.nan_to_num(out.masked_fill(m == 0, float("-inf")).max(1).values, neginf=0.0)
@@ -166,16 +198,23 @@ class OM2BiLSTM:
 
     def __init__(self, params=None, ncond=2, device=None):
         import torch
-        self.hp = dict(DEFAULT); self.hp.update(params or {})
+
+        self.hp = dict(DEFAULT)
+        self.hp.update(params or {})
         self.ncond = ncond
-        self.device = torch.device(device) if device else torch.device(
-            "cuda" if torch.cuda.is_available() else "cpu")
+        self.device = (
+            torch.device(device)
+            if device
+            else torch.device("cuda" if torch.cuda.is_available() else "cpu")
+        )
 
     def fit(self, tok, cond, y):
         import torch, torch.nn as nn
         from torch.utils.data import DataLoader, TensorDataset, Subset
+
         hp = self.hp
-        torch.manual_seed(hp["seed"]); np.random.seed(hp["seed"])
+        torch.manual_seed(hp["seed"])
+        np.random.seed(hp["seed"])
         torch.cuda.manual_seed_all(hp["seed"])
         self.net = _net(hp, self.ncond).to(self.device)
 
@@ -193,10 +232,10 @@ class OM2BiLSTM:
         tr = DataLoader(Subset(full, perm[nv:].tolist()), batch_size=hp["batch_size"], shuffle=True)
         va = DataLoader(Subset(full, perm[:nv].tolist()), batch_size=hp["batch_size"])
 
-        opt = torch.optim.AdamW(self.net.parameters(), lr=hp["lr"],
-                                weight_decay=hp["weight_decay"])
+        opt = torch.optim.AdamW(self.net.parameters(), lr=hp["lr"], weight_decay=hp["weight_decay"])
         sched = torch.optim.lr_scheduler.OneCycleLR(
-            opt, max_lr=hp["lr"], total_steps=max(1, hp["epochs"] * len(tr)), pct_start=0.05)
+            opt, max_lr=hp["lr"], total_steps=max(1, hp["epochs"] * len(tr)), pct_start=0.05
+        )
         # Soft-target BCE. NOTE its value has an IRREDUCIBLE FLOOR equal to the mean entropy of the
         # targets, so it is not comparable across corpora with different label distributions. It is
         # a training objective, never a reported metric. Kept out of autocast: BCELoss is explicitly
@@ -209,15 +248,19 @@ class OM2BiLSTM:
             self.net.train()
             for xb, cb, yb in tr:
                 opt.zero_grad()
-                lossf(self.net(xb.to(self.device), cb.to(self.device)),
-                      yb.to(self.device)).backward()
+                lossf(
+                    self.net(xb.to(self.device), cb.to(self.device)), yb.to(self.device)
+                ).backward()
                 torch.nn.utils.clip_grad_norm_(self.net.parameters(), 1.0)
-                opt.step(); sched.step()
-            self.net.eval(); tot = n = 0.0
+                opt.step()
+                sched.step()
+            self.net.eval()
+            tot = n = 0.0
             with torch.no_grad():
                 for xb, cb, yb in va:
                     p = self.net(xb.to(self.device), cb.to(self.device))
-                    tot += float(lossf(p, yb.to(self.device))) * len(yb); n += len(yb)
+                    tot += float(lossf(p, yb.to(self.device))) * len(yb)
+                    n += len(yb)
             vl = tot / max(n, 1)
             self.history.append(round(vl, 6))
             if vl < best - 1e-6:
@@ -227,37 +270,52 @@ class OM2BiLSTM:
                 bad += 1
                 if bad >= hp["patience"]:
                     break
-        if best_state:                              # BEST-validation weights, not the last ones
+        if best_state:  # BEST-validation weights, not the last ones
             self.net.load_state_dict(best_state)
         self.best_val, self.epochs_run = best, len(self.history)
         return self
 
     def predict(self, tok, cond, batch=4096):
         import torch
+
         self.net.eval()
         out = []
         with torch.no_grad():
             for i in range(0, len(tok), batch):
-                t = torch.from_numpy(np.asarray(tok[i:i+batch], np.int64)).to(self.device)
-                c = torch.from_numpy(np.asarray(cond[i:i+batch], np.float32)
-                                     .reshape(len(t), self.ncond)).to(self.device)
+                t = torch.from_numpy(np.asarray(tok[i : i + batch], np.int64)).to(self.device)
+                c = torch.from_numpy(
+                    np.asarray(cond[i : i + batch], np.float32).reshape(len(t), self.ncond)
+                ).to(self.device)
                 out.append(self.net(t, c).cpu().numpy())
         return np.clip(np.concatenate(out), 0.0, 1.0)
 
     def save(self, path):
         import torch
-        torch.save({"state_dict": self.net.state_dict(), "hp": self.hp, "ncond": self.ncond,
-                    "condition_spec": CONDITION_SPEC, "vocab": VOCAB, "pad": PAD,
-                    "threshold": THRESHOLD}, str(path))
+
+        torch.save(
+            {
+                "state_dict": self.net.state_dict(),
+                "hp": self.hp,
+                "ncond": self.ncond,
+                "condition_spec": CONDITION_SPEC,
+                "vocab": VOCAB,
+                "pad": PAD,
+                "threshold": THRESHOLD,
+            },
+            str(path),
+        )
 
     @classmethod
     def load(cls, path, device=None):
         import torch
+
         ck = torch.load(str(path), map_location="cpu", weights_only=False)
         if ck.get("condition_spec") != CONDITION_SPEC:
-            raise ValueError(f"{path} was fitted under a different condition encoder — serving it "
-                             f"now would shift every channel silently.\n  artifact: "
-                             f"{ck.get('condition_spec')}\n  current:  {CONDITION_SPEC}")
+            raise ValueError(
+                f"{path} was fitted under a different condition encoder — serving it "
+                f"now would shift every channel silently.\n  artifact: "
+                f"{ck.get('condition_spec')}\n  current:  {CONDITION_SPEC}"
+            )
         obj = cls(params=ck["hp"], ncond=ck["ncond"], device=device)
         obj.net = _net(ck["hp"], ck["ncond"]).to(obj.device)
         obj.net.load_state_dict(ck["state_dict"])
