@@ -305,7 +305,7 @@ def _load_bilstm(path, device=None):
         import torch  # noqa: F401
     except ImportError:
         raise MissingDependency(
-            'torch (required by duplex-BiLSTM; install with pip install "oligominer[bilstm]", '
+            'torch (required by duplex-BiLSTM; install with pip install "oligominer[torch]", '
             "or use physics-xgb, which needs no extra dependency)"
         )
 

@@ -70,9 +70,11 @@ Changelog = "https://github.com/beliveau-lab/OligoMiner2/blob/main/CHANGELOG.md"
 
 [project.optional-dependencies]
 
-# the sequence model. torch is ~1.8 GB, so it is not required to mine, screen or
-# score with the tree models
-bilstm = [
+# PyTorch, which only the duplex-BiLSTM model needs. Named for what it installs rather than
+# for what uses it, because the size and the GPU story are properties of torch: the default
+# PyPI wheel carries the whole CUDA stack on Linux, and a CPU-only build comes from a
+# different index. Mining, screening and scoring with the tree models need none of it.
+torch = [
     "torch",
 ]
 
