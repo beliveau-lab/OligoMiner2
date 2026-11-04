@@ -1,11 +1,11 @@
 """Tests for padlock (split-homology) probe mining.
 
 A padlock is one oligo whose two ends carry the target homology and whose middle
-is a non-hybridizing backbone. Probe and target are antiparallel, so the probe's
-5' arm pairs with the downstream target segment and its 3' arm with the upstream
+is a non-hybridizing backbone. The probe's free ends must meet at the nick, so its
+5' arm pairs with the upstream target segment and its 3' arm with the downstream
 one. The identity that makes this work, and that these tests assert, is that the
-two arms concatenated in probe order are the reverse complement of one contiguous
-target window.
+two arms joined in ligated order (3' arm, then 5' arm) are the reverse complement
+of one contiguous target window.
 """
 
 import random
@@ -76,7 +76,7 @@ class TestMining:
 
 
 class TestIdentity:
-    """The two arms in probe order are the reverse complement of the target window."""
+    """The arms in ligated order are the reverse complement of the target window."""
 
     def test_gapless_padlocks_satisfy_the_identity(self, target):
         df = padlocks_to_df(mine_padlock_sequence(target, seq_id="chr1", gap=0))
@@ -93,15 +93,46 @@ class TestIdentity:
         row = df.iloc[0]
         assert row["probe_seq"] == rev_comp(target[row["start"] : row["stop"]])
 
-    def test_probe_seq_is_the_two_arms_concatenated(self, target):
+    def test_probe_seq_is_the_two_arms_in_ligated_order(self, target):
         df = padlocks_to_df(mine_padlock_sequence(target, seq_id="chr1", gap=0))
         row = df.iloc[0]
-        assert row["probe_seq"] == row["arm_5p"] + row["arm_3p"]
+        assert row["probe_seq"] == row["arm_3p"] + row["arm_5p"]
 
     def test_the_junction_is_where_the_arms_meet(self, target):
         df = padlocks_to_df(mine_padlock_sequence(target, seq_id="chr1", gap=0))
         row = df.iloc[0]
-        assert row["junction"] == len(row["arm_5p"])
+        assert row["junction"] == len(row["arm_3p"])
+
+
+class TestTopology:
+    """The synthesized padlock's free ends pair either side of the target junction."""
+
+    @pytest.mark.parametrize("gap", [0, 5])
+    def test_free_ends_meet_at_the_junction(self, target, gap):
+        df = padlocks_to_df(mine_padlock_sequence(target, seq_id="chr1", gap=gap))
+        comp = {"A": "T", "C": "G", "G": "C", "T": "A"}
+        for _, row in df.head(50).iterrows():
+            t1_last = row["start"] + row["arm5_len"] - 1
+            t2_first = t1_last + 1 + gap
+            # the synthesized oligo is arm_5p + backbone + arm_3p
+            assert comp[row["arm_5p"][0]] == target[t1_last]
+            assert comp[row["arm_3p"][-1]] == target[t2_first]
+
+    def test_each_arm_gets_its_own_parameters(self, target):
+        df = padlocks_to_df(
+            mine_padlock_sequence(
+                target,
+                seq_id="chr1",
+                arm5=arm_params(min_length=16, max_length=16),
+                arm3=arm_params(min_length=24, max_length=24),
+            )
+        )
+        assert len(df) > 0
+        assert (df["arm5_len"] == 16).all() and (df["arm_5p"].str.len() == 16).all()
+        assert (df["arm3_len"] == 24).all() and (df["arm_3p"].str.len() == 24).all()
+        # the 16 nt 5' arm binds the upstream end of the footprint
+        row = df.iloc[0]
+        assert row["arm_5p"] == rev_comp(target[row["start"] : row["start"] + 16])
 
     def test_the_gap_sequence_is_recorded(self, target):
         df = padlocks_to_df(mine_padlock_sequence(target, seq_id="chr1", gap=5))

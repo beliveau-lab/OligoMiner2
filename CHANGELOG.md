@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Padlock arms were bound to the wrong ends of the target window.
+
 ## [0.0.4] - 2026-09-17
 
 First release under the packaging standard. `0.0.1.dev1` was a development release and could only

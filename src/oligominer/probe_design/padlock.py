@@ -7,25 +7,28 @@ whose middle is a non-hybridizing backbone::
 
     5'--[arm_5p]--[backbone]--[arm_3p]--3'
 
-Probe and target are antiparallel, so the probe's 5' arm pairs with the *downstream*
-target segment and its 3' arm with the *upstream* one. Writing the target footprint as
-``T1`` then ``T2`` (5'->3' along the target)::
+The probe's two free ends must meet at the nick, so they pair with the two target bases
+either side of the junction. Probe and target are antiparallel, so a 5' end pairs with the
+3'-most base of its segment and a 3' end with the 5'-most. Writing the target footprint as
+``T1`` then ``T2`` (5'->3' along the target), the 5' arm therefore binds the *upstream*
+segment and the 3' arm the *downstream* one::
 
-    arm_5p = revcomp(T2)
-    arm_3p = revcomp(T1)
-    arm_5p + arm_3p == revcomp(T1 + T2)
+    arm_5p = revcomp(T1)
+    arm_3p = revcomp(T2)
+    arm_3p + arm_5p == revcomp(T1 + T2)
 
-**The two arms concatenated in probe order are exactly the reverse complement of one
-contiguous genomic window.** That is what lets the whole homology go into specificity
-analysis as a single probe sequence: the split is bookkeeping (a junction offset and an
-optional gap), not a different molecule. Downstream code that screens k-mers, aligns to
-a genome or scores a duplex never has to know a padlock is involved.
+**The arms joined in ligated order (3' arm, then 5' arm, read across the nick) are exactly
+the reverse complement of one contiguous genomic window.** That is what lets the whole
+homology go into specificity analysis as a single probe sequence: the split is bookkeeping
+(a junction offset and an optional gap), not a different molecule. Downstream code that
+screens k-mers, aligns to a genome or scores a duplex never has to know a padlock is
+involved. The oligo that is *synthesized* is ``arm_5p + backbone + arm_3p``.
 
 When the arms are separated by a gap on the target, the identity above holds for the
-two arms alone -- ``probe_seq`` is what is *synthesized*, and the gap is filled by
-polymerase before ligation. The gap's target sequence is recorded as ``gap_seq`` so the
-ligated product can be reconstructed, but this module does not assert which end the
-polymerase extends from; that is a chemistry choice, not a mining one. For ``gap == 0``
+two arms alone, and the gap is filled by polymerase before ligation. The gap's target
+sequence is recorded as ``gap_seq`` so the ligated product can be reconstructed, but this
+module does not assert which end the polymerase extends from; that is a chemistry choice,
+not a mining one. For ``gap == 0``
 the arms are directly adjacent and ``probe_seq == revcomp(target window)`` exactly,
 which ``check_identity()`` asserts.
 
@@ -227,9 +230,9 @@ def mine_padlock_sequence(
         seq (str): the target DNA sequence (ACGTN).
         seq_id (str): identifier for this sequence.
         arm5 (dict or None): parameters for the probe's 5' arm, from arm_params().
-            This arm binds the DOWNSTREAM target segment. Defaults to DEFAULT_ARM.
+            This arm binds the UPSTREAM target segment. Defaults to DEFAULT_ARM.
         arm3 (dict or None): parameters for the probe's 3' arm, which binds the
-            UPSTREAM target segment. Defaults to DEFAULT_ARM.
+            DOWNSTREAM target segment. Defaults to DEFAULT_ARM.
         gap (int): bases on the target between the two arms, filled by polymerase
             before ligation. 0 makes the arms directly adjacent.
         spacing (int): minimum bases between the footprints of adjacent padlocks.
@@ -277,14 +280,14 @@ def mine_padlock_sequence(
     nuc_arr = seq_to_8bit(seq_str)
     span = nuc_arr.size
 
-    # T1 (upstream on the target) becomes the probe's 3' arm; T2 (downstream) the 5' arm
-    s1, l1, tm1 = _candidates(nuc_arr, _arm_config(arm3, thermo), 0)
-    s2, l2, tm2 = _candidates(nuc_arr, _arm_config(arm5, thermo), 0)
+    # T1 (upstream on the target) becomes the probe's 5' arm; T2 (downstream) the 3' arm
+    s1, l1, tm1 = _candidates(nuc_arr, _arm_config(arm5, thermo), 0)
+    s2, l2, tm2 = _candidates(nuc_arr, _arm_config(arm3, thermo), 0)
 
     if len(s1) == 0 or len(s2) == 0:
         return []
 
-    tj = tm_target_join if tm_target_join is not None else arm5.get("tm_target")
+    tj = tm_target_join if tm_target_join is not None else arm3.get("tm_target")
     has2, len2_at, tm2_at = _best_per_start(s2, l2, tm2, tj, span)
 
     # the adjacency join: a T1 candidate is usable iff a T2 candidate starts exactly
@@ -309,9 +312,9 @@ def mine_padlock_sequence(
         return []
 
     # one padlock per start: prefer the shortest total footprint, then the one whose
-    # 3' arm Tm best matches the request
+    # 5' arm Tm best matches the request
     total = stop - s1
-    tie = np.abs(tm1 - arm3["tm_target"]) if arm3.get("tm_target") is not None else total
+    tie = np.abs(tm1 - arm5["tm_target"]) if arm5.get("tm_target") is not None else total
     order = np.lexsort((tie, total, s1))
     s_sorted = s1[order]
     first = np.ones(len(s_sorted), dtype=bool)
@@ -337,24 +340,24 @@ def mine_padlock_sequence(
         if "N" in t1 or "N" in t2 or "N" in gap_seq:
             continue
 
-        arm_3p = rev_comp(t1)
-        arm_5p = rev_comp(t2)
+        arm_5p = rev_comp(t1)
+        arm_3p = rev_comp(t2)
 
         rows.append(
             (
                 seq_id,
                 t_start,
                 t_stop,
-                arm_5p + arm_3p,  # the synthesized homology, probe 5'->3'
+                arm_3p + arm_5p,  # the homology read across the ligation junction
                 arm_5p,
                 arm_3p,
-                int(l2_sel[i]),
                 int(l1[i]),
+                int(l2_sel[i]),
                 int(gap),
                 gap_seq,
-                round(float(tm2_sel[i]), 2),
                 round(float(tm1[i]), 2),
-                len(arm_5p),  # junction offset within probe_seq
+                round(float(tm2_sel[i]), 2),
+                len(arm_3p),  # junction offset within probe_seq
             )
         )
         last_stop = t_stop
@@ -381,8 +384,9 @@ def padlocks_to_df(rows):
 def check_identity(row, target_seq):
     """Assert the invariant that makes downstream padlock-blindness safe.
 
-    Verifies ``arm_5p + arm_3p == revcomp(T1 + T2)`` for a gapless padlock, and that
-    the junction offset splits probe_seq back into the two arms.
+    Verifies ``arm_3p + arm_5p == revcomp(T1 + T2)`` for a gapless padlock, that the
+    junction offset splits probe_seq back into the two arms, and that the probe's free
+    5' and 3' ends pair with the target bases either side of the junction.
 
     Args:
         row (dict or pandas.Series): one padlock record.
@@ -397,10 +401,21 @@ def check_identity(row, target_seq):
     probe = row["probe_seq"]
     j = int(row["junction"])
 
-    assert probe[:j] == row["arm_5p"], "junction does not recover arm_5p"
-    assert probe[j:] == row["arm_3p"], "junction does not recover arm_3p"
+    assert probe[:j] == row["arm_3p"], "junction does not recover arm_3p"
+    assert probe[j:] == row["arm_5p"], "junction does not recover arm_5p"
     assert len(row["arm_5p"]) == int(row["arm5_len"]), "arm5_len disagrees with arm_5p"
     assert len(row["arm_3p"]) == int(row["arm3_len"]), "arm3_len disagrees with arm_3p"
+
+    # the free ends sit either side of the junction: the 5' arm's 5'-terminal base pairs
+    # with the last base of T1, the 3' arm's 3'-terminal base with the first base of T2
+    t1_last = int(row["start"]) + int(row["arm5_len"]) - 1
+    t2_first = t1_last + 1 + int(row["gap_len"])
+    assert rev_comp(row["arm_5p"][0]) == target_seq[t1_last].upper(), (
+        "the probe's 5' end does not pair at the junction"
+    )
+    assert rev_comp(row["arm_3p"][-1]) == target_seq[t2_first].upper(), (
+        "the probe's 3' end does not pair at the junction"
+    )
 
     if int(row["gap_len"]) == 0:
         window = target_seq[int(row["start"]) : int(row["stop"])].upper()
