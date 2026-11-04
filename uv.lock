@@ -1775,7 +1775,7 @@ dependencies = [
 ]
 
 [package.optional-dependencies]
-bilstm = [
+torch = [
     { name = "torch" },
 ]
 
@@ -1800,10 +1800,10 @@ requires-dist = [
     { name = "pyfaidx" },
     { name = "pyranges" },
     { name = "scikit-learn" },
-    { name = "torch", marker = "extra == 'bilstm'" },
+    { name = "torch", marker = "extra == 'torch'" },
     { name = "xgboost", specifier = "==2.1.1" },
 ]
-provides-extras = ["bilstm"]
+provides-extras = ["torch"]
 
 [package.metadata.requires-dev]
 dev = [

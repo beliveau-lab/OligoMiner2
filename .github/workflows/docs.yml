@@ -10,6 +10,15 @@ name: docs
 on:
   push:
     branches: [dev]                 # the development docs, on every push
+  workflow_dispatch:
+    # Rebuild ONE already-released version's docs, to improve its documentation after the fact.
+    # The checkout is that version's own TAG, so the API reference still describes the code that
+    # version contains; only the prose changes, and only by first committing it to the tag's
+    # docs/ via a fix branch. Nothing here can make a released folder describe newer code.
+    inputs:
+      version:
+        description: "Released version to rebuild, without the leading v (e.g. 1.4.0)"
+        required: true
   workflow_run:
     # A version folder is published only when the RELEASE succeeds, never on the tag alone.
     # Building on the tag meant a release that failed after tagging still left its version on
@@ -29,13 +38,16 @@ jobs:
     # a failed release publishes nothing
     if: >-
       github.event_name == 'push' ||
+      github.event_name == 'workflow_dispatch' ||
       github.event.workflow_run.conclusion == 'success'
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7.0.1
         with:
-          ref: ${{ github.event_name == 'workflow_run'
-                   && github.event.workflow_run.head_sha || github.ref }}
+          ref: ${{ github.event_name == 'workflow_dispatch'
+                   && format('refs/tags/v{0}', inputs.version)
+                   || (github.event_name == 'workflow_run'
+                       && github.event.workflow_run.head_sha || github.ref) }}
       - uses: astral-sh/setup-uv@v10.1.0
         with:
           enable-cache: true
@@ -43,7 +55,11 @@ jobs:
       - name: Work out the destination folder
         id: dest
         run: |
-          if [[ "${{ github.event_name }}" == "workflow_run" ]]; then
+          if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+            # a rebuild of an existing released folder; it must not move `stable`
+            echo "folder=${{ inputs.version }}" >> "$GITHUB_OUTPUT"
+            echo "release=false" >> "$GITHUB_OUTPUT"
+          elif [[ "${{ github.event_name }}" == "workflow_run" ]]; then
             # the release that just succeeded; its head_branch is the tag
             VERSION="${{ github.event.workflow_run.head_branch }}"
             echo "folder=${VERSION#v}" >> "$GITHUB_OUTPUT"
