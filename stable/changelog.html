@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>Changelog &#8212; oligominer 0.0.4</title>
+    <title>Changelog &#8212; oligominer 0.0.5.dev1</title>
   
   
   
@@ -38,14 +38,14 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="_static/documentation_options.js?v=8c5712d9"></script>
+    <script src="_static/documentation_options.js?v=c1304e97"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'changelog';</script>
     <script>
         DOCUMENTATION_OPTIONS.theme_version = '0.16.1';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://oligominer.org/switcher.json';
-        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '0.0.4';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'dev';
         DOCUMENTATION_OPTIONS.show_version_warning_banner =
             false;
         </script>
@@ -116,7 +116,7 @@
   
   
   
-    <p class="title logo__title">oligominer 0.0.4</p>
+    <p class="title logo__title">oligominer 0.0.5.dev1</p>
   
 </a></div>
     
@@ -402,6 +402,12 @@
 <h1>Changelog<a class="headerlink" href="#changelog" title="Link to this heading">#</a></h1>
 <section id="unreleased">
 <h2><a class="reference external" href="https://github.com/beliveau-lab/OligoMiner2/compare/v0.0.4...HEAD">Unreleased</a><a class="headerlink" href="#unreleased" title="Link to this heading">#</a></h2>
+<section id="fixed">
+<h3>Fixed<a class="headerlink" href="#fixed" title="Link to this heading">#</a></h3>
+<ul class="simple">
+<li><p>Padlock arms were bound to the wrong ends of the target window.</p></li>
+</ul>
+</section>
 </section>
 <section id="id1">
 <h2><a class="reference external" href="https://github.com/beliveau-lab/OligoMiner2/releases/tag/v0.0.4">0.0.4</a> - 2026-09-17<a class="headerlink" href="#id1" title="Link to this heading">#</a></h2>
@@ -429,8 +435,8 @@ and changelog link.</p></li>
 package no longer offers it to users.</p></li>
 </ul>
 </section>
-<section id="fixed">
-<h3>Fixed<a class="headerlink" href="#fixed" title="Link to this heading">#</a></h3>
+<section id="id2">
+<h3>Fixed<a class="headerlink" href="#id2" title="Link to this heading">#</a></h3>
 <ul class="simple">
 <li><p>Probe mining raised <code class="docutils literal notranslate"><span class="pre">OverflowError</span></code> on numpy 2. The dinucleotide sentinel <code class="docutils literal notranslate"><span class="pre">-1</span></code> was written into
 an unsigned array; earlier numpy silently wrapped it to 255.</p></li>
@@ -477,11 +483,14 @@ an unsigned array; earlier numpy silently wrapped it to 255.</p></li>
   </div>
   <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#unreleased">Unreleased</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#unreleased">Unreleased</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fixed">Fixed</a></li>
+</ul>
+</li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#id1">0.0.4 - 2026-09-17</a><ul class="nav section-nav flex-column">
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#added">Added</a></li>
 <li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#changed">Changed</a></li>
-<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#fixed">Fixed</a></li>
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#id2">Fixed</a></li>
 </ul>
 </li>
 </ul>

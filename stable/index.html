@@ -8,7 +8,7 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
-    <title>OligoMiner2 &#8212; oligominer 0.0.4</title>
+    <title>OligoMiner2 &#8212; oligominer 0.0.5.dev1</title>
   
   
   
@@ -38,14 +38,14 @@
   <link rel="preload" as="script" href="_static/scripts/bootstrap.js?digest=8878045cc6db502f8baf" />
 <link rel="preload" as="script" href="_static/scripts/pydata-sphinx-theme.js?digest=8878045cc6db502f8baf" />
 
-    <script src="_static/documentation_options.js?v=8c5712d9"></script>
+    <script src="_static/documentation_options.js?v=c1304e97"></script>
     <script src="_static/doctools.js?v=9bcbadda"></script>
     <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script>DOCUMENTATION_OPTIONS.pagename = 'index';</script>
     <script>
         DOCUMENTATION_OPTIONS.theme_version = '0.16.1';
         DOCUMENTATION_OPTIONS.theme_switcher_json_url = 'https://oligominer.org/switcher.json';
-        DOCUMENTATION_OPTIONS.theme_switcher_version_match = '0.0.4';
+        DOCUMENTATION_OPTIONS.theme_switcher_version_match = 'dev';
         DOCUMENTATION_OPTIONS.show_version_warning_banner =
             false;
         </script>
@@ -116,7 +116,7 @@
   
   
   
-    <p class="title logo__title">oligominer 0.0.4</p>
+    <p class="title logo__title">oligominer 0.0.5.dev1</p>
   
 </a></div>
     
@@ -369,9 +369,13 @@
                   
   <section id="oligominer2">
 <h1>OligoMiner2<a class="headerlink" href="#oligominer2" title="Link to this heading">#</a></h1>
-<p><strong>Genome-scale oligonucleotide probe design for DNA and RNA FISH.</strong></p>
-<p>OligoMiner2 takes a target genome or transcriptome and returns candidate probe sequences that are
-thermodynamically optimized and filtered for specificity.</p>
+<p><strong>A Python toolkit for oligonucleotide probe design.</strong></p>
+<p>OligoMiner2 is a library of composable parts for designing oligo probes: thermodynamic mining,
+specificity analysis, duplex-stability models, and probe assembly. Each part is usable on its own,
+so a probe design is written as a program against the toolkit rather than configured through one
+fixed program.</p>
+<p>The <a class="reference internal" href="pipeline.html"><span class="std std-doc">end-to-end pipeline</span></a> is one such program — the conventional FISH probe design
+flow, assembled from these parts, and the place to start if it is the flow you want.</p>
 <div class="admonition warning">
 <p class="admonition-title">Warning</p>
 <p>This package is under active development. Until the first stable release (<code class="docutils literal notranslate"><span class="pre">v1.0.0</span></code>) the API may
@@ -382,10 +386,52 @@ change without notice, so pin to a specific version if you depend on it.</p>
 <div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>oligominer
 </pre></div>
 </div>
-<p>The sequence model is optional, because torch is large and mining, screening and scoring with the
-tree models do not need it:</p>
-<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">"oligominer[bilstm]"</span>
+<p>That is everything except PyTorch. Mining, specificity, probe assembly and three of the four
+duplex-stability models work with it. Only the duplex-BiLSTM needs torch, so it is an extra:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span><span class="s2">"oligominer[torch]"</span>
 </pre></div>
+</div>
+<section id="cpu-or-gpu">
+<h3>CPU or GPU<a class="headerlink" href="#cpu-or-gpu" title="Link to this heading">#</a></h3>
+<p>There is no separate GPU extra, because there is nothing for it to install. On Linux the default
+PyTorch wheel on PyPI already depends on the full CUDA stack, so <code class="docutils literal notranslate"><span class="pre">oligominer[torch]</span></code> is a
+GPU-capable install and the BiLSTM uses a GPU when one is present. The GPU is the default, not an
+upgrade.</p>
+<p>What that costs is size: the CUDA stack runs to several GB. If you have no GPU, or want a small
+install, take torch from PyTorch’s CPU index first and then the extra is already satisfied:</p>
+<div class="highlight-bash notranslate"><div class="highlight"><pre><span></span>pip<span class="w"> </span>install<span class="w"> </span>torch<span class="w"> </span>--index-url<span class="w"> </span>https://download.pytorch.org/whl/cpu
+pip<span class="w"> </span>install<span class="w"> </span><span class="s2">"oligominer[torch]"</span>
+</pre></div>
+</div>
+<p>This cannot be an extra — an extra names packages, and cannot say which index to take one from.</p>
+</section>
+</section>
+<section id="what-is-in-the-toolkit">
+<h2>What is in the toolkit<a class="headerlink" href="#what-is-in-the-toolkit" title="Link to this heading">#</a></h2>
+<div class="pst-scrollable-table-container"><table class="table">
+<thead>
+<tr class="row-odd"><th class="head"><p>Subsystem</p></th>
+<th class="head"><p>What it does</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">thermodynamics</span></code></p></td>
+<td><p>Melting temperature and formamide correction, candidate mining from sequence, exact NUPACK pDup</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">specificity</span></code></p></td>
+<td><p>Alignment handling, duplex reconstruction from a reference, duplex stability, k-mer frequency</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">models</span></code></p></td>
+<td><p>Four registered duplex-stability models selected by name, and retraining for two of them</p></td>
+</tr>
+<tr class="row-odd"><td><p><code class="docutils literal notranslate"><span class="pre">probe_design</span></code></p></td>
+<td><p>Probe sets, padlock and split architectures, domain layouts, exclusions, scoring, splitting, I/O</p></td>
+</tr>
+<tr class="row-even"><td><p><code class="docutils literal notranslate"><span class="pre">bioinformatics</span></code></p></td>
+<td><p>Sequence and annotation I/O, transcriptome construction</p></td>
+</tr>
+</tbody>
+</table>
 </div>
 </section>
 <section id="quick-start">
@@ -396,14 +442,17 @@ tree models do not need it:</p>
 <span class="n">df</span> <span class="o">=</span> <span class="n">mine_fasta</span><span class="p">(</span><span class="s1">'genome.fa'</span><span class="p">)</span>
 </pre></div>
 </div>
+<p>Mining is the entry point most designs begin from, but nothing requires the rest of the pipeline
+to follow it — the resulting frame is ordinary tabular data.</p>
 <div class="toctree-wrapper compound">
 </div>
 </section>
 <section id="where-to-go-next">
 <h2>Where to go next<a class="headerlink" href="#where-to-go-next" title="Link to this heading">#</a></h2>
 <ul class="simple">
-<li><p><a class="reference internal" href="pipeline.html"><span class="std std-doc">The pipeline</span></a> — mining, alignment and prediction, and what each stage decides.</p></li>
-<li><p><a class="reference internal" href="api.html"><span class="std std-doc">API reference</span></a> — every public module, generated from the source.</p></li>
+<li><p><a class="reference internal" href="pipeline.html"><span class="std std-doc">The pipeline</span></a> — the end-to-end flow: mining, alignment, prediction, and what each
+stage decides.</p></li>
+<li><p><a class="reference internal" href="api.html"><span class="std std-doc">API reference</span></a> — the toolkit, subsystem by subsystem, generated from the source.</p></li>
 <li><p><a class="reference internal" href="changelog.html"><span class="std std-doc">Changelog</span></a> — what changed, newest first.</p></li>
 </ul>
 </section>
@@ -447,7 +496,11 @@ tree models do not need it:</p>
   </div>
   <nav class="bd-toc-nav page-toc" aria-labelledby="pst-page-navigation-heading-2">
     <ul class="visible nav section-nav flex-column">
-<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#install">Install</a></li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#install">Install</a><ul class="nav section-nav flex-column">
+<li class="toc-h3 nav-item toc-entry"><a class="reference internal nav-link" href="#cpu-or-gpu">CPU or GPU</a></li>
+</ul>
+</li>
+<li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#what-is-in-the-toolkit">What is in the toolkit</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#quick-start">Quick start</a></li>
 <li class="toc-h2 nav-item toc-entry"><a class="reference internal nav-link" href="#where-to-go-next">Where to go next</a></li>
 </ul>
