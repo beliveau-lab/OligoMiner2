@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [0.0.5] - 2026-11-04
+
 ### Fixed
 
 - Padlock arms were bound to the wrong ends of the target window.
@@ -42,5 +44,6 @@ rebuilt artifact no longer matches the hash already recorded in the index.
 - Probe mining raised `OverflowError` on numpy 2. The dinucleotide sentinel `-1` was written into
   an unsigned array; earlier numpy silently wrapped it to 255.
 
-[Unreleased]: https://github.com/beliveau-lab/OligoMiner2/compare/v0.0.4...HEAD
+[Unreleased]: https://github.com/beliveau-lab/OligoMiner2/compare/v0.0.5...HEAD
+[0.0.5]: https://github.com/beliveau-lab/OligoMiner2/releases/tag/v0.0.5
 [0.0.4]: https://github.com/beliveau-lab/OligoMiner2/releases/tag/v0.0.4
